@@ -3,8 +3,9 @@
 The JavaCloud Framework (jcframe) makes building Java web CRUD applications really simple.
 
 The details of the framewok is that is uses reflection to generate the necessary code to handle:
-* DataAccessObjects (DAO)s - in interface **BaseDAO.java** and class **BaseDAOImpl.java**
-* HttpServlets - in interface **BaseController.java** and class **BaseControllerImpl.java**
+* DataAccessObjects (DAO)s - interface=**BaseDAO.java**, class=**BaseDAOImpl.java**
+* HttpServlets - interface=**BaseController.java**, class=**BaseControllerImpl.java**
+* Security layer - interface **AuthService,java**, class=**BaseAuthServiceImpl.java**
 
 These both handle bean objects called **BaseBean.java**
 
@@ -32,4 +33,11 @@ public T getLookup(int id);
 public T get(int id);
 public void delete(int beanId);
 public List<T> find(String field, String value, int pageNo);
+```
+
+The **AuthService** interface provides:
+```java
+public U getUser(HttpServletRequest request);
+public boolean isAuthenticated(HttpServletRequest request);
+public <T extends BaseBean> boolean checkACL(U user, Class<T> classType, Action action);
 ```
