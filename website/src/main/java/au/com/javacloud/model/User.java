@@ -9,8 +9,8 @@ import au.com.javacloud.annotation.Exclude;
  */
 
 public class User extends BaseBean {
-    private Date cdate;
-    private Date mdate;
+    private Date cdate = new Date();
+    private Date mdate = new Date();
     private String description;
     private String tags;
     private String type;

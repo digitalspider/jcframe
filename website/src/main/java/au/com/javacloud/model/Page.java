@@ -9,8 +9,8 @@ import au.com.javacloud.annotation.Exclude;
  */
 
 public class Page extends BaseBean {
-    protected Date cdate;
-    protected Date mdate;
+    protected Date cdate = new Date();
+    protected Date mdate = new Date();
     protected String description;
     protected String tags;
     protected String type;
