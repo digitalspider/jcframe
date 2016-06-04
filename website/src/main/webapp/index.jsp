@@ -10,9 +10,9 @@
     <body>
 	<h2>Controllers in this site</h2>
 	<ul>
-		<li><a href="/student">student controller</a> - <a href="/student.json">/student.json</a></li>
-		<li><a href="/user">user controller</a> - <a href="/user.json">/user.json</a></li>
-		<li><a href="/page">page controller</a> - <a href="/page.json">/page.json</a></li>
+		<li><a href="<%=request.getContextPath()%>/student">student controller</a> - <a href="<%=request.getContextPath()%>/student.json">/student.json</a></li>
+		<li><a href="<%=request.getContextPath()%>/user">user controller</a> - <a href="<%=request.getContextPath()%>/user.json">/user.json</a></li>
+		<li><a href="<%=request.getContextPath()%>/page">page controller</a> - <a href="<%=request.getContextPath()%>/page.json">/page.json</a></li>
 	</ul>
 
     </body>
