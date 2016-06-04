@@ -16,7 +16,6 @@
 	<modules>
 		<module>jcframe</module>
 		<module>website</module>
-		<module>demo</module>
 	</modules>
 	
 	<organization>
