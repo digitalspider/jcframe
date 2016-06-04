@@ -6,6 +6,7 @@ The details of the framewok is that is uses reflection to generate the necessary
 * DataAccessObjects (DAO)s - interface=**BaseDAO.java**, class=**BaseDAOImpl.java**
 * HttpServlets - interface=**BaseController.java**, class=**BaseControllerImpl.java**
 * Security layer - interface **AuthService,java**, class=**BaseAuthServiceImpl.java**
+
 These both handle bean objects called **BaseBean.java**
 
 The reflection is mostly done in the class **ReflectUtil.java** and **Statics.java**
