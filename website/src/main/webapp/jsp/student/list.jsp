@@ -10,16 +10,25 @@
         <title>Show All Students</title>
     </head>
     <body>
-        <jc:substring input="GOODMORNING" start="1" end="6"/>
+        <a href="<%=request.getContextPath()%>">Home</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/list/1">Page1</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/list/2">Page2</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/config/order/id/desc">ID Desc</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/config/order/id/asc">ID ASC</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/config/order/id">ID Toggle</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/config/limit/2">Limit 2</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}/config/limit">Limit Reset</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}.json">JSON</a>&nbsp;|&nbsp;
+        <br/>
 
         <table>
             <thead>
                 <tr>
-                    <th>Student ID</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Course</th>
-                    <th>Year</th>
+                    <th><a href="${baseUrl}/config/order/id">Student ID</a></th>
+                    <th><a href="${baseUrl}/config/order/firstName">First Name</a></th>
+                    <th><a href="${baseUrl}/config/order/lastName">Last Name</a></th>
+                    <th><a href="${baseUrl}/config/order/course">Course</a></th>
+                    <th><a href="${baseUrl}/config/order/year">Year</a></th>
                     <th colspan="2">Action</th>
                 </tr>
             </thead>
