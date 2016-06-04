@@ -40,6 +40,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected String tableName;
 	protected Class<T> clazz;
 	protected String orderBy;
+	protected boolean orderAsc = true;
 	protected int limit = DEFAULT_LIMIT;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private Connection conn;
@@ -421,8 +422,22 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public void setOrderBy(String orderBy) {
-		this.orderBy = orderBy;
+	public void toggleOrderBy(String orderBy) {
+		orderAsc = !orderAsc;
+		setOrderBy(orderBy,orderAsc);
+	}
+
+	@Override
+	public void setOrderBy(String orderBy, boolean isAsc) {
+		orderAsc = isAsc;
+		if (StringUtils.isEmpty(orderBy)) {
+			orderBy = "";
+		}
+		if (isAsc) {
+			this.orderBy = orderBy +" ASC";
+		} else {
+			this.orderBy = orderBy +" DESC";
+		}
 	}
 
 	@Override
@@ -432,8 +447,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public void setLimit(int limit) {
-		if (limit<0) {
-			limit=0;
+		if (limit<=0) {
+			limit=DEFAULT_LIMIT;
 		}
 		if (limit>MAX_LIMIT) {
 			limit=MAX_LIMIT;

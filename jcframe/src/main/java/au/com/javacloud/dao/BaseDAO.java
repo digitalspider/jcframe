@@ -35,7 +35,8 @@ public interface BaseDAO<T extends BaseBean> {
     public void init(ServletConfig config);
     public Connection getConnection() throws SQLException;
 
-    public void setOrderBy(String orderBy);
+    public void toggleOrderBy(String orderBy);
+    public void setOrderBy(String orderBy, boolean isAsc);
     public String getOrderBy();
 
     public void setLimit(int limit);

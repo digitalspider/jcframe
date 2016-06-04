@@ -402,16 +402,20 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 	public void config()  throws Exception {
 		if (pathParts.size()>1) {
 			if (pathParts.get(1).equals(PROP_ORDER)) {
-				dao.setOrderBy("");
 				if (pathParts.size() > 2) {
 					String field = pathParts.get(2);
-					dao.setOrderBy(field);
 					if (pathParts.size() > 3) {
 						String direction = pathParts.get(3);
-						if (direction.equalsIgnoreCase(PROP_ORDER_ASC) || direction.equalsIgnoreCase(PROP_ORDER_DESC)) {
-							dao.setOrderBy(field + " " + direction);
+						if (direction.equalsIgnoreCase(PROP_ORDER_ASC)) {
+							dao.setOrderBy(field,true);
+						} else if (direction.equalsIgnoreCase(PROP_ORDER_DESC)) {
+							dao.setOrderBy(field,false);
 						}
+					} else {
+						dao.toggleOrderBy(field);
 					}
+				} else {
+					dao.setOrderBy("",true);
 				}
 			} else if (pathParts.get(1).equals(PROP_LIMIT)) {
 				int limit = pathParts.getInt(2);
