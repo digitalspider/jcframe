@@ -119,10 +119,7 @@ public class BaseDataSource implements DataSource {
 	}
 
 	public void setRealPath(String realPath) {
-		if (!realPath.endsWith(File.separator)) {
-			realPath = realPath+File.separator;
-		}
-		this.realPath = realPath+".."+File.separator;
+		this.realPath = realPath;
 	}
 
 	public String injectRealPath(String url) {
