@@ -1,0 +1,6 @@
+# JavaCloud configuration file
+
+#package.model.name=au.com.javacloud.model
+#auth.class=au.com.javacloud.auth.BaseAuthServiceImpl
+#ds.class=au.com.javacloud.dao.BaseDataSource
+#ds.config.file=db.properties.sample

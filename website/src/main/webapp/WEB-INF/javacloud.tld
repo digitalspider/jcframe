@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+    version="2.1">
+
+    <!--
+    <display-name>JavaCloud Custom Utilities</display-name>
+    -->
+    <tlib-version>1.0</tlib-version>
+    <short-name>jc</short-name>
+    <uri>http://javacloud.com.au/taglib</uri>
+
+    <tag>
+        <name>substring</name>
+        <tag-class>au.com.javacloud.taglib.SubstringTag</tag-class>
+        <example>Substring function.</example>
+        <attribute>
+          <name>input</name>
+          <required>true</required>
+        </attribute>
+        <attribute>
+          <name>start</name>
+          <required>true</required>
+      </attribute>
+        <attribute>
+          <name>end</name>
+          <required>true</required>
+      </attribute>
+    </tag>
+
+    <!--
+    <function>
+        <name>unescapeHtml</name>
+        <example>This function unescapes html</example>
+        <function-class>org.apache.commons.lang3.StringEscapeUtils</function-class>
+        <function-signature>java.lang.String unescapeHtml4(java.lang.String)</function-signature>
+    </function>
+    -->
+</taglib>
