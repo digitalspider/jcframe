@@ -3,11 +3,13 @@ package au.com.javacloud.controller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -18,6 +20,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -56,6 +61,10 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 	private HttpServletResponse response;
 	private Properties configProperties = new Properties();
 	private Gson gson = new GsonBuilder().setExclusionStrategies(new GsonExclusionStrategy()).create();
+	private boolean isMultipart;
+	private String filePath;
+	private int maxFileSize = 50 * 1024;
+	private int maxMemSize = 4 * 1024;
 
 	public static final String BEANS_SUFFIX = "s";
 	public static final String BEANS_FIELDSUFFIX = "fields";
@@ -115,6 +124,12 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
     public void init() throws ServletException {
     	super.init();
 		dao.init(getServletConfig());
+		filePath = getServletContext().getInitParameter("file-upload");
+		if (StringUtils.isBlank(filePath)) {
+			filePath = System.getProperty("java.io.tmpdir");
+		}
+
+		// Configure lookupMap
     	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass());
     	for (Method method : fieldMethods.keySet()) {
     		Class lookupClass = fieldMethods.get(method);
@@ -236,6 +251,9 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 		baseUrl = HttpUtil.getBaseUrl(request);
 		LOG.info("baseUrl="+baseUrl);
 
+		isMultipart = ServletFileUpload.isMultipartContent(request);
+		LOG.info("isMultipart="+isMultipart);
+
 		try {
 			String id = request.getParameter(BaseBean.FIELD_ID);
 			if( id == null || id.isEmpty() ) {
@@ -265,6 +283,54 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 		view.forward(request, response);
 	}
 
+	public void upload() throws Exception {
+		LOG.info("upload() START");
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		// maximum size that will be stored in memory
+		factory.setSizeThreshold(maxMemSize);
+		// Location to save data that is larger than maxMemSize.
+		factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		// maximum file size to be uploaded.
+		upload.setSizeMax( maxFileSize );
+
+		File file;
+
+		// Parse the request to get file items.
+		List<FileItem> fileItems = upload.parseRequest(request);
+
+		for (FileItem fileItem : fileItems) {
+			LOG.info("fileItem="+fileItem);
+			if (!fileItem.isFormField()) {
+				// Get the uploaded file parameters
+				String fieldName = fileItem.getFieldName();
+				LOG.info("fieldName="+fieldName);
+				String fileName = fileItem.getName();
+				LOG.info("fileName="+fileName);
+				String contentType = fileItem.getContentType();
+				LOG.info("contentType="+contentType);
+				boolean isInMemory = fileItem.isInMemory();
+				long sizeInBytes = fileItem.getSize();
+				LOG.info("sizeInBytes="+sizeInBytes);
+				// Write the file
+				LOG.info("filePath="+filePath);
+				String fullFilePath;
+				if (fileName.lastIndexOf("\\") >= 0) {
+					fullFilePath = filePath + fileName.substring(fileName.lastIndexOf("\\"));
+				} else {
+					fullFilePath = filePath + fileName.substring(fileName.lastIndexOf("\\") + 1);
+				}
+				LOG.info("fullFilePath="+fullFilePath);
+				file = new File(filePath);
+				fileItem.write(file);
+				LOG.info("Uploaded Filename: " + fileName + "<br>");
+			}
+		}
+		LOG.info("upload() DONE");
+	}
+
     @SuppressWarnings("rawtypes")
 	protected T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		T bean = ReflectUtil.getNewBean(clazz);
@@ -273,7 +339,7 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 			Class classType = methods.get(method);
 			String fieldName = ReflectUtil.getFieldName(method);
 			try {
-				String value = request.getParameter( fieldName );
+				String value = request.getParameter(fieldName);
 
 				if (ReflectUtil.isBean(classType)) {
 					// Handle BaseBeans
@@ -339,6 +405,9 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
     public void create() throws Exception {
 		T bean = populateBean(request, response);
 		dao.saveOrUpdate(bean);
+		if (isMultipart) {
+			upload();
+		}
     }
 
     @Override
@@ -374,6 +443,9 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 		T bean = populateBean(request, response);
 		bean.setId( Integer.parseInt(id) );
 		dao.saveOrUpdate(bean);
+		if (isMultipart) {
+			upload();
+		}
     }
 
     @Override

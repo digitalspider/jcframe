@@ -230,10 +230,8 @@ public class ReflectUtil {
 				method.invoke(bean, Double.parseDouble(value));
 			} else if (classType.equals(BigDecimal.class)) {
 				method.invoke(bean, new BigDecimal(value));
-			} else if (classType.equals(Blob.class)) {
-				//method.invoke(bean, Blob.parseBlob(value));
-			} else if (classType.equals(Clob.class)) {
-				//method.invoke(bean, Clob.parseClob(value));
+			} else if (classType.equals(File.class)) {
+				method.invoke(bean, new File(value));
 			}
 		}
 	}
