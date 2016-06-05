@@ -10,7 +10,7 @@ The development process is:
 * Create a new database table schema, or get the connection properties to existing database
 * Use a tool to generate a series of *beans* against the database schema
  * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
- * A **bean** is an object representing a table in the database
+ * A **bean** is an object representing a table in the database, extends **BaseBean**
 * Import this JCFrame jar file into your maven
  * Download the source code using <code> git clone https://github.com/digitalspider/jcsite.git </code>
  * Run <code>maven clean install</code>
