@@ -21,7 +21,7 @@ The development process is:
       <groupId>au.com.javacloud</groupId>
       <artifactId>jcframe</artifactId>
       <version>1.0-SNAPSHOT</version>
-    </dependenc>y
+    </dependency>
 ```
 * Create a new controller for each *bean*, e.g. the below is created for the *Page* bean:
 ```java

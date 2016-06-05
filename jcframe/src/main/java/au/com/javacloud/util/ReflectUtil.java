@@ -30,7 +30,7 @@ import au.com.javacloud.model.BaseBean;
 public class ReflectUtil {
 
 	private static final Logger LOG = Logger.getLogger(ReflectUtil.class);
-	
+
 	public static boolean isBean(Class clazz) {
         if (BaseBean.class.isAssignableFrom(clazz)) {
         	return true;
@@ -69,7 +69,7 @@ public class ReflectUtil {
     	LOG.debug("setters="+setterMethods);
     	return setterMethods;
     }
-    
+
     public static Map<Method,Class> getPublicGetterMethods(Class<?> objectClass) {
     	Method[] allMethods = objectClass.getDeclaredMethods();
     	Map<Method,Class> getterMethods = new HashMap<Method,Class>();
@@ -81,7 +81,7 @@ public class ReflectUtil {
         }
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
-    	        if (method.getName().startsWith("get")) {
+    	        if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
 					if (!method.isAnnotationPresent(Exclude.class)) {
 						Class returnClass = method.getReturnType();
 						getterMethods.put(method, returnClass);
@@ -92,7 +92,7 @@ public class ReflectUtil {
     	LOG.debug("getters="+getterMethods);
     	return getterMethods;
     }
-    
+
     public static <U extends BaseBean> U getNewBean(Class<U> clazz) {
     	try {
     		return (U)clazz.newInstance();
@@ -101,7 +101,7 @@ public class ReflectUtil {
     	}
     	return null;
     }
-    
+
 	public static <U extends BaseBean> List<String> getBeanFieldNames(Class<U> clazz) {
 		Set<Method> methods = ReflectUtil.getPublicGetterMethods(clazz).keySet();
 		List<String> beanFieldNames = new ArrayList<String>();
@@ -112,12 +112,12 @@ public class ReflectUtil {
 		return beanFieldNames;
 	}
 
-    
+
     public static String getFieldName(String methodName) {
     	String methodString = methodName.substring(3);
     	return methodString.substring(0,1).toLowerCase()+methodString.substring(1);
     }
-    
+
     public static String getFieldName(Method method) {
 		return getFieldName(method.getName());
     }
@@ -187,7 +187,7 @@ public class ReflectUtil {
 		}
 	}
 
-    
+
 	public static <T extends BaseBean> void invokeSetterMethodForCollection(T bean, Method method, Class classType, String value) throws Exception {
 		if (ReflectUtil.isCollection(classType)) {
 			String[] valueArray = value.split(",");
