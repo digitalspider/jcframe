@@ -1,6 +1,5 @@
 #!/bin/bash
 
-DBDIR=/opt/tomcat/tomcat-stage/webapps
+rm -f database.db
+echo ".exit" | sqlite3 database.db -init src/main/resources/database.sql
 
-sudo rm $DBDIR/database.db
-sudo sqlite3 $DBDIR/database.db -init src/main/resources/database.sql
