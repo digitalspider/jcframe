@@ -231,6 +231,11 @@ public class ReflectUtil {
 			} else if (classType.equals(BigDecimal.class)) {
 				method.invoke(bean, new BigDecimal(value));
 			} else if (classType.equals(File.class)) {
+				if (value.lastIndexOf("\\") >= 0) {
+					value = value.substring(value.lastIndexOf("\\"));
+				} else {
+					value = value.substring(value.lastIndexOf("\\") + 1);
+				}
 				method.invoke(bean, new File(value));
 			}
 		}
