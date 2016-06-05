@@ -46,6 +46,8 @@
 			</div>
 			<div>
 				<label for="authorId">Author Id</label>
+				<!-- Cloudflare setting -->
+				<!--email_off-->
 				<select name="authorId">
 				    <option value="">Select Author Id...</option>
                     <c:forEach items='${lookupMap.get("authorId")}' var="authorBean">
@@ -54,6 +56,7 @@
                        ><c:out value="${authorBean.id}"/> - <c:out value="${authorBean.displayValue}"/></option>
                     </c:forEach>
 				</select>
+				<!--/email_off-->
 			</div>
 			<div>
 				<label for="parentId">Parent Id</label>
