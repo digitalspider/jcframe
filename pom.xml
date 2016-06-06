@@ -15,7 +15,7 @@
 
 	<modules>
 		<module>jcframe</module>
-		<module>website</module>
+		<module>site</module>
 	</modules>
 	
 	<organization>
