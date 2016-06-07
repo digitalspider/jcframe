@@ -37,6 +37,7 @@ public class Statics {
 	private static List<Class<? extends BaseBean>> beanClassTypes = new ArrayList<>();
     private static Map<Class,BaseDAO> daoMap = new HashMap<Class,BaseDAO>();
     private static Map<Class,BaseController> controllerMap = new HashMap<Class,BaseController>();
+	private static Map<String,Class> urlClassMap = new HashMap<String,Class>();
     private static AuthService authService;
     private static DataSource dataSource;
 	private static String packageName = DEFAULT_PACKAGE_NAME;
@@ -83,6 +84,7 @@ public class Statics {
 						beanClassTypes.add(classType);
 						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
 						controllerMap.put(classType, new BaseControllerImpl<>(classType,authService));
+						urlClassMap.put(classType.getSimpleName().toLowerCase(),classType);
 					}
 				}
 			} catch (Exception e) {
@@ -113,4 +115,8 @@ public class Statics {
     public static Map<Class,BaseController> getControllerMap() {
     	return controllerMap;
     }
+
+	public static Map<String, Class> getUrlClassMap() {
+		return urlClassMap;
+	}
 }
