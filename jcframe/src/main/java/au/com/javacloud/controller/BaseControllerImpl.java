@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.auth.ACLException;
 import au.com.javacloud.auth.Action;
 import au.com.javacloud.auth.AuthService;
@@ -369,10 +370,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	private void checkAuth(HttpServletRequest request) throws AuthenticationException {
-		if (configProperties.get(PROP_AUTH).equals("true")) {
-			if (!authService.isAuthenticated(request)) {
-				throw new AuthenticationException("Unauthenticated Exception");
-			}
+		if (clazz.isAnnotationPresent(Secure.class) && !authService.isAuthenticated(request)) {
+			throw new AuthenticationException("Access Denied for class: "+clazz);
 		}
 	}
 
