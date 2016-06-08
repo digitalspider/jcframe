@@ -14,7 +14,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,8 +45,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	private final static Logger LOG = Logger.getLogger(BaseControllerImpl.class);
 
-	private static final long serialVersionUID = -2841993759251817415L;
-	private boolean initialised = false;
 	protected BaseDAO<T> dao;
 	protected Class<T> clazz;
     protected String beanName = "bean";
@@ -58,6 +55,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     protected String insertOrEditUrl = "/";
     protected String baseUrl;
     protected String contextUrl;
+    protected String serlvetSuffix;
     protected PathParts pathParts;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected AuthService<U> authService;
@@ -94,13 +92,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public static final String PROP_SET = "set";
 
 	@SuppressWarnings("unchecked")
-	public BaseControllerImpl(Class<T> clazz) {
-		this(clazz, Statics.getAuthService());
+    public void init(Class<T> clazz) {	
+		init(clazz, Statics.getAuthService());
 	}
 
 	@SuppressWarnings("unchecked")
-    public BaseControllerImpl(Class<T> clazz, AuthService<U> authService) {
-		super();
+    public void init(Class<T> clazz, AuthService<U> authService) {
 		this.clazz = clazz;
 		this.authService = authService;
 		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
@@ -116,24 +113,16 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.insertOrEditUrl = prefix+contextName+DEFAULT_EDIT_PAGE;
 	}
 
-    public BaseControllerImpl(BaseDAO<T> dao, String beanName, String beansName, String listUrl, String showUrl, String insertOrEditUrl) {
-		super();
-        this.dao = dao;
-        this.beanName = beanName;
-        this.listUrl = listUrl;
-		this.showUrl = showUrl;
-        this.insertOrEditUrl = insertOrEditUrl;
-	}
-
     public boolean isInitialised() {
-    	return initialised;
+    	return serlvetSuffix!=null;
     }
     
     @SuppressWarnings("rawtypes")
 	@Override
-    public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
+    public void init(ServletContext servletContext, ServletConfig servletConfig, String serlvetSuffix) throws ServletException {
     	this.servletContext = servletContext;
     	this.servletConfig = servletConfig;
+    	this.serlvetSuffix = serlvetSuffix;
 		dao.init(servletConfig);
 		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
@@ -156,7 +145,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     			}
     		}
     	}
-    	initialised = true;
     }
 
     public void doAction(ServletAction action, String beanName, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -240,7 +228,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					throw new ServletException(e);
 				}
 		
-				if (baseUrl.endsWith(JSON_SUFFIX)) {
+				if (baseUrl.endsWith(JSON_SUFFIX+serlvetSuffix)) {
 					return ;
 				}
 	   			break;
@@ -363,7 +351,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	protected boolean handleJson(Object o) throws IOException {
-		if (baseUrl.endsWith(JSON_SUFFIX)) {
+		if (baseUrl.endsWith(JSON_SUFFIX+serlvetSuffix)) {
 			String output = gson.toJson(o);
 			response.getWriter().write(output);
 			return true;
@@ -556,6 +544,14 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	@Override
 	public void setAuthService(AuthService<U> authService) {
 		this.authService = authService;
+	}
+
+	public ServletConfig getServletConfig() {
+		return servletConfig;
+	}
+
+	public ServletContext getServletContext() {
+		return servletContext;
 	}
 
 }

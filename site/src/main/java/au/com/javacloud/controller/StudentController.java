@@ -13,7 +13,7 @@ import au.com.javacloud.model.Student;
 public class StudentController extends BaseControllerImpl<Student,Principal> {
 
     public StudentController() {
-		super(Student.class);
+		super.init(Student.class);
 	}
 
 }

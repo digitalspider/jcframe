@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,7 +128,7 @@ public class ReflectUtil {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public static List<Class> getClasses(String packageName) throws ClassNotFoundException, IOException {
+	public static List<Class> getClasses(String packageName, Class filterClassType, boolean excludeSelf) throws ClassNotFoundException, IOException {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		assert classLoader != null;
 		String path = packageName.replace('.', '/');
@@ -142,7 +140,7 @@ public class ReflectUtil {
 		}
 		List<Class> classes = new ArrayList<Class>();
 		for (File directory : dirs) {
-			classes.addAll(findClasses(directory, packageName));
+			classes.addAll(findClasses(directory, packageName, filterClassType, excludeSelf));
 		}
 		return classes;
 	}
@@ -155,7 +153,8 @@ public class ReflectUtil {
 	 * @return The classes
 	 * @throws ClassNotFoundException
 	 */
-	public static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+	@SuppressWarnings("unchecked")
+	public static List<Class> findClasses(File directory, String packageName, Class filterClassType, boolean excludeSelf) throws ClassNotFoundException {
 
 		List<Class> classes = new ArrayList<Class>();
 
@@ -167,9 +166,14 @@ public class ReflectUtil {
 		for (File file : files) {
 			if (file.isDirectory()) {
 				assert !file.getName().contains(".");
-				classes.addAll(findClasses(file, packageName + "." + file.getName()));
+				classes.addAll(findClasses(file, packageName + "." + file.getName(), filterClassType, excludeSelf));
 			} else if (file.getName().endsWith(".class")) {
-				classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+				Class classType = Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6));
+				if (filterClassType == null || (filterClassType!=null && filterClassType.isAssignableFrom(classType))) {
+					if (!(excludeSelf && classType.equals(filterClassType))) {
+						classes.add(classType);
+					}
+				}
 			}
 		}
 		return classes;

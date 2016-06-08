@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.HttpUtil;
 import au.com.javacloud.util.PathParts;
 import au.com.javacloud.util.Statics;
@@ -21,6 +22,11 @@ import au.com.javacloud.util.Statics;
 public class FrontControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = -9034690294608764448L;
 	private final static Logger LOG = Logger.getLogger(FrontControllerServlet.class);
+	private String serlvetSuffix = ".jc";
+	
+	public FrontControllerServlet(String serlvetSuffix) {
+		this.serlvetSuffix = serlvetSuffix;
+	}
 	
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -67,11 +73,15 @@ public class FrontControllerServlet extends HttpServlet {
         LOG.info("baseController="+baseController);
         if (baseController!=null) {
         	if (!baseController.isInitialised()) {
-        		baseController.init(getServletContext(), getServletConfig());
+        		baseController.init(getServletContext(), getServletConfig(), serlvetSuffix);
         	}
         	baseController.doAction(action,beanName,request,response);
         } else {
         	throw new ServletException("Controller not found for request with bean="+beanName);
         }
     }
+
+	public String getSerlvetSuffix() {
+		return serlvetSuffix;
+	}
 }

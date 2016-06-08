@@ -14,7 +14,7 @@ import au.com.javacloud.model.User;
 public class UserController extends BaseControllerImpl<User,Principal> {
 
     public UserController() {
-		super(User.class);
+		super.init(User.class);
 	}
 
 }
