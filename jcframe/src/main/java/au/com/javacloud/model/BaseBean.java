@@ -1,7 +1,6 @@
 package au.com.javacloud.model;
 
 import au.com.javacloud.annotation.Exclude;
-import au.com.javacloud.annotation.GSonExclude;
 
 /**
  * Created by david on 22/05/16.

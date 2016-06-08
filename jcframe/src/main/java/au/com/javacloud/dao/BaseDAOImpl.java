@@ -13,7 +13,6 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -73,8 +72,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public void saveOrUpdate( T bean ) throws Exception {
 		PreparedStatement statement = null;
+		Connection conn = getConnection();
 		try {
-			statement = prepareStatementForSave(getConnection(), bean);
+			statement = prepareStatementForSave(conn, bean);
 			statement.executeUpdate();
 		} finally {
 			if (statement!=null) statement.close();
@@ -84,7 +84,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public void delete( int id ) throws SQLException {
 		String query = "delete from "+tableName+" where id=?";
-		PreparedStatement preparedStatement = getConnection().prepareStatement(query);
+		Connection conn = getConnection();
+		PreparedStatement preparedStatement = conn.prepareStatement(query);
 		preparedStatement.setInt(1, id);
 		preparedStatement.executeUpdate();
 		preparedStatement.close();
@@ -93,12 +94,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public List<T> getAll(int pageNo) throws Exception {
 		List<T> beans = new ArrayList<T>();
+		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
 			if (pageNo<1) { pageNo=1; };
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; };
-			statement = getConnection().createStatement();
+			statement = conn.createStatement();
 			String query = "select * from "+tableName;
 			if (!StringUtils.isBlank(orderBy)) {
 				query += " order by "+orderBy;
@@ -119,12 +121,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	public List<T> getLookup() throws SQLException, IOException {
 		List<T> beans = new ArrayList<T>();
+		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
 			T bean = ReflectUtil.getNewBean(clazz);
 			String columnName = bean.getNameColumn();
-			statement = getConnection().createStatement();
+			statement = conn.createStatement();
 			String query = "select id,"+columnName+" from "+tableName;
 			if (!StringUtils.isBlank(orderBy)) {
 				query += " order by "+orderBy;
@@ -147,12 +150,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public T getLookup(int id) throws Exception {
 		T bean = ReflectUtil.getNewBean(clazz);
+		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			String columnName = bean.getNameColumn();
 			String query = "select id,"+columnName+" from "+tableName+" where id=?";
-			statement = getConnection().prepareStatement( query );
+			statement = conn.prepareStatement( query );
 			statement.setInt(1, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
@@ -169,6 +173,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public T get(int id) throws Exception {
 		T bean = ReflectUtil.getNewBean(clazz);
+		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -176,7 +181,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			if (!StringUtils.isBlank(orderBy)) {
 				query += " order by "+orderBy;
 			}
-			statement = getConnection().prepareStatement( query );
+			statement = conn.prepareStatement( query );
 			statement.setInt(1, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
@@ -193,6 +198,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public List<T> find(String field, String value, int pageNo) throws Exception {
 		List<T> results = new ArrayList<T>();
+		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -203,7 +209,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				query += " order by "+orderBy;
 			}
 			query += " limit "+limit+" offset "+((pageNo-1)*limit);
-			statement = getConnection().prepareStatement( query );
+			statement = conn.prepareStatement( query );
 			statement.setString(1, "%"+value+"%");
 			resultSet = statement.executeQuery();
 			while( resultSet.next() ) {

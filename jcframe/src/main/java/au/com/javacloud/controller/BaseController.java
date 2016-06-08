@@ -41,6 +41,8 @@ public interface BaseController<T extends BaseBean, U> {
     public void find() throws Exception;
 
     public void config() throws Exception;
+    
+    public void upload() throws Exception;
 
     public Class<T> getBeanClass();
 

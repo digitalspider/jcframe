@@ -17,11 +17,11 @@ public class BaseAuthServiceImpl implements AuthService<Principal> {
 	public <T extends BaseBean> boolean checkACL(Principal user, Class<T> classType, Action action) {
 		return true; // Everything is allowed
 	}
-	
+
 	@Override
 	public <T extends BaseBean> void handleACL(Principal user, Class<T> classType, Action action) throws ACLException {
 		if (!checkACL(user, classType, action)) {
-			throw new ACLException("User: "+user.getName()+" classType="+classType+" action="+action+" IS NOT ALLOWED!");
+			throw new ACLException("Access DENIED: User: "+user.getName()+" classType="+classType+" action="+action+" IS NOT ALLOWED!");
 		}
 	}
 

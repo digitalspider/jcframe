@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.auth.ACLException;
 import au.com.javacloud.auth.Action;
@@ -77,6 +78,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public static final String CONTEXTURL = "contextUrl";
 	public static final String BASEURL = "baseUrl";
 	public static final String BEANURL = "beanUrl";
+	public static final String EDITURL = "editUrl";
+	public static final String SHOWURL = "showUrl";
+	public static final String LISTURL = "listUrl";
+	public static final String DELETEURL = "listUrl";
 	public static final String DEFAULT_JSPPAGE_PREFIX = "/jsp/";
 	public static final String DEFAULT_LIST_PAGE = "/list.jsp";
 	public static final String DEFAULT_SHOW_PAGE = "/show.jsp";
@@ -84,8 +89,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public static final String DEFAULT_INDEX_PAGE = "/index.jsp";
 	public static final String JSON_SUFFIX = ".json";
 	
-	public static final String PROP_USE_INDEX = "useindex";
-	public static final String PROP_AUTH = "auth";
 	public static final String PROP_ORDER = "order";
 	public static final String PROP_ORDER_ASC = "ASC";
 	public static final String PROP_ORDER_DESC = "DESC";
@@ -103,8 +106,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.authService = authService;
 		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
-		configProperties.setProperty(PROP_USE_INDEX, "false");
-		configProperties.setProperty(PROP_AUTH, "false");
     }
 
 	protected void updateUrls(String prefix, String contextName) {
@@ -153,9 +154,9 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.request = request;
 		this.response = response;
 
-		contextUrl = HttpUtil.getContextUrl(request); // TODO: These need to be fixed for the front controller!
+		contextUrl = HttpUtil.getContextUrl(request);
 		LOG.info("contextUrl="+contextUrl);
-        baseUrl = HttpUtil.getBaseUrl(request);
+        baseUrl = HttpUtil.getBaseUrl(request) + "/"+beanName;
         LOG.info("baseUrl="+baseUrl);
         String pathInfo = request.getPathInfo();
         if (pathInfo.startsWith("/"+beanName)) {
@@ -165,16 +166,19 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		LOG.info("pathParts="+pathParts);
 
 		String forward = null;
-
+		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
+		request.setAttribute(LOOKUPMAP, lookupMap );
+		request.setAttribute(CONTEXTURL, contextUrl );
+		request.setAttribute(BASEURL, baseUrl );
+		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
+		request.setAttribute(EDITURL, baseUrl+"/edit" );
+		request.setAttribute(SHOWURL, baseUrl+"/show" );
+		request.setAttribute(LISTURL, baseUrl+"/list" );
+		request.setAttribute(DELETEURL, baseUrl+"/delete" );
+		
    		switch (action) {
     		case GET:
     			try {
-		    		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
-		    		request.setAttribute(LOOKUPMAP, lookupMap );
-		    		request.setAttribute(CONTEXTURL, contextUrl );
-		    		request.setAttribute(BASEURL, baseUrl );
-		    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
-		
 					if (pathParts!=null && !pathParts.isEmpty()) {
 						if (pathParts.get(0).equalsIgnoreCase(Action.DELETE.name())) {
 							LOG.info("action=delete");
@@ -220,7 +224,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 						checkAuthAndAcl(request, Action.LIST);
 						list();
 						forward = listUrl;
-						if (configProperties.getProperty(PROP_USE_INDEX).equalsIgnoreCase("true")) {
+						if (clazz.isAnnotationPresent(IndexPage.class)) {
 							forward = indexUrl;
 						}
 			        }
@@ -243,22 +247,21 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					String id = request.getParameter(BaseBean.FIELD_ID);
 					if( id == null || id.isEmpty() ) {
 						LOG.info("action=create");
-						if (authService.checkACL(authService.getUser(request), this.clazz, Action.INSERT)) {
-							create();
+						checkAuthAndAcl(request, Action.INSERT);
+						create();
+						if (isMultipart) {
+							upload();
 						}
 					} else {
 						LOG.info("action=update("+id+")");
-						if (authService.checkACL(authService.getUser(request), this.clazz, Action.EDIT)) {
-							update(id);
+						checkAuthAndAcl(request, Action.EDIT);
+						update(id);
+						if (isMultipart) {
+							upload();
 						}
 					}
 		
 					request.setAttribute(beanName+BEANS_SUFFIX, dao.getAll(0) );
-					request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
-					request.setAttribute(LOOKUPMAP, lookupMap );
-		    		request.setAttribute(CONTEXTURL, contextUrl );
-		    		request.setAttribute(BASEURL, baseUrl );
-		    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
 				} catch (Exception e) {
 					LOG.error(e,e);
 					throw new ServletException(e);
@@ -273,6 +276,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
         view.forward(request, response);
 	}
     
+    @Override
 	public void upload() throws Exception {
 		LOG.info("upload() START");
 		DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -395,9 +399,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     public void create() throws Exception {
 		T bean = populateBean(request, response);
 		dao.saveOrUpdate(bean);
-		if (isMultipart) {
-			upload();
-		}
     }
 
     @Override
@@ -433,9 +434,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		T bean = populateBean(request, response);
 		bean.setId( Integer.parseInt(id) );
 		dao.saveOrUpdate(bean);
-		if (isMultipart) {
-			upload();
-		}
     }
 
     @Override
