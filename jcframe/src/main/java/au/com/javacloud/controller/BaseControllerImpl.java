@@ -1,20 +1,18 @@
 package au.com.javacloud.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +24,13 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import au.com.javacloud.auth.ACLException;
 import au.com.javacloud.auth.Action;
 import au.com.javacloud.auth.AuthService;
+import au.com.javacloud.auth.AuthenticationException;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.GsonExclusionStrategy;
@@ -39,11 +42,12 @@ import au.com.javacloud.util.Statics;
 /**
  * Created by david on 22/05/16.
  */
-public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet implements BaseController<T,U> {
+public class BaseControllerImpl<T extends BaseBean, U> implements BaseController<T,U> {
 
 	private final static Logger LOG = Logger.getLogger(BaseControllerImpl.class);
 
 	private static final long serialVersionUID = -2841993759251817415L;
+	private boolean initialised = false;
 	protected BaseDAO<T> dao;
 	protected Class<T> clazz;
     protected String beanName = "bean";
@@ -65,6 +69,8 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 	private String filePath;
 	private int maxFileSize = 50 * 1024;
 	private int maxMemSize = 4 * 1024;
+	private ServletConfig servletConfig;
+	private ServletContext servletContext;
 
 	public static final String BEANS_SUFFIX = "s";
 	public static final String BEANS_FIELDSUFFIX = "fields";
@@ -97,7 +103,7 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 		super();
 		this.clazz = clazz;
 		this.authService = authService;
-		dao = Statics.getDaoMap().get(clazz);
+		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
 		configProperties.setProperty(PROP_USE_INDEX, "false");
 		configProperties.setProperty(PROP_AUTH, "false");
@@ -119,12 +125,17 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
         this.insertOrEditUrl = insertOrEditUrl;
 	}
 
+    public boolean isInitialised() {
+    	return initialised;
+    }
+    
     @SuppressWarnings("rawtypes")
 	@Override
-    public void init() throws ServletException {
-    	super.init();
-		dao.init(getServletConfig());
-		filePath = getServletContext().getInitParameter("file-upload");
+    public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
+    	this.servletContext = servletContext;
+    	this.servletConfig = servletConfig;
+		dao.init(servletConfig);
+		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
 			filePath = System.getProperty("java.io.tmpdir");
 		}
@@ -145,144 +156,134 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
     			}
     		}
     	}
+    	initialised = true;
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		LOG.info("doGet() START");
+    public void doAction(ServletAction action, String beanName, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		LOG.info("doAction() "+action+" START");
 		this.request = request;
 		this.response = response;
 
-		contextUrl = HttpUtil.getContextUrl(request);
-		LOG.debug("contextUrl="+contextUrl);
+		contextUrl = HttpUtil.getContextUrl(request); // TODO: These need to be fixed for the front controller!
+		LOG.info("contextUrl="+contextUrl);
         baseUrl = HttpUtil.getBaseUrl(request);
         LOG.info("baseUrl="+baseUrl);
-		pathParts = HttpUtil.getPathParts(request);
+        String pathInfo = request.getPathInfo();
+        if (pathInfo.startsWith("/"+beanName)) {
+        	pathInfo = pathInfo.substring(("/"+beanName).length());
+        }
+		pathParts = HttpUtil.getPathParts(pathInfo);
 		LOG.info("pathParts="+pathParts);
-
 
 		String forward = null;
 
-    	try {
-    		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
-    		request.setAttribute(LOOKUPMAP, lookupMap );
-    		request.setAttribute(CONTEXTURL, contextUrl );
-    		request.setAttribute(BASEURL, baseUrl );
-    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
-
-			if (pathParts!=null && !pathParts.isEmpty()) {
-				if (pathParts.get(0).equalsIgnoreCase(Action.DELETE.name())) {
-					LOG.info("action=delete");
-					if (checkAuthAndAcl(request, Action.DELETE)) {
-						delete();
+   		switch (action) {
+    		case GET:
+    			try {
+		    		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
+		    		request.setAttribute(LOOKUPMAP, lookupMap );
+		    		request.setAttribute(CONTEXTURL, contextUrl );
+		    		request.setAttribute(BASEURL, baseUrl );
+		    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
+		
+					if (pathParts!=null && !pathParts.isEmpty()) {
+						if (pathParts.get(0).equalsIgnoreCase(Action.DELETE.name())) {
+							LOG.info("action=delete");
+							checkAuthAndAcl(request, Action.DELETE);
+							delete();
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.EDIT.name())) {
+							LOG.info("action=edit");
+							checkAuthAndAcl(request, Action.EDIT);
+							read();
+							forward = insertOrEditUrl;
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.SHOW.name())) {
+							LOG.info("action=show");
+							checkAuthAndAcl(request, Action.SHOW);
+							read();
+							forward = showUrl;
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.LIST.name())) {
+							LOG.info("action=list");
+							checkAuthAndAcl(request, Action.LIST);
+							list();
+							forward = listUrl;
+						} else if (StringUtils.isNumeric(pathParts.get(0))) {
+							LOG.info("action=<int>");
+							checkAuthAndAcl(request, Action.SHOW);
+							read();
+							forward = showUrl;
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.INSERT.name())) {
+							LOG.info("action=insert");
+							checkAuthAndAcl(request, Action.INSERT);
+							forward = insertOrEditUrl;
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.FIND.name())) {
+							LOG.info("action=find");
+							checkAuthAndAcl(request, Action.FIND);
+							find();
+							forward = listUrl;
+						} else if (pathParts.get(0).equalsIgnoreCase(Action.CONFIG.name())) {
+							LOG.info("action=config");
+							checkAuthAndAcl(request, Action.CONFIG);
+							config();
+						}
 					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.EDIT.name())) {
-					LOG.info("action=edit");
-					if (checkAuthAndAcl(request, Action.EDIT)) {
-						read();
-						forward = insertOrEditUrl;
-					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.SHOW.name())) {
-					LOG.info("action=show");
-					if (checkAuthAndAcl(request, Action.SHOW)) {
-						read();
-						forward = showUrl;
-					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.LIST.name())) {
-					LOG.info("action=list");
-					if (checkAuthAndAcl(request, Action.LIST)) {
+			        if (forward==null) {
+		        		LOG.info("action=list(default)");
+						checkAuthAndAcl(request, Action.LIST);
 						list();
 						forward = listUrl;
-					}
-				} else if (StringUtils.isNumeric(pathParts.get(0))) {
-					LOG.info("action=<int>");
-					if (checkAuthAndAcl(request, Action.SHOW)) {
-						read();
-						forward = showUrl;
-					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.INSERT.name())) {
-					LOG.info("action=insert");
-					if (checkAuthAndAcl(request, Action.INSERT)) {
-						forward = insertOrEditUrl;
-					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.FIND.name())) {
-					LOG.info("action=find");
-					if (checkAuthAndAcl(request, Action.FIND)) {
-						find();
-						forward = listUrl;
-					}
-				} else if (pathParts.get(0).equalsIgnoreCase(Action.CONFIG.name())) {
-					LOG.info("action=config");
-					if (checkAuthAndAcl(request, Action.CONFIG)) {
-						config();
-					}
+						if (configProperties.getProperty(PROP_USE_INDEX).equalsIgnoreCase("true")) {
+							forward = indexUrl;
+						}
+			        }
+				} catch (Exception e) {
+					LOG.error(e,e);
+					throw new ServletException(e);
 				}
-			}
-	        if (forward==null) {
-        		LOG.info("action=list(default)");
-				if (checkAuthAndAcl(request, Action.LIST)) {
-					list();
-					forward = listUrl;
-					if (configProperties.getProperty(PROP_USE_INDEX).equalsIgnoreCase("true")) {
-						forward = indexUrl;
-					}
+		
+				if (baseUrl.endsWith(JSON_SUFFIX)) {
+					return ;
 				}
-	        }
-		} catch (Exception e) {
-			LOG.error(e,e);
-			throw new ServletException(e);
-		}
+	   			break;
 
-		if (baseUrl.endsWith(JSON_SUFFIX)) {
-			return ;
-		}
-
+	   		// Handle POST
+	   		case POST:
+				isMultipart = ServletFileUpload.isMultipartContent(request);
+				LOG.info("isMultipart="+isMultipart);
+		
+				try {
+					String id = request.getParameter(BaseBean.FIELD_ID);
+					if( id == null || id.isEmpty() ) {
+						LOG.info("action=create");
+						if (authService.checkACL(authService.getUser(request), this.clazz, Action.INSERT)) {
+							create();
+						}
+					} else {
+						LOG.info("action=update("+id+")");
+						if (authService.checkACL(authService.getUser(request), this.clazz, Action.EDIT)) {
+							update(id);
+						}
+					}
+		
+					request.setAttribute(beanName+BEANS_SUFFIX, dao.getAll(0) );
+					request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
+					request.setAttribute(LOOKUPMAP, lookupMap );
+		    		request.setAttribute(CONTEXTURL, contextUrl );
+		    		request.setAttribute(BASEURL, baseUrl );
+		    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
+				} catch (Exception e) {
+					LOG.error(e,e);
+					throw new ServletException(e);
+				}
+				forward = listUrl;
+				break;
+			default:
+				LOG.warn("Action "+action+" has not been implemented!");
+	    }
         RequestDispatcher view = request.getRequestDispatcher( forward );
-		LOG.info("doGet() DONE. forward="+forward);
+		LOG.info("doAction() "+action+" DONE. forward="+forward);
         view.forward(request, response);
-    }
-    
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		LOG.info("doPost() START");
-		this.request = request;
-		this.response = response;
-
-		pathParts = HttpUtil.getPathParts(request);
-		LOG.info("pathParts="+pathParts);
-		baseUrl = HttpUtil.getBaseUrl(request);
-		LOG.info("baseUrl="+baseUrl);
-
-		isMultipart = ServletFileUpload.isMultipartContent(request);
-		LOG.info("isMultipart="+isMultipart);
-
-		try {
-			String id = request.getParameter(BaseBean.FIELD_ID);
-			if( id == null || id.isEmpty() ) {
-				LOG.info("action=create");
-				if (authService.checkACL(authService.getUser(request), this.clazz, Action.INSERT)) {
-					create();
-				}
-			} else {
-				LOG.info("action=update("+id+")");
-				if (authService.checkACL(authService.getUser(request), this.clazz, Action.EDIT)) {
-					update(id);
-				}
-			}
-
-			request.setAttribute(beanName+BEANS_SUFFIX, dao.getAll(0) );
-			request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
-			request.setAttribute(LOOKUPMAP, lookupMap );
-    		request.setAttribute(CONTEXTURL, contextUrl );
-    		request.setAttribute(BASEURL, baseUrl );
-    		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
-		} catch (Exception e) {
-			LOG.error(e,e);
-			throw new ServletException(e);
-		}
-		RequestDispatcher view = request.getRequestDispatcher( listUrl );
-		LOG.info("doPost() DONE. view="+view);
-		view.forward(request, response);
 	}
-
+    
 	public void upload() throws Exception {
 		LOG.info("upload() START");
 		DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -370,19 +371,21 @@ public class BaseControllerImpl<T extends BaseBean, U> extends HttpServlet imple
 		return false;
 	}
 
-	private boolean checkAuthAndAcl(HttpServletRequest request, Action action) {
-		return checkAuth(request) && checkACL(request, action);
+	private void checkAuthAndAcl(HttpServletRequest request, Action action) throws AuthenticationException, ACLException {
+		checkAuth(request);
+		checkACL(request, action);
 	}
 
-	private boolean checkACL(HttpServletRequest request, Action action) {
-		return (authService.checkACL(authService.getUser(request), this.clazz, action));
+	private void checkACL(HttpServletRequest request, Action action) throws ACLException {
+		authService.handleACL(authService.getUser(request), this.clazz, action);
 	}
 
-	private boolean checkAuth(HttpServletRequest request) {
+	private void checkAuth(HttpServletRequest request) throws AuthenticationException {
 		if (configProperties.get(PROP_AUTH).equals("true")) {
-			return authService.isAuthenticated(request);
+			if (!authService.isAuthenticated(request)) {
+				throw new AuthenticationException("Unauthenticated Exception");
+			}
 		}
-		return true;
 	}
 
 	protected HttpServletRequest getRequest() {

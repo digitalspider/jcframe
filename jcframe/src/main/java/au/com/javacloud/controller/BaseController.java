@@ -1,6 +1,13 @@
 package au.com.javacloud.controller;
 
+import java.io.IOException;
 import java.text.DateFormat;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import au.com.javacloud.auth.AuthService;
 import au.com.javacloud.dao.BaseDAO;
@@ -11,6 +18,12 @@ import au.com.javacloud.model.BaseBean;
  */
 public interface BaseController<T extends BaseBean, U> {
 
+	public boolean isInitialised();
+	
+	public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
+	
+	public void doAction(ServletAction action, String beanName, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+	
 	public void list() throws Exception;
 	
     public void create() throws Exception;

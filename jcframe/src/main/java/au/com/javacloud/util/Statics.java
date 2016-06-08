@@ -1,6 +1,5 @@
 package au.com.javacloud.util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.auth.AuthService;
@@ -34,10 +34,9 @@ public class Statics {
     private static final String PROP_DS_CLASS = "ds.class";
 	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
 
-	private static List<Class<? extends BaseBean>> beanClassTypes = new ArrayList<>();
-    private static Map<Class,BaseDAO> daoMap = new HashMap<Class,BaseDAO>();
-    private static Map<Class,BaseController> controllerMap = new HashMap<Class,BaseController>();
-	private static Map<String,Class> urlClassMap = new HashMap<String,Class>();
+    private static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>>();
+    private static Map<Class<? extends BaseBean>,BaseController> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController>();
+	private static Map<String,Class<? extends BaseBean>> classTypeMap = new HashMap<String,Class<? extends BaseBean>>();
     private static AuthService authService;
     private static DataSource dataSource;
 	private static String packageName = DEFAULT_PACKAGE_NAME;
@@ -81,24 +80,30 @@ public class Statics {
 				List<Class> classTypes = ReflectUtil.getClasses(packageName);
 				for (Class classType : classTypes) {
 					if (BaseBean.class.isAssignableFrom(classType) && !classType.equals(BaseBean.class)) {
-						beanClassTypes.add(classType);
 						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
 						controllerMap.put(classType, new BaseControllerImpl<>(classType,authService));
-						urlClassMap.put(classType.getSimpleName().toLowerCase(),classType);
+						classTypeMap.put(classType.getSimpleName().toLowerCase(),classType);
 					}
 				}
 			} catch (Exception e) {
 				LOG.error(e, e);
 			}
-			LOG.info("beanClassTypes="+beanClassTypes);
+			LOG.info("getClassTypeMap="+classTypeMap);
 		} catch(Exception e) {
 			LOG.error(e,e);
 		}
     }
-
-	public static List<Class<? extends BaseBean>> getBeanClassTypes() {
-		return beanClassTypes;
-	}
+    
+    public static BaseController getControllerForBeanName(String beanName) { 
+	    if (!StringUtils.isBlank(beanName)) {
+	        Class<? extends BaseBean> classType = classTypeMap.get(beanName);
+	        if (classType!=null) {
+		        BaseController baseController = controllerMap.get(classType);
+		        return baseController;
+	        }
+	    }
+	    return null;
+    }
 
 	public static AuthService getAuthService() {
 		return authService;
@@ -108,15 +113,15 @@ public class Statics {
 		return dataSource;
 	}
     
-    public static Map<Class,BaseDAO> getDaoMap() {
+    public static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> getDaoMap() {
     	return daoMap;
     }
     
-    public static Map<Class,BaseController> getControllerMap() {
+    public static Map<Class<? extends BaseBean>,BaseController> getControllerMap() {
     	return controllerMap;
     }
 
-	public static Map<String, Class> getUrlClassMap() {
-		return urlClassMap;
+	public static Map<String, Class<? extends BaseBean>> getClassTypeMap() {
+		return classTypeMap;
 	}
 }

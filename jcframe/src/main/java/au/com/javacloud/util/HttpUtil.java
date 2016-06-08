@@ -8,13 +8,15 @@ public class HttpUtil
 {
     private static final Logger LOG = Logger.getLogger(HttpUtil.class);
 
-    public static PathParts getPathParts(HttpServletRequest req) {
-        String pathInfo = req.getPathInfo();
+    public static PathParts getPathParts(String pathInfo) {
         LOG.debug("pathInfo="+pathInfo);
         if (pathInfo!=null) {
-            return new PathParts(pathInfo.substring(1).split("/"));
+        	if (pathInfo.startsWith("/")) {
+        		pathInfo = pathInfo.substring(1);
+        	}
+        	return new PathParts(pathInfo.split("/"));
         }
-        return new PathParts(new String[0]);
+        return new PathParts();
     }
 
 
