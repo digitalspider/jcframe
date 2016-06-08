@@ -57,7 +57,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     protected String insertOrEditUrl = "/";
     protected String baseUrl;
     protected String contextUrl;
-    protected String serlvetSuffix;
+    protected String servletSuffix;
     protected PathParts pathParts;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected AuthService<U> authService;
@@ -116,15 +116,15 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
     public boolean isInitialised() {
-    	return serlvetSuffix!=null;
+    	return servletSuffix!=null;
     }
     
     @SuppressWarnings("rawtypes")
 	@Override
-    public void init(ServletContext servletContext, ServletConfig servletConfig, String serlvetSuffix) throws ServletException {
+    public void init(ServletContext servletContext, ServletConfig servletConfig, String servletSuffix) throws ServletException {
     	this.servletContext = servletContext;
     	this.servletConfig = servletConfig;
-    	this.serlvetSuffix = serlvetSuffix;
+    	this.servletSuffix = servletSuffix;
 		dao.init(servletConfig);
 		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
@@ -156,7 +156,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 		contextUrl = HttpUtil.getContextUrl(request);
 		LOG.info("contextUrl="+contextUrl);
-        baseUrl = HttpUtil.getBaseUrl(request) + "/"+beanName;
+        baseUrl = HttpUtil.getBaseUrl(request) + "/"+beanName + servletSuffix;
         LOG.info("baseUrl="+baseUrl);
         String pathInfo = request.getPathInfo();
         if (pathInfo.startsWith("/"+beanName)) {
@@ -170,7 +170,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
-		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
+		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase() + servletSuffix);
 		request.setAttribute(EDITURL, baseUrl+"/edit" );
 		request.setAttribute(SHOWURL, baseUrl+"/show" );
 		request.setAttribute(LISTURL, baseUrl+"/list" );
@@ -233,7 +233,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					throw new ServletException(e);
 				}
 		
-				if (baseUrl.endsWith(JSON_SUFFIX+serlvetSuffix)) {
+				if (baseUrl.endsWith(JSON_SUFFIX+servletSuffix)) {
 					return ;
 				}
 	   			break;
@@ -306,6 +306,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 				String contentType = fileItem.getContentType();
 				LOG.info("contentType="+contentType);
 				boolean isInMemory = fileItem.isInMemory();
+				LOG.info("isInMemory="+isInMemory);
 				long sizeInBytes = fileItem.getSize();
 				LOG.info("sizeInBytes="+sizeInBytes);
 				// Write the file
@@ -356,7 +357,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	protected boolean handleJson(Object o) throws IOException {
-		if (baseUrl.endsWith(JSON_SUFFIX+serlvetSuffix)) {
+		if (baseUrl.endsWith(JSON_SUFFIX+servletSuffix)) {
 			String output = gson.toJson(o);
 			response.getWriter().write(output);
 			return true;
