@@ -1,5 +1,6 @@
 package au.com.javacloud.util;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,26 +82,31 @@ public class Statics {
 
 			// Find all the beanClassTypes
 			try {
+				LOG.info("controllerPackageName="+controllerPackageName);
+				LOG.info("beanPackageName="+beanPackageName);
 				List<Class> controllerClassTypes = ReflectUtil.getClasses(controllerPackageName, BaseController.class, true);
 				for (Class controllerClassType : controllerClassTypes) {
 					Class classType = getClassTypeFromBeanClassAnnotation(controllerClassType);
 					if (classType!=null) {
+						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
 						BaseController controller = (BaseController) controllerClassType.newInstance();
 						controller.init(classType, authService);
 						controllerMap.put(classType, controller);
 					}
 				}
+				LOG.info("controllerMap(custom)="+controllerMap);
 				
 				List<Class> beanClassTypes = ReflectUtil.getClasses(beanPackageName, BaseBean.class, true);
 				for (Class classType : beanClassTypes) {
-					daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
 					if (!controllerMap.containsKey(classType)) {
+						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
 						BaseController controller = new BaseControllerImpl();
 						controller.init(classType, authService);
 						controllerMap.put(classType, controller);
 					}
 					classTypeMap.put(classType.getSimpleName().toLowerCase(),classType);
 				}
+				LOG.info("controllerMap(final)="+controllerMap);
 			} catch (Exception e) {
 				LOG.error(e, e);
 			}
@@ -110,11 +116,14 @@ public class Statics {
 		}
     }
 
-    private static <T extends BaseBean> Class<T> getClassTypeFromBeanClassAnnotation(Class controllerClassType) throws ClassNotFoundException {
-		if (controllerClassType.isAnnotationPresent(BeanClass.class)) {
-			BeanClass baseClassAnnotation = (BeanClass) controllerClassType.getAnnotation(BeanClass.class);
-			Class<T> classType = (Class<T>) baseClassAnnotation.bean();
-			return classType;
+    private static <T extends BaseBean> Class<T> getClassTypeFromBeanClassAnnotation(Class controllerClassType) throws ClassNotFoundException, NoSuchMethodException {
+		Constructor constructor = controllerClassType.getConstructor(null);
+		if (constructor!=null && constructor.isAnnotationPresent(BeanClass.class)) {
+			BeanClass baseClassAnnotation = (BeanClass) constructor.getAnnotation(BeanClass.class);
+			if (baseClassAnnotation!=null) {
+				Class<T> classType = (Class<T>) baseClassAnnotation.bean();
+				return classType;
+			}
 		}
 		return null;
 	}
