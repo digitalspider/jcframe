@@ -57,7 +57,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     protected String insertOrEditUrl = "/";
     protected String baseUrl;
     protected String contextUrl;
-    protected String servletSuffix;
     protected PathParts pathParts;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected AuthService<U> authService;
@@ -95,6 +94,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public static final String PROP_LIMIT = "limit";
 	public static final String PROP_SET = "set";
 
+	public String toString() {
+		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"] beanName="+beanName;
+	}
+
 	@SuppressWarnings("unchecked")
     public void init(Class<T> clazz) {	
 		init(clazz, Statics.getAuthService());
@@ -116,15 +119,14 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
     public boolean isInitialised() {
-    	return servletSuffix!=null;
+    	return servletContext!=null;
     }
-    
+
     @SuppressWarnings("rawtypes")
 	@Override
-    public void init(ServletContext servletContext, ServletConfig servletConfig, String servletSuffix) throws ServletException {
+    public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
     	this.servletContext = servletContext;
     	this.servletConfig = servletConfig;
-    	this.servletSuffix = servletSuffix;
 		dao.init(servletConfig);
 		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
@@ -149,28 +151,29 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	}
     }
 
-    public void doAction(ServletAction action, String beanName, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		LOG.info("doAction() "+action+" START");
 		this.request = request;
 		this.response = response;
 
 		contextUrl = HttpUtil.getContextUrl(request);
 		LOG.info("contextUrl="+contextUrl);
-        baseUrl = HttpUtil.getBaseUrl(request) + "/"+beanName + servletSuffix;
+        baseUrl = HttpUtil.getBaseUrl(request);
         LOG.info("baseUrl="+baseUrl);
         String pathInfo = request.getPathInfo();
-        if (pathInfo.startsWith("/"+beanName)) {
-        	pathInfo = pathInfo.substring(("/"+beanName).length());
-        }
+		LOG.info("pathInfo="+pathInfo);
+		String servletPath = request.getServletPath();
+		LOG.info("servletPath="+servletPath);
 		pathParts = HttpUtil.getPathParts(pathInfo);
 		LOG.info("pathParts="+pathParts);
+		baseUrl += "/"+pathParts.get(0);
 
 		String forward = null;
 		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
-		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase() + servletSuffix);
+		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
 		request.setAttribute(EDITURL, baseUrl+"/edit" );
 		request.setAttribute(SHOWURL, baseUrl+"/show" );
 		request.setAttribute(LISTURL, baseUrl+"/list" );
@@ -179,41 +182,41 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
    		switch (action) {
     		case GET:
     			try {
-					if (pathParts!=null && !pathParts.isEmpty()) {
-						if (pathParts.get(0).equalsIgnoreCase(Action.DELETE.name())) {
+					if (pathParts!=null && pathParts.size()>1) {
+						if (pathParts.get(1).equalsIgnoreCase(Action.DELETE.name())) {
 							LOG.info("action=delete");
 							checkAuthAndAcl(request, Action.DELETE);
 							delete();
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.EDIT.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.EDIT.name())) {
 							LOG.info("action=edit");
 							checkAuthAndAcl(request, Action.EDIT);
 							read();
 							forward = insertOrEditUrl;
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.SHOW.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.SHOW.name())) {
 							LOG.info("action=show");
 							checkAuthAndAcl(request, Action.SHOW);
 							read();
 							forward = showUrl;
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.LIST.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.LIST.name())) {
 							LOG.info("action=list");
 							checkAuthAndAcl(request, Action.LIST);
 							list();
 							forward = listUrl;
-						} else if (StringUtils.isNumeric(pathParts.get(0))) {
+						} else if (StringUtils.isNumeric(pathParts.get(1))) {
 							LOG.info("action=<int>");
 							checkAuthAndAcl(request, Action.SHOW);
 							read();
 							forward = showUrl;
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.INSERT.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.INSERT.name())) {
 							LOG.info("action=insert");
 							checkAuthAndAcl(request, Action.INSERT);
 							forward = insertOrEditUrl;
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.FIND.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.FIND.name())) {
 							LOG.info("action=find");
 							checkAuthAndAcl(request, Action.FIND);
 							find();
 							forward = listUrl;
-						} else if (pathParts.get(0).equalsIgnoreCase(Action.CONFIG.name())) {
+						} else if (pathParts.get(1).equalsIgnoreCase(Action.CONFIG.name())) {
 							LOG.info("action=config");
 							checkAuthAndAcl(request, Action.CONFIG);
 							config();
@@ -233,7 +236,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					throw new ServletException(e);
 				}
 		
-				if (baseUrl.endsWith(JSON_SUFFIX+servletSuffix)) {
+				if (baseUrl.endsWith(JSON_SUFFIX)) {
 					return ;
 				}
 	   			break;
@@ -260,8 +263,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 							upload();
 						}
 					}
-		
-					request.setAttribute(beanName+BEANS_SUFFIX, dao.getAll(0) );
+					list();
 				} catch (Exception e) {
 					LOG.error(e,e);
 					throw new ServletException(e);
@@ -357,7 +359,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	protected boolean handleJson(Object o) throws IOException {
-		if (baseUrl.endsWith(JSON_SUFFIX+servletSuffix)) {
+		if (baseUrl.endsWith(JSON_SUFFIX)) {
 			String output = gson.toJson(o);
 			response.getWriter().write(output);
 			return true;
@@ -405,10 +407,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     @Override
     public void read() throws Exception {
 		String idValue = null;
-		if (pathParts.isNumeric(0)) {
-			idValue = pathParts.get(0);
-		} else if (pathParts.isNumeric(1)) {
+		if (pathParts.isNumeric(1)) {
 			idValue = pathParts.get(1);
+		} else if (pathParts.isNumeric(2)) {
+			idValue = pathParts.get(2);
 		}
 		if (idValue!=null) {
 			int id = Integer.parseInt(idValue);
@@ -422,7 +424,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	@Override
 	public void list() throws Exception {
-		int pageNo = pathParts.getInt(1);
+		int pageNo = pathParts.getInt(2);
 		List<T> beans = dao.getAll(pageNo);
 		if (handleJson(beans)) {
 			return;
@@ -439,7 +441,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
     @Override
     public void delete()  throws Exception {
-		int id = pathParts.getInt(1);
+		int id = pathParts.getInt(2);
 		if (id>0) {
 			dao.delete(id);
 		}
@@ -447,10 +449,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	@Override
 	public void find()  throws Exception {
-		if (pathParts.size() > 2) {
-			String field = pathParts.get(1);
-			String value = pathParts.get(2);
-			int pageNo = pathParts.getInt(3);
+		if (pathParts.size() > 3) {
+			String field = pathParts.get(2);
+			String value = pathParts.get(3);
+			int pageNo = pathParts.getInt(4);
 			List<T> beans = dao.find(field, value, pageNo);
 			if (handleJson(beans)) {
 				return;
@@ -461,12 +463,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	@Override
 	public void config()  throws Exception {
-		if (pathParts.size()>1) {
-			if (pathParts.get(1).equals(PROP_ORDER)) {
-				if (pathParts.size() > 2) {
-					String field = pathParts.get(2);
-					if (pathParts.size() > 3) {
-						String direction = pathParts.get(3);
+		if (pathParts.size()>2) {
+			if (pathParts.get(2).equals(PROP_ORDER)) {
+				if (pathParts.size() > 3) {
+					String field = pathParts.get(3);
+					if (pathParts.size() > 4) {
+						String direction = pathParts.get(4);
 						if (direction.equalsIgnoreCase(PROP_ORDER_ASC)) {
 							dao.setOrderBy(field,true);
 						} else if (direction.equalsIgnoreCase(PROP_ORDER_DESC)) {
@@ -478,18 +480,18 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 				} else {
 					dao.setOrderBy("",true);
 				}
-			} else if (pathParts.get(1).equals(PROP_LIMIT)) {
-				int limit = pathParts.getInt(2);
+			} else if (pathParts.get(2).equals(PROP_LIMIT)) {
+				int limit = pathParts.getInt(3);
 				dao.setLimit(limit);
-			} else if (pathParts.get(1).equals(PROP_SET)) {
-				if (pathParts.size() > 3) {
-					String key = pathParts.get(2);
-					String value = pathParts.get(3);
+			} else if (pathParts.get(2).equals(PROP_SET)) {
+				if (pathParts.size() > 4) {
+					String key = pathParts.get(3);
+					String value = pathParts.get(4);
 					if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
 						configProperties.setProperty(key, value);
 					}
-				} else if (pathParts.size() > 2) {
-					String key = pathParts.get(2);
+				} else if (pathParts.size() > 3) {
+					String key = pathParts.get(3);
 					if (StringUtils.isNotBlank(key)) {
 						if (configProperties.contains(key)) {
 							configProperties.setProperty(key, null);

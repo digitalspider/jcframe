@@ -2,19 +2,15 @@ package au.com.javacloud.controller;
 
 import java.security.Principal;
 
-/**
- * Created by david on 22/05/16.
- */
-
-import javax.servlet.annotation.WebServlet;
-
+import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.User;
 
-@WebServlet(urlPatterns = {"/user/*", "/user.json/*"})
+/**
+ * Created by david on 10/06/16.
+ */
 public class UserController extends BaseControllerImpl<User,Principal> {
 
+    @BeanClass(bean = User.class)
     public UserController() {
-		super.init(User.class);
-	}
-
+    }
 }

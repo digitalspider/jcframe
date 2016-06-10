@@ -2,11 +2,11 @@
 
 cd ..
 mvn clean install
-cd website
+cd site
 
 TOMCATDIR=/opt/tomcat/tomcat-stage
 
-rm -rf $TOMCATDIR/webapps/website*
+rm -rf $TOMCATDIR/webapps/site*
 sleep 2
-cp target/website.war $TOMCATDIR/webapps/
+cp target/site.war $TOMCATDIR/webapps/
 tail -100f $TOMCATDIR/logs/catalina.out 

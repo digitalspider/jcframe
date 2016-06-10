@@ -1,20 +1,24 @@
 package au.com.javacloud.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class PathParts extends LinkedList<String> {
+public class PathParts extends HashMap<Integer,String> {
 
 	private static final long serialVersionUID = 3137725756932412782L;
 
 	public PathParts() {
-		
 	}
 
 	public PathParts(String[] dataArray) {
+		int i=0;
 		for (String data : dataArray) {
-			add(data);
+			put(i++,data);
 		}
 	}
 	

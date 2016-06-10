@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.HttpUtil;
 import au.com.javacloud.util.PathParts;
 import au.com.javacloud.util.Statics;
@@ -18,16 +18,12 @@ import au.com.javacloud.util.Statics;
 /**
  * Created by david on 7/06/16.
  */
-@WebServlet(urlPatterns = {"*.jc"})
+@WebServlet(urlPatterns = {"/jc/*"})
 public class FrontControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = -9034690294608764448L;
 	private final static Logger LOG = Logger.getLogger(FrontControllerServlet.class);
-	private String serlvetSuffix = ".jc";
-	
-	public FrontControllerServlet(String serlvetSuffix) {
-		this.serlvetSuffix = serlvetSuffix;
-	}
-	
+    public static final String JSON_SUFFIX = ".json";
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	doAction(ServletAction.GET,request,response);
@@ -67,21 +63,20 @@ public class FrontControllerServlet extends HttpServlet {
         PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
         LOG.info("doAction() "+action+" pathParts="+pathParts);
 
-        String beanName = pathParts.getFirst();
+        String beanName = pathParts.get(0);
+        if (beanName != null && beanName.endsWith(JSON_SUFFIX)) {
+            beanName = beanName.substring(0,beanName.length()-JSON_SUFFIX.length());
+        }
         LOG.info("beanName="+beanName);
         BaseController baseController = Statics.getControllerForBeanName(beanName);
         LOG.info("baseController="+baseController);
         if (baseController!=null) {
         	if (!baseController.isInitialised()) {
-        		baseController.init(getServletContext(), getServletConfig(), serlvetSuffix);
+        		baseController.init(getServletContext(), getServletConfig());
         	}
-        	baseController.doAction(action,beanName,request,response);
+        	baseController.doAction(action,request,response);
         } else {
         	throw new ServletException("Controller not found for request with bean="+beanName);
         }
     }
-
-	public String getSerlvetSuffix() {
-		return serlvetSuffix;
-	}
 }

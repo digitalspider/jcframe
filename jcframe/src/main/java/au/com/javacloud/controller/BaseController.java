@@ -24,9 +24,9 @@ public interface BaseController<T extends BaseBean, U> {
 	
 	public void init(Class<T> clazz, AuthService<U> authService);
 	
-	public void init(ServletContext servletContext, ServletConfig servletConfig, String serlvetSuffix) throws ServletException;
+	public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	
-	public void doAction(ServletAction action, String beanName, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+	public void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 	
 	public void list() throws Exception;
 	
