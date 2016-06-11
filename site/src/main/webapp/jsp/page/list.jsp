@@ -21,6 +21,7 @@
         <a href="${baseUrl}.json">JSON</a>&nbsp;|&nbsp;
         <br/>
 
+        <p>Showing ${beans.size()}/${beancount}</p>
         <table>
             <thead>
                 <tr>

@@ -30,7 +30,7 @@ public class UserController extends BaseControllerImpl<User,Principal> {
         try {
             LOG.info("In custom controller!");
             super.doAction(action, request, response);
-            if (pathParts.get(1).equals("login")) {
+            if (action.equals(ServletAction.GET) && pathParts.get(1).equals("login")) {
                 LOG.info("custom login");
                 String username = pathParts.get(2);
                 String password = pathParts.get(3);

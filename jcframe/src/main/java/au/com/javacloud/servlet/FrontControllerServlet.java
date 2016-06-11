@@ -1,4 +1,4 @@
-package au.com.javacloud.controller;
+package au.com.javacloud.servlet;
 
 import java.io.IOException;
 
@@ -8,9 +8,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.controller.BaseController;
+import au.com.javacloud.controller.ServletAction;
 import au.com.javacloud.util.HttpUtil;
 import au.com.javacloud.util.PathParts;
 import au.com.javacloud.util.Statics;
@@ -72,7 +73,7 @@ public class FrontControllerServlet extends HttpServlet {
         LOG.info("baseController="+baseController);
         if (baseController!=null) {
         	if (!baseController.isInitialised()) {
-        		baseController.init(getServletContext(), getServletConfig());
+        		baseController.initHttp(getServletContext(), getServletConfig());
         	}
         	baseController.doAction(action,request,response);
         } else {
