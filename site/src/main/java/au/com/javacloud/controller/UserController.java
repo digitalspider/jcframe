@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import au.com.javacloud.annotation.BeanClass;
+import au.com.javacloud.auth.Action;
 import au.com.javacloud.model.User;
 import au.com.javacloud.util.PathParts;
 
@@ -30,7 +31,7 @@ public class UserController extends BaseControllerImpl<User,Principal> {
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             LOG.info("In custom controller!");
-            if (action.equals(ServletAction.POST) && pathParts.get(1).equals("login")) {
+            if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals("login")) {
                 LOG.info("custom login");
                 String username = request.getParameter("j_username");
                 String password = request.getParameter("j_password");
@@ -47,6 +48,9 @@ public class UserController extends BaseControllerImpl<User,Principal> {
                     LOG.info("user="+user);
                     if (user.getPassword()!=null && user.getPassword().equals(password)) {
                         LOG.info("You are good!!!");
+                        action = ServletAction.GET;
+                        pathParts.put(0, Action.LIST.name());
+                        super.doAction(action, pathParts, request, response);
                     } else {
                         throw new Exception("Password is not valid");
                     }

@@ -62,13 +62,13 @@ public class FrontControllerServlet extends HttpServlet {
     }
     
     protected void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setAttribute("contextUrl", HttpUtil.getContextUrl(request));
+        request.setAttribute("baseUrl", HttpUtil.getBaseUrl(request));
+        request.setAttribute("beantypes", Statics.getClassTypeMap().keySet() );
         try {
             PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
             LOG.info("doAction() " + action + " pathParts=" + pathParts);
             if (pathParts.isEmpty()) {
-                request.setAttribute("contextUrl", HttpUtil.getContextUrl(request));
-                request.setAttribute("baseUrl", HttpUtil.getBaseUrl(request));
-                request.setAttribute("beantypes", Statics.getClassTypeMap().keySet() );
                 RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
                 view.forward( request, response );
                 return;
@@ -93,6 +93,7 @@ public class FrontControllerServlet extends HttpServlet {
                 return;
             }
         } catch (Exception e) {
+            request.setAttribute("e", e );
             RequestDispatcher view = request.getRequestDispatcher("/error.jsp");
             view.forward( request, response );
         }
