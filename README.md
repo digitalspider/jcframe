@@ -23,17 +23,16 @@ The development process is:
       <version>1.0-SNAPSHOT</version>
     </dependency>
 ```
-* Create a new controller for each *bean*, e.g. the below is created for the *Page* bean:
+* Controllers are automatically created for each *bean*, however you can create custom ones like this:
 ```java
 import java.security.Principal;
-import javax.servlet.annotation.WebServlet;
+import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.Page;
 
-@WebServlet(urlPatterns = {"/page/*", "/page.json/*"})
 public class PageController extends BaseControllerImpl<Page,Principal> {
+    @BeanClass(bean = Page.class)
     public PageController() {
-		super(Page.class);
-	}
+    }
 }
 ```
 * Create some jsp pages for the *bean* "page"
