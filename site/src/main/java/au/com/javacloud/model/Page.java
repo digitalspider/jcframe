@@ -9,7 +9,7 @@ import au.com.javacloud.annotation.TableName;
  * Created by david on 22/05/16.
  */
 
-public class Page2 extends BaseBean {
+public class Page extends BaseBean {
     protected Date cdate = new Date();
     protected Date mdate = new Date();
     protected String description;
@@ -17,13 +17,13 @@ public class Page2 extends BaseBean {
     protected String type;
     protected String status;
     protected User authorId;
-    protected Page2 parentId;
+    protected Page parentId;
     private String title;
     private String content;
     private String url;
 
     @TableName(name="Page")
-    public Page2() {
+    public Page() {
 
     }
     @Exclude
@@ -103,11 +103,11 @@ public class Page2 extends BaseBean {
         this.authorId = authorId;
     }
 
-    public Page2 getParentId() {
+    public Page getParentId() {
         return parentId;
     }
 
-    public void setParentId(Page2 parentId) {
+    public void setParentId(Page parentId) {
         this.parentId = parentId;
     }
 
