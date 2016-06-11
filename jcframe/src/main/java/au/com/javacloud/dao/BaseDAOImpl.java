@@ -1,6 +1,7 @@
 package au.com.javacloud.dao;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -24,6 +25,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.annotation.TableName;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
 
@@ -268,7 +270,19 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public String getTableName() {
-		return clazz.getSimpleName().toLowerCase();
+		String tableName = null;
+		try {
+			TableName annotation = (TableName) clazz.getConstructor(null).getAnnotation(TableName.class);
+			if (annotation!=null) {
+				tableName = annotation.name();
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		if (StringUtils.isEmpty(tableName)) {
+			tableName = clazz.getSimpleName().toLowerCase();
+		}
+		return tableName;
 	}
 
 	@Override

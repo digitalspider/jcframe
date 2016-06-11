@@ -3,12 +3,13 @@ package au.com.javacloud.model;
 import java.util.Date;
 
 import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.TableName;
 
 /**
  * Created by david on 22/05/16.
  */
 
-public class Page extends BaseBean {
+public class Page2 extends BaseBean {
     protected Date cdate = new Date();
     protected Date mdate = new Date();
     protected String description;
@@ -16,11 +17,15 @@ public class Page extends BaseBean {
     protected String type;
     protected String status;
     protected User authorId;
-    protected Page parentId;
+    protected Page2 parentId;
     private String title;
     private String content;
     private String url;
 
+    @TableName(name="Page")
+    public Page2() {
+
+    }
     @Exclude
     public String getNameColumn() {
         return "title";
@@ -98,11 +103,11 @@ public class Page extends BaseBean {
         this.authorId = authorId;
     }
 
-    public Page getParentId() {
+    public Page2 getParentId() {
         return parentId;
     }
 
-    public void setParentId(Page parentId) {
+    public void setParentId(Page2 parentId) {
         this.parentId = parentId;
     }
 
