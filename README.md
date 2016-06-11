@@ -45,14 +45,14 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
 ```html
 <c:forEach items="${beans}" var="bean">
     <tr>
-        <td><a href="${baseUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+        <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
         <td><c:out value="${bean.title}"/></td>
         <td><c:out value="${bean.description}" escapeXml="false"/></td>
-        <td><a href="${baseUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-        <td><a href="${baseUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+        <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+        <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
     </tr>
 </c:forEach>
-<a href="${baseUrl}/insert">Add Page</a>
+<a href="${beanUrl}/insert">Add Page</a>
 ```
 * Create a new file for the database configuration in
  * src/main/resources/**db.properties**
