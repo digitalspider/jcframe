@@ -56,6 +56,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected String showUrl = "/";
     protected String insertOrEditUrl = "/";
     protected String baseUrl;
+	protected String beanUrl;
     protected String contextUrl;
     protected PathParts pathParts;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -73,6 +74,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	public static final String SUFFIX_BEANS = "s";
 	public static final String SUFFIX_FIELDS = "fields";
+	public static final String SUFFIX_TYPES = "types";
 	public static final String SUFFIX_COUNT = "count";
 	public static final String LOOKUPMAP = "lookupMap";
 	public static final String CONTEXTURL = "contextUrl";
@@ -167,18 +169,20 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		LOG.info("servletPath="+servletPath);
 		this.pathParts = pathParts;
 		LOG.info("pathParts="+pathParts);
-		baseUrl += "/"+pathParts.get(0);
+		beanUrl = baseUrl + "/"+pathParts.get(0);
+		LOG.info("beanUrl="+beanUrl);
 
 		String forward = null;
 		request.setAttribute(beanName+SUFFIX_FIELDS, dao.getBeanFieldNames() );
+		request.setAttribute(beanName+SUFFIX_TYPES, Statics.getClassTypeMap().keySet() );
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
-		request.setAttribute(BEANURL, contextUrl+"/"+clazz.getSimpleName().toLowerCase());
-		request.setAttribute(EDITURL, baseUrl+"/edit" );
-		request.setAttribute(SHOWURL, baseUrl+"/show" );
-		request.setAttribute(LISTURL, baseUrl+"/list" );
-		request.setAttribute(DELETEURL, baseUrl+"/delete" );
+		request.setAttribute(BEANURL, beanUrl);
+		request.setAttribute(EDITURL, beanUrl+"/edit" );
+		request.setAttribute(SHOWURL, beanUrl+"/show" );
+		request.setAttribute(LISTURL, beanUrl+"/list" );
+		request.setAttribute(DELETEURL, beanUrl+"/delete" );
 		
    		switch (action) {
     		case GET:
@@ -237,7 +241,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					throw new ServletException(e);
 				}
 		
-				if (baseUrl.endsWith(JSON_SUFFIX)) {
+				if (beanUrl.endsWith(JSON_SUFFIX)) {
 					return ;
 				}
 	   			break;
@@ -360,7 +364,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	protected boolean handleJson(Object o) throws IOException {
-		if (baseUrl.endsWith(JSON_SUFFIX)) {
+		if (beanUrl.endsWith(JSON_SUFFIX)) {
 			String output = gson.toJson(o);
 			response.getWriter().write(output);
 			return true;

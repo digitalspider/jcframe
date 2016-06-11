@@ -2,6 +2,7 @@ package au.com.javacloud.servlet;
 
 import java.io.IOException;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -61,23 +62,39 @@ public class FrontControllerServlet extends HttpServlet {
     }
     
     protected void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
-        LOG.info("doAction() "+action+" pathParts="+pathParts);
+        try {
+            PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
+            LOG.info("doAction() " + action + " pathParts=" + pathParts);
+            if (pathParts.isEmpty()) {
+                request.setAttribute("contextUrl", HttpUtil.getContextUrl(request));
+                request.setAttribute("baseUrl", HttpUtil.getBaseUrl(request));
+                request.setAttribute("beantypes", Statics.getClassTypeMap().keySet() );
+                RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
+                view.forward( request, response );
+                return;
+            }
 
-        String beanName = pathParts.get(0);
-        if (beanName != null && beanName.endsWith(JSON_SUFFIX)) {
-            beanName = beanName.substring(0,beanName.length()-JSON_SUFFIX.length());
-        }
-        LOG.info("beanName="+beanName);
-        BaseController baseController = Statics.getControllerForBeanName(beanName);
-        LOG.info("baseController="+baseController);
-        if (baseController!=null) {
-        	if (!baseController.isInitialised()) {
-        		baseController.initHttp(getServletContext(), getServletConfig());
-        	}
-        	baseController.doAction(action, pathParts, request,response);
-        } else {
-        	throw new ServletException("Controller not found for request with bean="+beanName);
+            String beanName = pathParts.get(0);
+            if (beanName != null && beanName.endsWith(JSON_SUFFIX)) {
+                beanName = beanName.substring(0, beanName.length() - JSON_SUFFIX.length());
+            }
+            LOG.info("beanName=" + beanName);
+            BaseController controller = Statics.getControllerForBeanName(beanName);
+            LOG.info("controller=" + controller);
+            if (controller != null) {
+                if (!controller.isInitialised()) {
+                    controller.initHttp(getServletContext(), getServletConfig());
+                }
+                controller.doAction(action, pathParts, request, response);
+            } else {
+                LOG.error("Controller not found for request with bean=" + beanName);
+                RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
+                view.forward( request, response );
+                return;
+            }
+        } catch (Exception e) {
+            RequestDispatcher view = request.getRequestDispatcher("/error.jsp");
+            view.forward( request, response );
         }
     }
 }

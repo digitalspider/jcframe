@@ -8,9 +8,9 @@
 <title>User <c:out value="${user.id}" /></title>
 </head>
 <body>
-    <a href="${baseUrl}/list">List</a>
+    <a href="${beanUrl}/list">List</a>
     &nbsp;|&nbsp;
-    <a href="${baseUrl}/edit/<c:out value="${bean.id}" />">Edit</a>
+    <a href="${beanUrl}/edit/<c:out value="${bean.id}" />">Edit</a>
     <div>
         <label for="id">Student ID</label>
         <div><c:out value="${bean.id}" /></div>

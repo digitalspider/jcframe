@@ -10,15 +10,16 @@
         <title>Show All Pages</title>
     </head>
     <body>
-        <a href="<%=request.getContextPath()%>">Home</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/list/1">Page1</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/list/2">Page2</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id/desc">ID Desc</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id/asc">ID ASC</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id">ID Toggle</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/limit/2">Limit 2</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/limit">Limit Reset</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}.json">JSON</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/list/1">Page1</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/list/2">Page2</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/find/id/1">Find ID 1</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id/desc">ID Desc</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id/asc">ID ASC</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id">ID Toggle</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/limit/2">Limit 2</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/limit">Limit Reset</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}.json">JSON</a>&nbsp;|&nbsp;
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
@@ -41,7 +42,7 @@
             <tbody>
                 <c:forEach items="${beans}" var="bean">
                     <tr>
-                        <td><a href="${baseUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+                        <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
                         <td><c:out value="${bean.title}" escapeXml="false"/></td>
                         <td><c:out value="${bean.description}" escapeXml="false"/></td>
                         <td><c:out value="${bean.content}" escapeXml="false"/></td>
@@ -49,16 +50,16 @@
                         <td><c:out value="${bean.type}" /></td>
                         <td><c:out value="${bean.tags}" /></td>
                         <td><c:out value="${bean.status}" /></td>
-                        <td><a href="${contextUrl}/user/show/<c:out value='${bean.authorId.id}'/>"><c:out value="${bean.authorId.id}" /> - <c:out value="${bean.authorId.displayValue}" /></a></td>
-                        <td><a href="${contextUrl}/page/show/<c:out value='${bean.parentId.id}'/>"><c:out value="${bean.parentId.id}" /> - <c:out value="${bean.parentId.displayValue}" /></a></td>
-                        <td><a href="${baseUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-                        <td><a href="${baseUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+                        <td><a href="${baseUrl}/user/show/<c:out value='${bean.authorId.id}'/>"><c:out value="${bean.authorId.id}" /> - <c:out value="${bean.authorId.displayValue}" /></a></td>
+                        <td><a href="${baseUrl}/page/show/<c:out value='${bean.parentId.id}'/>"><c:out value="${bean.parentId.id}" /> - <c:out value="${bean.parentId.displayValue}" /></a></td>
+                        <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+                        <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
                     </tr>
                 </c:forEach>
             </tbody>
         </table>
         <p>
-            <a href="${baseUrl}/insert">Add Page</a>
+            <a href="${beanUrl}/insert">Add Page</a>
         </p>
     </body>
 </html>

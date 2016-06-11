@@ -10,15 +10,16 @@
         <title>Show All Students</title>
     </head>
     <body>
-        <a href="<%=request.getContextPath()%>">Home</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/list/1">Page1</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/list/2">Page2</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id/desc">ID Desc</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id/asc">ID ASC</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/order/id">ID Toggle</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/limit/2">Limit 2</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}/config/limit">Limit Reset</a>&nbsp;|&nbsp;
-        <a href="${baseUrl}.json">JSON</a>&nbsp;|&nbsp;
+        <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/list/1">Page1</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/list/2">Page2</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/find/id/1">Find ID 1</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id/desc">ID Desc</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id/asc">ID ASC</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/order/id">ID Toggle</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/limit/2">Limit 2</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}/config/limit">Limit Reset</a>&nbsp;|&nbsp;
+        <a href="${beanUrl}.json">JSON</a>&nbsp;|&nbsp;
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
@@ -26,30 +27,30 @@
         <table>
             <thead>
                 <tr>
-                    <th><a href="${baseUrl}/config/order/id">Student ID</a></th>
-                    <th><a href="${baseUrl}/config/order/firstName">First Name</a></th>
-                    <th><a href="${baseUrl}/config/order/lastName">Last Name</a></th>
-                    <th><a href="${baseUrl}/config/order/course">Course</a></th>
-                    <th><a href="${baseUrl}/config/order/year">Year</a></th>
+                    <th><a href="${beanUrl}/config/order/id">Student ID</a></th>
+                    <th><a href="${beanUrl}/config/order/firstName">First Name</a></th>
+                    <th><a href="${beanUrl}/config/order/lastName">Last Name</a></th>
+                    <th><a href="${beanUrl}/config/order/course">Course</a></th>
+                    <th><a href="${beanUrl}/config/order/year">Year</a></th>
                     <th colspan="2">Action</th>
                 </tr>
             </thead>
             <tbody>
                 <c:forEach items="${beans}" var="bean">
                     <tr>
-                        <td><a href="${baseUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}"/></td>
+                        <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}"/></td>
                         <td><c:out value="${bean.firstName}" escapeXml="false"/></td>
                         <td><c:out value="${bean.lastName}" escapeXml="false"/></td>
                         <td><c:out value="${bean.course}" escapeXml="false"/></td>
                         <td><c:out value="${bean.year}" escapeXml="false"/></td>
-                        <td><a href="${baseUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-                        <td><a href="${baseUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+                        <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+                        <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
                     </tr>
                 </c:forEach>
             </tbody>
         </table>
         <p>
-            <a href="${baseUrl}/insert">Add Student</a>
+            <a href="${beanUrl}/insert">Add Student</a>
         </p>
     </body>
 </html>
