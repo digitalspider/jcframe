@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import au.com.javacloud.auth.AuthService;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
+import au.com.javacloud.util.PathParts;
 
 /**
  * Created by david on 22/05/16.
@@ -24,9 +25,9 @@ public interface BaseController<T extends BaseBean, U> {
 	
 	public void init(Class<T> clazz, AuthService<U> authService);
 	
-	public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
+	public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	
-	public void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+	public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 	
 	public void list() throws Exception;
 	
@@ -41,7 +42,7 @@ public interface BaseController<T extends BaseBean, U> {
     public void find() throws Exception;
 
     public void config() throws Exception;
-    
+
     public void upload() throws Exception;
 
     public Class<T> getBeanClass();

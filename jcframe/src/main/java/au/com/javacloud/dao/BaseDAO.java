@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
+import javax.sql.DataSource;
 
 import au.com.javacloud.model.BaseBean;
 
@@ -25,6 +26,8 @@ public interface BaseDAO<T extends BaseBean> {
     public List<String> getBeanFieldNames();
     
     public void saveOrUpdate(T bean) throws Exception;
+    public int count() throws Exception;
+    public int count(String field, String value) throws Exception;
     public List<T> getAll(int pageNo) throws Exception;
     public List<T> getLookup() throws Exception;
     public T getLookup(int id) throws Exception;
@@ -32,7 +35,8 @@ public interface BaseDAO<T extends BaseBean> {
     public void delete(int beanId) throws Exception;
     public List<T> find(String field, String value, int pageNo) throws Exception;
 
-    public void init(ServletConfig config);
+    public void init(Class<T> clazz, DataSource dataSource);
+    public void initHttp(ServletConfig config);
     public Connection getConnection() throws SQLException;
 
     public void toggleOrderBy(String orderBy);

@@ -44,13 +44,15 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private Connection conn;
 
-	public BaseDAOImpl(Class<T> clazz, DataSource dataSource) {
+	@Override
+	public void init(Class<T> clazz, DataSource dataSource) {
 		this.clazz = clazz;
 		this.dataSource = dataSource;
 		this.tableName= getTableName();
 	}
 
-	public void init(ServletConfig config) {
+	@Override
+	public void initHttp(ServletConfig config) {
 		if (dataSource instanceof BaseDataSource) {
 			((BaseDataSource)dataSource).setRealPath(config.getServletContext().getRealPath("/"));
 		}
@@ -82,13 +84,52 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
+	public int count() throws SQLException {
+		String query = "select count(1) from "+tableName;
+		Connection conn = getConnection();
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(query);
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				return resultSet.getInt(1);
+			}
+		} finally {
+			if (resultSet!=null) resultSet.close();
+			if (statement!=null) statement.close();
+		}
+		return 0;
+	}
+
+	@Override
+	public int count(String field, String value) throws SQLException {
+		String query = "select count(1) from "+tableName+" where "+field+" like ?";
+		Connection conn = getConnection();
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(query);
+			statement.setString(1, "%"+value+"%");
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				return resultSet.getInt(1);
+			}
+		} finally {
+			if (resultSet!=null) resultSet.close();
+			if (statement!=null) statement.close();
+		}
+		return 0;
+	}
+
+	@Override
 	public void delete( int id ) throws SQLException {
 		String query = "delete from "+tableName+" where id=?";
 		Connection conn = getConnection();
-		PreparedStatement preparedStatement = conn.prepareStatement(query);
-		preparedStatement.setInt(1, id);
-		preparedStatement.executeUpdate();
-		preparedStatement.close();
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setInt(1, id);
+		statement.executeUpdate();
+		statement.close();
 	}
 
 	@Override
@@ -473,6 +514,6 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	public String toString() {
-		return getClass().getSimpleName()+" clazz="+clazz+" tableName="+tableName+" dataSource="+dataSource;
+		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"] tableName="+tableName;
 	}
 }

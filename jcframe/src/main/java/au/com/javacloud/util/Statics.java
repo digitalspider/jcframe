@@ -31,8 +31,7 @@ public class Statics {
     private static final String DEFAULT_AUTH_CLASS = "au.com.javacloud.auth.BaseAuthServiceImpl";
     private static final String DEFAULT_DS_CLASS = "au.com.javacloud.dao.BaseDataSource";
     
-    private static final String PROP_PACKAGE_NAME_BEAN = "bean.package.name";
-    private static final String PROP_PACKAGE_NAME_CONTROLLER = "controller.package.name";
+    private static final String PROP_PACKAGE_NAME = "package.name";
     private static final String PROP_AUTH_CLASS = "auth.class";
     private static final String PROP_DS_CLASS = "ds.class";
 	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
@@ -42,14 +41,12 @@ public class Statics {
 	private static Map<String,Class<? extends BaseBean>> classTypeMap = new HashMap<String,Class<? extends BaseBean>>();
     private static AuthService authService;
     private static DataSource dataSource;
-	private static String beanPackageName;
-	private static String controllerPackageName;
+	private static String packageName;
 
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
-			beanPackageName = properties.getProperty(PROP_PACKAGE_NAME_BEAN,DEFAULT_PACKAGE_NAME);
-			controllerPackageName = properties.getProperty(PROP_PACKAGE_NAME_CONTROLLER,beanPackageName);
+			packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
 			String authClassName = properties.getProperty(PROP_AUTH_CLASS,DEFAULT_AUTH_CLASS);
 			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
 			String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE,DEFAULT_DB_CONFIG_FILE);
@@ -82,31 +79,41 @@ public class Statics {
 
 			// Find all the beanClassTypes
 			try {
-				LOG.info("controllerPackageName="+controllerPackageName);
-				LOG.info("beanPackageName="+beanPackageName);
-				List<Class> controllerClassTypes = ReflectUtil.getClasses(controllerPackageName, BaseController.class, true);
-				for (Class controllerClassType : controllerClassTypes) {
-					Class classType = getClassTypeFromBeanClassAnnotation(controllerClassType);
-					if (classType!=null) {
-						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
-						BaseController controller = (BaseController) controllerClassType.newInstance();
-						controller.init(classType, authService);
-						controllerMap.put(classType, controller);
-					}
-				}
-				LOG.info("controllerMap(custom)="+controllerMap);
-				
-				List<Class> beanClassTypes = ReflectUtil.getClasses(beanPackageName, BaseBean.class, true);
+				LOG.info("packageName="+packageName);
+				// Initialise default classTypeMap, daoMap and controllerMap
+				List<Class> beanClassTypes = ReflectUtil.getClasses(packageName, BaseBean.class, true);
 				for (Class classType : beanClassTypes) {
-					if (!controllerMap.containsKey(classType)) {
-						daoMap.put(classType, new BaseDAOImpl<>(classType, dataSource));
-						BaseController controller = new BaseControllerImpl();
-						controller.init(classType, authService);
-						controllerMap.put(classType, controller);
-					}
 					classTypeMap.put(classType.getSimpleName().toLowerCase(),classType);
+					BaseDAO dao = new BaseDAOImpl<>();
+					dao.init(classType, dataSource);
+					daoMap.put(classType, dao);
+					BaseController controller = new BaseControllerImpl();
+					controller.init(classType, authService);
+					controllerMap.put(classType, controller);
 				}
-				LOG.info("controllerMap(final)="+controllerMap);
+				LOG.info("classTypeMap="+classTypeMap);
+				// Insert custom daos
+				List<Class> classTypes = ReflectUtil.getClasses(packageName, BaseDAO.class, true);
+				for (Class classType : classTypes) {
+					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
+					if (beanClassType!=null) {
+						BaseDAO dao = (BaseDAO) classType.newInstance();
+						dao.init(beanClassType, dataSource);
+						daoMap.put(beanClassType, dao);
+					}
+				}
+				LOG.info("daoMap="+daoMap);
+				// Insert custom controllers
+				classTypes = ReflectUtil.getClasses(packageName, BaseController.class, true);
+				for (Class classType : classTypes) {
+					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
+					if (beanClassType!=null) {
+						BaseController controller = (BaseController) classType.newInstance();
+						controller.init(beanClassType, authService);
+						controllerMap.put(beanClassType, controller);
+					}
+				}
+				LOG.info("controllerMap="+controllerMap);
 			} catch (Exception e) {
 				LOG.error(e, e);
 			}

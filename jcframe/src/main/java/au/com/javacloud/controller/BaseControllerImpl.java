@@ -71,8 +71,9 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	private ServletConfig servletConfig;
 	private ServletContext servletContext;
 
-	public static final String BEANS_SUFFIX = "s";
-	public static final String BEANS_FIELDSUFFIX = "fields";
+	public static final String SUFFIX_BEANS = "s";
+	public static final String SUFFIX_FIELDS = "fields";
+	public static final String SUFFIX_COUNT = "count";
 	public static final String LOOKUPMAP = "lookupMap";
 	public static final String CONTEXTURL = "contextUrl";
 	public static final String BASEURL = "baseUrl";
@@ -95,7 +96,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public static final String PROP_SET = "set";
 
 	public String toString() {
-		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"] beanName="+beanName;
+		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"]";
 	}
 
 	@SuppressWarnings("unchecked")
@@ -124,10 +125,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
     @SuppressWarnings("rawtypes")
 	@Override
-    public void init(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
+    public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
     	this.servletContext = servletContext;
     	this.servletConfig = servletConfig;
-		dao.init(servletConfig);
+		dao.initHttp(servletConfig);
 		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
 			filePath = System.getProperty("java.io.tmpdir");
@@ -151,7 +152,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	}
     }
 
-    public void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		LOG.info("doAction() "+action+" START");
 		this.request = request;
 		this.response = response;
@@ -164,12 +165,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		LOG.info("pathInfo="+pathInfo);
 		String servletPath = request.getServletPath();
 		LOG.info("servletPath="+servletPath);
-		pathParts = HttpUtil.getPathParts(pathInfo);
+		this.pathParts = pathParts;
 		LOG.info("pathParts="+pathParts);
 		baseUrl += "/"+pathParts.get(0);
 
 		String forward = null;
-		request.setAttribute(beanName+BEANS_FIELDSUFFIX, dao.getBeanFieldNames() );
+		request.setAttribute(beanName+SUFFIX_FIELDS, dao.getBeanFieldNames() );
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
@@ -430,10 +431,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public void list() throws Exception {
 		int pageNo = pathParts.getInt(2);
 		List<T> beans = dao.getAll(pageNo);
+		int count = dao.count();
 		if (handleJson(beans)) {
 			return;
 		}
-		request.setAttribute(beanName+BEANS_SUFFIX, beans );
+		request.setAttribute(beanName + SUFFIX_COUNT, count );
+		request.setAttribute(beanName + SUFFIX_BEANS, beans );
 	}
 
     @Override
@@ -458,10 +461,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			String value = pathParts.get(3);
 			int pageNo = pathParts.getInt(4);
 			List<T> beans = dao.find(field, value, pageNo);
+			int count = dao.count(field, value);
 			if (handleJson(beans)) {
 				return;
 			}
-			request.setAttribute(beanName + BEANS_SUFFIX, beans);
+			request.setAttribute(beanName + SUFFIX_COUNT, count );
+			request.setAttribute(beanName + SUFFIX_BEANS, beans);
 		}
 	}
 

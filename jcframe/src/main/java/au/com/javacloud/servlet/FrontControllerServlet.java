@@ -75,7 +75,7 @@ public class FrontControllerServlet extends HttpServlet {
         	if (!baseController.isInitialised()) {
         		baseController.initHttp(getServletContext(), getServletConfig());
         	}
-        	baseController.doAction(action,request,response);
+        	baseController.doAction(action, pathParts, request,response);
         } else {
         	throw new ServletException("Controller not found for request with bean="+beanName);
         }

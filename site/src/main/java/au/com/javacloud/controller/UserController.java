@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.User;
+import au.com.javacloud.util.PathParts;
 
 /**
  * Created by david on 10/06/16.
@@ -26,14 +27,13 @@ public class UserController extends BaseControllerImpl<User,Principal> {
     }
 
     @Override
-    public void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             LOG.info("In custom controller!");
-            super.doAction(action, request, response);
-            if (action.equals(ServletAction.GET) && pathParts.get(1).equals("login")) {
+            if (action.equals(ServletAction.POST) && pathParts.get(1).equals("login")) {
                 LOG.info("custom login");
-                String username = pathParts.get(2);
-                String password = pathParts.get(3);
+                String username = request.getParameter("j_username");
+                String password = request.getParameter("j_password");
                 if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
                     throw new Exception("Username and password are both required!");
                 }
@@ -51,6 +51,8 @@ public class UserController extends BaseControllerImpl<User,Principal> {
                         throw new Exception("Password is not valid");
                     }
                 }
+            } else {
+                super.doAction(action, pathParts, request, response);
             }
         } catch(Exception e) {
             LOG.error(e);

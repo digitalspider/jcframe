@@ -8,10 +8,12 @@
     </head>
 
     <body>
+    <h2><a href="<%=request.getContextPath()%>/login.jsp">Login</a></h2>
+
 	<h2>Controllers in this site</h2>
 	<ul>
-		<li><a href="<%=request.getContextPath()%>/jc/student">student controller</a> - <a href="<%=request.getContextPath()%>/jc/student.json">/student.json</a></li>
-		<li><a href="<%=request.getContextPath()%>/jc/user">user controller</a> - <a href="<%=request.getContextPath()%>/jc/user.json">/user.json</a></li>
+		<li><a href="<%=request.getContextPath()%>/jc/student">student controller</a> - <a href="<%=request.getContextPath()%>/student.json">/student.json</a></li>
+		<li><a href="<%=request.getContextPath()%>/jc/user">user controller</a> - <a href="<%=request.getContextPath()%>/user.json">/user.json</a></li>
 		<li><a href="<%=request.getContextPath()%>/jc/page">page controller</a> - <a href="<%=request.getContextPath()%>/jc/page.json">/page.json</a></li>
 	</ul>
 
