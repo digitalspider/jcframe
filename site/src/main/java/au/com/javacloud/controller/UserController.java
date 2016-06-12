@@ -19,13 +19,10 @@ import au.com.javacloud.util.PathParts;
 /**
  * Created by david on 10/06/16.
  */
+@BeanClass(bean = User.class)
 public class UserController extends BaseControllerImpl<User,Principal> {
 
     private final static Logger LOG = Logger.getLogger(UserController.class);
-
-    @BeanClass(bean = User.class)
-    public UserController() {
-    }
 
     @Override
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

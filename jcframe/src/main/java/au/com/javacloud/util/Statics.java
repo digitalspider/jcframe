@@ -1,6 +1,5 @@
 package au.com.javacloud.util;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,9 +123,8 @@ public class Statics {
     }
 
     private static <T extends BaseBean> Class<T> getClassTypeFromBeanClassAnnotation(Class controllerClassType) throws ClassNotFoundException, NoSuchMethodException {
-		Constructor constructor = controllerClassType.getConstructor(null);
-		if (constructor!=null && constructor.isAnnotationPresent(BeanClass.class)) {
-			BeanClass baseClassAnnotation = (BeanClass) constructor.getAnnotation(BeanClass.class);
+		if (controllerClassType.isAnnotationPresent(BeanClass.class)) {
+			BeanClass baseClassAnnotation = (BeanClass) controllerClassType.getAnnotation(BeanClass.class);
 			if (baseClassAnnotation!=null) {
 				Class<T> classType = (Class<T>) baseClassAnnotation.bean();
 				return classType;

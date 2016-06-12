@@ -232,7 +232,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 						checkAuthAndAcl(request, Action.LIST);
 						list();
 						forward = listUrl;
-						if (clazz.getConstructor(null).isAnnotationPresent(IndexPage.class)) {
+						if (clazz.isAnnotationPresent(IndexPage.class)) {
 							forward = indexUrl;
 						}
 			        }
@@ -382,12 +382,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	private void checkAuth(HttpServletRequest request) throws AuthenticationException {
-		try {
-			if (clazz.getConstructor(null).isAnnotationPresent(Secure.class) && !authService.isAuthenticated(request)) {
-				throw new AuthenticationException("Access Denied for class: " + clazz);
-			}
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+		if (clazz.isAnnotationPresent(Secure.class) && !authService.isAuthenticated(request)) {
+			throw new AuthenticationException("Access Denied for class: " + clazz);
 		}
 	}
 

@@ -29,9 +29,11 @@ import java.security.Principal;
 import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.Page;
 
+@BeanClass(bean = Page.class)
 public class PageController extends BaseControllerImpl<Page,Principal> {
-    @BeanClass(bean = Page.class)
-    public PageController() {
+    @Override
+    public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        super.doAction(action, pathParts, request, response);
     }
 }
 ```

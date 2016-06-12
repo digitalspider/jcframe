@@ -9,6 +9,7 @@ import au.com.javacloud.annotation.TableName;
  * Created by david on 22/05/16.
  */
 
+@TableName(name="Page")
 public class Page extends BaseBean {
     protected Date cdate = new Date();
     protected Date mdate = new Date();
@@ -22,10 +23,6 @@ public class Page extends BaseBean {
     private String content;
     private String url;
 
-    @TableName(name="Page")
-    public Page() {
-
-    }
     @Exclude
     public String getNameColumn() {
         return "title";

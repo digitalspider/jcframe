@@ -272,7 +272,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	public String getTableName() {
 		String tableName = null;
 		try {
-			TableName annotation = (TableName) clazz.getConstructor(null).getAnnotation(TableName.class);
+			TableName annotation = (TableName) clazz.getAnnotation(TableName.class);
 			if (annotation!=null) {
 				tableName = annotation.name();
 			}

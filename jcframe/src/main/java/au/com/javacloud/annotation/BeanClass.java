@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import au.com.javacloud.model.BaseBean;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.CONSTRUCTOR)
+@Target(ElementType.TYPE)
 public @interface BeanClass {
 	Class<? extends BaseBean> bean();
 }
