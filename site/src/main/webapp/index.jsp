@@ -24,7 +24,9 @@
             </ul>
         </c:when>
         <c:otherwise>
-            <h2><a href="<%=request.getContextPath()%>/jc">JavaCloud</a></h2>
+            <%
+                response.sendRedirect(request.getContextPath()+"/jc");
+            %>
         </c:otherwise>
     </c:choose>
 

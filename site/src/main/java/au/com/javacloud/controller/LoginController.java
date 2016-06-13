@@ -49,8 +49,10 @@ public class LoginController extends BaseControllerImpl<Login,Principal> {
                         HttpUtil.sendRedirect(request, response, "redirect");
                         return ;
                     } else {
-                        throw new Exception("Password is not valid");
+                        throw new Exception("Username or Password is not valid");
                     }
+                } else {
+                    throw new Exception("Username or Password is not valid");
                 }
             } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals("logout")) {
                 LOG.info("custom logout");
