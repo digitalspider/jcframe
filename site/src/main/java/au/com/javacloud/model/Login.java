@@ -11,7 +11,7 @@ import au.com.javacloud.annotation.TableName;
  * Created by david on 22/05/16.
  */
 @Hidden
-@TableName(name = "User")
+@TableName("User")
 public class Login extends BaseBean {
     private String username;
     private String password;

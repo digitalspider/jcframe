@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.annotation.NameColumn;
 import au.com.javacloud.annotation.TableName;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
@@ -141,8 +142,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			if (pageNo<1) { pageNo=1; };
-			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; };
+			if (pageNo<1) { pageNo=1; }
+			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			statement = conn.createStatement();
 			String query = "select * from "+tableName;
 			if (!StringUtils.isBlank(orderBy)) {
@@ -169,7 +170,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		ResultSet resultSet = null;
 		try {
 			T bean = ReflectUtil.getNewBean(clazz);
-			String columnName = bean.getNameColumn();
+			String columnName = BaseBean.FIELD_ID;
+			if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
+				columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+			}
 			statement = conn.createStatement();
 			String query = "select id,"+columnName+" from "+tableName;
 			if (!StringUtils.isBlank(orderBy)) {
@@ -197,7 +201,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			String columnName = bean.getNameColumn();
+			String columnName = BaseBean.FIELD_ID;
+			if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
+				columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+			}
 			String query = "select id,"+columnName+" from "+tableName+" where id=?";
 			statement = conn.prepareStatement( query );
 			statement.setInt(1, id);
@@ -245,8 +252,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			if (pageNo<1) { pageNo=1; };
-			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; };
+			if (pageNo<1) { pageNo=1; }
+			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			String query = "select * from "+tableName+" where "+field+" like ?";
 			if (!StringUtils.isBlank(orderBy)) {
 				query += " order by "+orderBy;
@@ -271,13 +278,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public String getTableName() {
 		String tableName = null;
-		try {
-			TableName annotation = (TableName) clazz.getAnnotation(TableName.class);
-			if (annotation!=null) {
-				tableName = annotation.name();
-			}
-		} catch (Exception e) {
-			// ignore
+		if (clazz.isAnnotationPresent(TableName.class)) {
+			tableName = clazz.getAnnotation(TableName.class).value();
 		}
 		if (StringUtils.isEmpty(tableName)) {
 			tableName = clazz.getSimpleName().toLowerCase();
@@ -299,7 +301,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception {
 		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz);
-		String columnName = bean.getNameColumn();
+		String columnName = BaseBean.FIELD_ID;
+		if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
+			columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+		}
 		for (Method method : methods.keySet()) {
 			Class classType = methods.get(method);
             LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());

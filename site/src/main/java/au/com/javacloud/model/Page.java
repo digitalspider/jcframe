@@ -3,6 +3,8 @@ package au.com.javacloud.model;
 import java.util.Date;
 
 import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.Header;
+import au.com.javacloud.annotation.NameColumn;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.annotation.TableName;
 
@@ -11,7 +13,8 @@ import au.com.javacloud.annotation.TableName;
  */
 
 @Secure
-@TableName(name="Page")
+@TableName("Page")
+@NameColumn("title")
 public class Page extends BaseBean {
     protected Date cdate = new Date();
     protected Date mdate = new Date();
@@ -19,16 +22,13 @@ public class Page extends BaseBean {
     protected String tags;
     protected String type;
     protected String status;
+    @Header("Author")
     protected User authorId;
+    @Header("Parent Page")
     protected Page parentId;
     private String title;
     private String content;
     private String url;
-
-    @Exclude
-    public String getNameColumn() {
-        return "title";
-    }
 
     @Override
     public String toString() {

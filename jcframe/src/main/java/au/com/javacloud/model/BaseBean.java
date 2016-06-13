@@ -19,11 +19,6 @@ public class BaseBean {
     }
 
     @Exclude
-    public String getNameColumn() {
-    	return FIELD_ID;
-    }
-
-    @Exclude
     public int getId() {
         return id;
     }
