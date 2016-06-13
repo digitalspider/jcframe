@@ -3,11 +3,11 @@ package au.com.javacloud.model;
 import java.util.Date;
 
 import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.Secure;
 
 /**
  * Created by david on 22/05/16.
  */
-
 public class User extends BaseBean {
     private Date cdate = new Date();
     private Date mdate = new Date();

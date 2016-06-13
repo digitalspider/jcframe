@@ -81,45 +81,47 @@ public class FrontControllerServlet extends HttpServlet {
                 beanName = beanName.substring(0, beanName.length() - JSON_SUFFIX.length());
             }
             LOG.info("beanName=" + beanName);
-            if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(beanName) && beanName.equals("login")) {
-                LOG.info("processing login");
-                String username = request.getParameter("j_username");
-                String password = request.getParameter("j_password");
-                if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-                    throw new Exception("Username and password are both required!");
+            BaseController controller = Statics.getControllerForBeanName(beanName,request);
+            LOG.info("controller=" + controller);
+            if (controller != null) {
+                if (!controller.isInitialised()) {
+                    controller.initHttp(getServletContext(), getServletConfig());
                 }
-                LOG.info("username=" + username);
-                request.login(username, password);
-                String user = request.getUserPrincipal().getName();
-                LOG.info("login successful for user " + user);
-            } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(beanName) && beanName.equals("logout")) {
-                LOG.info("processing logout");
-                if (request.getUserPrincipal()!=null) {
-                    String user = request.getUserPrincipal().getName();
-                    request.logout();
-                    LOG.info("login successful for user " + user);
-                }
+                controller.doAction(action, pathParts, request, response);
             } else {
-                BaseController controller = Statics.getControllerForBeanName(beanName,request);
-                LOG.info("controller=" + controller);
-                if (controller != null) {
-                    if (!controller.isInitialised()) {
-                        controller.initHttp(getServletContext(), getServletConfig());
-                    }
-                    controller.doAction(action, pathParts, request, response);
-                } else {
-                    Class<? extends BaseBean> classType = Statics.getCompleteClassTypeMap().get(beanName);
-                    if (classType!=null) {
-                        LOG.error("Login required for bean=" + beanName);
-                        RequestDispatcher view = request.getRequestDispatcher("/login.jsp");
-                        view.forward(request, response);
-                        return;
-                    }
-                    LOG.error("Controller not found for request with bean=" + beanName);
-                    RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
+                Class<? extends BaseBean> classType = Statics.getSecureClassTypeMap().get(beanName);
+                if (classType!=null) {
+                    LOG.error("Login required for bean=" + beanName);
+                    RequestDispatcher view = request.getRequestDispatcher("/login.jsp");
                     view.forward(request, response);
                     return;
                 }
+                if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(beanName) && beanName.equals("login")) {
+                    LOG.info("processing login");
+                    String username = request.getParameter("j_username");
+                    String password = request.getParameter("j_password");
+                    if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
+                        throw new Exception("Username and password are both required!");
+                    }
+                    LOG.info("username=" + username);
+                    request.login(username, password);
+                    String user = request.getUserPrincipal().getName();
+                    LOG.info("login successful for user " + user);
+                    HttpUtil.sendRedirect(request, response, "redirect");
+                    return ;
+                } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(beanName) && beanName.equals("logout")) {
+                    LOG.info("processing logout");
+                    if (request.getUserPrincipal()!=null) {
+                        String user = request.getUserPrincipal().getName();
+                        request.logout();
+                        LOG.info("login successful for user " + user);
+                    }
+                    HttpUtil.sendRedirect(request, response, "redirect");
+                    return ;
+                }
+                LOG.error("Controller not found for request with bean=" + beanName);
+                HttpUtil.sendRedirect(request, response, null);
+                return;
             }
         } catch (Exception e) {
             request.setAttribute("e", e );

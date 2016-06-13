@@ -11,7 +11,7 @@
     <% if (request.getUserPrincipal()==null) { %>
         <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
     <% } else { %>
-        <strong><a href="<%=request.getContextPath()%>/jc/user/logout">Logout</a></strong>
+        <strong><a href="<%=request.getContextPath()%>/jc/login/logout">Logout</a></strong>
     <% } %>
 
     <c:choose>

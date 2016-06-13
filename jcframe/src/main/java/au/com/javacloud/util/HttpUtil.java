@@ -1,8 +1,12 @@
 package au.com.javacloud.util;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
 
 public class HttpUtil
 {
@@ -32,5 +36,17 @@ public class HttpUtil
         baseUrl = baseUrl + request.getServletPath();
         LOG.debug("baseUrl="+baseUrl);
         return baseUrl;
+    }
+
+    public static void sendRedirect(HttpServletRequest request, HttpServletResponse response, String redirectParam) throws IOException {
+        String redirectPath = HttpUtil.getBaseUrl(request);
+        if (redirectParam!=null) {
+            String redirect = (String) request.getParameter(redirectParam);
+            if (StringUtils.isNotEmpty(redirect)) {
+                redirectPath += redirect;
+            }
+        }
+        LOG.debug("redirectPath=" + redirectPath);
+        response.sendRedirect(response.encodeRedirectURL(redirectPath));
     }
 }

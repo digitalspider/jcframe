@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.BeanClass;
+import au.com.javacloud.annotation.Hidden;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.auth.AuthService;
 import au.com.javacloud.auth.BaseAuthServiceImpl;
@@ -40,7 +41,9 @@ public class Statics {
     private static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>>();
     private static Map<Class<? extends BaseBean>,BaseController<? extends BaseBean, ?>> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController<? extends BaseBean,?>>();
 	private static Map<String,Class<? extends BaseBean>> classTypeMap = new HashMap<String,Class<? extends BaseBean>>();
-	private static Map<String,Class<? extends BaseBean>> completeClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
+	private static Map<String,Class<? extends BaseBean>> secureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
+	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
+	private static Map<String,Class<? extends BaseBean>> hiddenSecureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
     private static AuthService authService;
     private static DataSource dataSource;
 	private static String packageName;
@@ -85,10 +88,17 @@ public class Statics {
 				// Initialise default classTypeMap, daoMap and controllerMap
 				List<Class> beanClassTypes = ReflectUtil.getClasses(packageName, BaseBean.class, true);
 				for (Class classType : beanClassTypes) {
-					if (!classType.isAnnotationPresent(Secure.class)) {
-						classTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
+					if (!classType.isAnnotationPresent(Hidden.class)) {
+						if (!classType.isAnnotationPresent(Secure.class)) {
+							classTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
+						}
+						secureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
+					} else {
+						if (!classType.isAnnotationPresent(Secure.class)) {
+							hiddenClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
+						}
+						hiddenSecureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					}
-					completeClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					BaseDAO dao = new BaseDAOImpl<>();
 					dao.init(classType, dataSource);
 					daoMap.put(classType, dao);
@@ -142,10 +152,13 @@ public class Statics {
     public static BaseController<? extends BaseBean,?> getControllerForBeanName(String beanName, HttpServletRequest request) {
 	    if (!StringUtils.isBlank(beanName)) {
 	        Class<? extends BaseBean> classType = getClassTypeMap(request).get(beanName);
+			if (classType==null) {
+				classType = getHiddenClassTypeMap(request).get(beanName);
+			}
 	        if (classType!=null) {
 		        BaseController<? extends BaseBean,?> baseController = controllerMap.get(classType);
 		        return baseController;
-	        }
+			}
 	    }
 	    return null;
     }
@@ -168,13 +181,20 @@ public class Statics {
 
 	public static Map<String, Class<? extends BaseBean>> getClassTypeMap(HttpServletRequest request) {
 		if (authService.isAuthenticated(request)) {
-			return completeClassTypeMap;
+			return secureClassTypeMap;
 		}
 		return classTypeMap;
 	}
 
-	public static Map<String, Class<? extends BaseBean>> getCompleteClassTypeMap() {
-		return completeClassTypeMap;
+	public static Map<String, Class<? extends BaseBean>> getSecureClassTypeMap() {
+		return secureClassTypeMap;
+	}
+
+	private static Map<String, Class<? extends BaseBean>> getHiddenClassTypeMap(HttpServletRequest request) {
+		if (authService.isAuthenticated(request)) {
+			return hiddenSecureClassTypeMap;
+		}
+		return hiddenClassTypeMap;
 	}
 
 }

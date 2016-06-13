@@ -10,7 +10,7 @@
     <body>
         <h2>Login</h2>
 
-        <form id="loginForm" method="POST" action="<%=request.getContextPath()%>/jc/user/login?redirect=/page">
+        <form id="loginForm" method="POST" action="<%=request.getContextPath()%>/jc/login/login?redirect=/page">
             <table>
                 <tr>
                     <td>Username</td>
