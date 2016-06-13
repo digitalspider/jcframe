@@ -3,12 +3,14 @@ package au.com.javacloud.model;
 import java.util.Date;
 
 import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.annotation.TableName;
 
 /**
  * Created by david on 22/05/16.
  */
 
+@Secure
 @TableName(name="Page")
 public class Page extends BaseBean {
     protected Date cdate = new Date();

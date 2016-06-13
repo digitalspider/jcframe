@@ -8,7 +8,11 @@
     </head>
 
     <body>
-    <h2><a href="<%=request.getContextPath()%>/login.jsp">Login</a></h2>
+    <% if (request.getUserPrincipal()==null) { %>
+        <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
+    <% } else { %>
+        <strong><a href="<%=request.getContextPath()%>/jc/user/logout">Logout</a></strong>
+    <% } %>
 
     <c:choose>
         <c:when test="${beantypes!=null}">

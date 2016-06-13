@@ -9,10 +9,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.controller.BaseController;
 import au.com.javacloud.controller.ServletAction;
+import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.HttpUtil;
 import au.com.javacloud.util.PathParts;
 import au.com.javacloud.util.Statics;
@@ -64,7 +66,7 @@ public class FrontControllerServlet extends HttpServlet {
     protected void doAction(ServletAction action, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("contextUrl", HttpUtil.getContextUrl(request));
         request.setAttribute("baseUrl", HttpUtil.getBaseUrl(request));
-        request.setAttribute("beantypes", Statics.getClassTypeMap().keySet() );
+        request.setAttribute("beantypes", Statics.getClassTypeMap(request).keySet() );
         try {
             PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
             LOG.info("doAction() " + action + " pathParts=" + pathParts);
@@ -79,18 +81,45 @@ public class FrontControllerServlet extends HttpServlet {
                 beanName = beanName.substring(0, beanName.length() - JSON_SUFFIX.length());
             }
             LOG.info("beanName=" + beanName);
-            BaseController controller = Statics.getControllerForBeanName(beanName);
-            LOG.info("controller=" + controller);
-            if (controller != null) {
-                if (!controller.isInitialised()) {
-                    controller.initHttp(getServletContext(), getServletConfig());
+            if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(beanName) && beanName.equals("login")) {
+                LOG.info("processing login");
+                String username = request.getParameter("j_username");
+                String password = request.getParameter("j_password");
+                if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
+                    throw new Exception("Username and password are both required!");
                 }
-                controller.doAction(action, pathParts, request, response);
+                LOG.info("username=" + username);
+                request.login(username, password);
+                String user = request.getUserPrincipal().getName();
+                LOG.info("login successful for user " + user);
+            } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(beanName) && beanName.equals("logout")) {
+                LOG.info("processing logout");
+                if (request.getUserPrincipal()!=null) {
+                    String user = request.getUserPrincipal().getName();
+                    request.logout();
+                    LOG.info("login successful for user " + user);
+                }
             } else {
-                LOG.error("Controller not found for request with bean=" + beanName);
-                RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
-                view.forward( request, response );
-                return;
+                BaseController controller = Statics.getControllerForBeanName(beanName,request);
+                LOG.info("controller=" + controller);
+                if (controller != null) {
+                    if (!controller.isInitialised()) {
+                        controller.initHttp(getServletContext(), getServletConfig());
+                    }
+                    controller.doAction(action, pathParts, request, response);
+                } else {
+                    Class<? extends BaseBean> classType = Statics.getCompleteClassTypeMap().get(beanName);
+                    if (classType!=null) {
+                        LOG.error("Login required for bean=" + beanName);
+                        RequestDispatcher view = request.getRequestDispatcher("/login.jsp");
+                        view.forward(request, response);
+                        return;
+                    }
+                    LOG.error("Controller not found for request with bean=" + beanName);
+                    RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
+                    view.forward(request, response);
+                    return;
+                }
             }
         } catch (Exception e) {
             request.setAttribute("e", e );

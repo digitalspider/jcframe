@@ -3,6 +3,7 @@ package au.com.javacloud.controller;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -159,6 +160,13 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.request = request;
 		this.response = response;
 
+		LOG.info("isAuth=" + authService.isAuthenticated(request));
+		Principal principal = request.getUserPrincipal();
+		if (principal!=null) {
+			String username = principal.getName();
+			LOG.info("username=" + username);
+		}
+
 		contextUrl = HttpUtil.getContextUrl(request);
 		LOG.info("contextUrl="+contextUrl);
         baseUrl = HttpUtil.getBaseUrl(request);
@@ -174,7 +182,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 		String forward = null;
 		request.setAttribute(beanName+SUFFIX_FIELDS, dao.getBeanFieldNames() );
-		request.setAttribute(beanName+SUFFIX_TYPES, Statics.getClassTypeMap().keySet() );
+		request.setAttribute(beanName+SUFFIX_TYPES, Statics.getClassTypeMap(request).keySet() );
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
