@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.Login;
+import au.com.javacloud.servlet.FrontControllerServlet;
+import au.com.javacloud.servlet.UserRoleFilter;
 import au.com.javacloud.util.HttpUtil;
 import au.com.javacloud.util.PathParts;
 
@@ -28,10 +30,10 @@ public class LoginController extends BaseControllerImpl<Login,Principal> {
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             LOG.info("In custom controller!");
-            if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals("login")) {
+            if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals(FrontControllerServlet.LOGIN)) {
                 LOG.info("custom login");
-                String username = request.getParameter("j_username");
-                String password = request.getParameter("j_password");
+                String username = request.getParameter(FrontControllerServlet.LOGIN_USERNAME);
+                String password = request.getParameter(FrontControllerServlet.LOGIN_PASSWORD);
                 if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
                     throw new Exception("Username and password are both required!");
                 }
@@ -45,8 +47,8 @@ public class LoginController extends BaseControllerImpl<Login,Principal> {
                     LOG.info("user=" + user);
                     if (user.getPassword() != null && user.getPassword().equals(password)) {
                         LOG.info("You are good!!!");
-                        request.getSession().setAttribute("user", username);
-                        HttpUtil.sendRedirect(request, response, "redirect");
+                        request.getSession().setAttribute(UserRoleFilter.SESSION_ATTRIBUTE_USER, username);
+                        HttpUtil.sendRedirect(request, response, FrontControllerServlet.PARAM_REDIRECT);
                         return ;
                     } else {
                         throw new Exception("Username or Password is not valid");
@@ -54,11 +56,11 @@ public class LoginController extends BaseControllerImpl<Login,Principal> {
                 } else {
                     throw new Exception("Username or Password is not valid");
                 }
-            } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals("logout")) {
+            } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals(FrontControllerServlet.LOGOUT)) {
                 LOG.info("custom logout");
-                request.getSession().removeAttribute("user");
+                request.getSession().removeAttribute(UserRoleFilter.SESSION_ATTRIBUTE_USER);
                 request.getSession().invalidate();
-                HttpUtil.sendRedirect(request, response, "redirect");
+                HttpUtil.sendRedirect(request, response, FrontControllerServlet.PARAM_REDIRECT);
                 return ;
             } else {
                 super.doAction(action, pathParts, request, response);

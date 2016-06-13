@@ -21,6 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 @WebFilter(urlPatterns = {"/jc/*"})
 public class UserRoleFilter implements Filter {
 
+    public static String SESSION_ATTRIBUTE_USER = "jcuser";
+    public static String SESSION_ATTRIBUTE_ROLES = "jcroles";
+
     public void init(FilterConfig cfg) throws ServletException {
     }
 
@@ -28,9 +31,9 @@ public class UserRoleFilter implements Filter {
                          FilterChain next) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
 
-        String user = (String)request.getSession().getAttribute("user");
+        String user = (String)request.getSession().getAttribute(SESSION_ATTRIBUTE_USER);
 
-        List<String> roles = (List<String>)request.getSession().getAttribute("roles");
+        List<String> roles = (List<String>)request.getSession().getAttribute(SESSION_ATTRIBUTE_ROLES);
 
         next.doFilter(new UserRoleRequestWrapper(user, roles, request), response);
     }

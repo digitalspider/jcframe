@@ -4,7 +4,7 @@
 
 <html>
     <head>
-        <title>Javacloud Website</title>
+        <title>Javacloud Home</title>
     </head>
 
     <body>
@@ -24,9 +24,7 @@
             </ul>
         </c:when>
         <c:otherwise>
-            <%
-                response.sendRedirect(request.getContextPath()+"/jc");
-            %>
+            <% response.sendRedirect(request.getContextPath()+"/jc"); %>
         </c:otherwise>
     </c:choose>
 

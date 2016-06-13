@@ -82,6 +82,6 @@ package.model.name=au.com.javacloud.model
 #ds.config.file=db.properties.sample
 ```
 * Build your application
- * <code>maven package</code>
+ * <code>mvn package</code>
 * Deploy your application
  * Place the war file into a tomcat "webapps" directory

@@ -27,6 +27,14 @@ public class FrontControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = -9034690294608764448L;
 	private final static Logger LOG = Logger.getLogger(FrontControllerServlet.class);
     public static final String JSON_SUFFIX = ".json";
+    public static final String URL_INDEX = "/index.jsp";
+    public static final String URL_LOGIN = "/login.jsp";
+    public static final String URL_ERROR = "/error.jsp";
+    public static final String LOGIN = "login";
+    public static final String LOGOUT = "logout";
+    public static final String LOGIN_USERNAME = "j_username";
+    public static final String LOGIN_PASSWORD = "j_password";
+    public static final String PARAM_REDIRECT = "redirect";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -71,7 +79,7 @@ public class FrontControllerServlet extends HttpServlet {
             PathParts pathParts = HttpUtil.getPathParts(request.getPathInfo());
             LOG.info("doAction() " + action + " pathParts=" + pathParts);
             if (pathParts.isEmpty()) {
-                RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
+                RequestDispatcher view = request.getRequestDispatcher(URL_INDEX);
                 view.forward( request, response );
                 return;
             }
@@ -92,14 +100,14 @@ public class FrontControllerServlet extends HttpServlet {
                 Class<? extends BaseBean> classType = Statics.getSecureClassTypeMap().get(beanName);
                 if (classType!=null) {
                     LOG.error("Login required for bean=" + beanName);
-                    RequestDispatcher view = request.getRequestDispatcher("/login.jsp");
+                    RequestDispatcher view = request.getRequestDispatcher(URL_LOGIN);
                     view.forward(request, response);
                     return;
                 }
-                if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(beanName) && beanName.equals("login")) {
+                if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(beanName) && beanName.equals(LOGIN)) {
                     LOG.info("processing login");
-                    String username = request.getParameter("j_username");
-                    String password = request.getParameter("j_password");
+                    String username = request.getParameter(LOGIN_USERNAME);
+                    String password = request.getParameter(LOGIN_PASSWORD);
                     if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
                         throw new Exception("Username and password are both required!");
                     }
@@ -107,16 +115,16 @@ public class FrontControllerServlet extends HttpServlet {
                     request.login(username, password);
                     String user = request.getUserPrincipal().getName();
                     LOG.info("login successful for user " + user);
-                    HttpUtil.sendRedirect(request, response, "redirect");
+                    HttpUtil.sendRedirect(request, response, PARAM_REDIRECT);
                     return ;
-                } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(beanName) && beanName.equals("logout")) {
+                } else if (action.equals(ServletAction.GET) && StringUtils.isNotBlank(beanName) && beanName.equals(LOGOUT)) {
                     LOG.info("processing logout");
                     if (request.getUserPrincipal()!=null) {
                         String user = request.getUserPrincipal().getName();
                         request.logout();
                         LOG.info("login successful for user " + user);
                     }
-                    HttpUtil.sendRedirect(request, response, "redirect");
+                    HttpUtil.sendRedirect(request, response, PARAM_REDIRECT);
                     return ;
                 }
                 LOG.error("Controller not found for request with bean=" + beanName);
@@ -125,7 +133,7 @@ public class FrontControllerServlet extends HttpServlet {
             }
         } catch (Exception e) {
             request.setAttribute("e", e );
-            RequestDispatcher view = request.getRequestDispatcher("/error.jsp");
+            RequestDispatcher view = request.getRequestDispatcher(URL_ERROR);
             view.forward( request, response );
         }
     }

@@ -9,8 +9,7 @@
     </head>
 
     <body>
-    <h2><a href="<%=request.getContextPath()%>/login.jsp">Login</a></h2>
-    <h2><a href="<%=request.getContextPath()%>/jc">JavaCloud</a></h2>
+    <strong><a href="<%=request.getContextPath()%>/jc">Home</a></strong>
 
     <p><b>Message:</b> ${e.getMessage()}</p>
     <p><b>StackTrace:</b> <pre>${pageContext.out.flush()}${e.printStackTrace(pageContext.response.writer)}</pre></p>
