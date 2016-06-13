@@ -31,6 +31,8 @@ public class BaseDataSource implements DataSource {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+		this.driver = properties.getProperty(PROP_DRIVER);
+		this.url = properties.getProperty(PROP_URL);
 	}
 
 	@Override
