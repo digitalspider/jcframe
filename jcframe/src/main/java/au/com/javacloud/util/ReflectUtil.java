@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.Header;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
 
@@ -112,12 +113,26 @@ public class ReflectUtil {
 
 
     public static String getFieldName(String methodName) {
-    	String methodString = methodName.substring(3);
-    	return methodString.substring(0,1).toLowerCase()+methodString.substring(1);
+		if (methodName.startsWith("is")) {
+			methodName = methodName.substring(2);
+		} else {
+			methodName = methodName.substring(3);
+		}
+    	return methodName;
     }
 
     public static String getFieldName(Method method) {
-		return getFieldName(method.getName());
+		return getFieldName(method.getName().toLowerCase());
+    }
+    
+    public static String getFieldHeader(Method method) { 
+    	if (method.isAnnotationPresent(Header.class)) {
+    		return method.getAnnotation(Header.class).value();
+    	}
+    	if (method.getName().startsWith("is")) {
+    		return method.getName().substring(2);
+    	}
+    	return method.getName().substring(3); // TODO: Put spaces in between each uppercase letter
     }
 
 	/**
