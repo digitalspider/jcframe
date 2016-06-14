@@ -31,7 +31,6 @@
     <th><a href="${beanUrl}/config/order/mobile">Mobile</a></th>
     <th><a href="${beanUrl}/config/order/lastname">Lastname</a></th>
     <th><a href="${beanUrl}/config/order/image">Image</a></th>
-    <th><a href="${beanUrl}/config/order/password">password</a></th>
     <th><a href="${beanUrl}/config/order/url">Url</a></th>
     <th><a href="${beanUrl}/config/order/token">Token</a></th>
     <th><a href="${beanUrl}/config/order/type">Type</a></th>

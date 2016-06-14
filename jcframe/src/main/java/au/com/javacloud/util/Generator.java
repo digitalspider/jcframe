@@ -140,7 +140,9 @@ public class Generator {
 			fieldName = ReflectUtil.getFieldName(method);
 			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-			html.append("    <th><a href=\"${beanUrl}/config/order/"+fieldName+"\">"+fieldHeader+"</a></th>\n");
+			if (!type.equals("password")) {
+				html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
+			}
 		}
 		html.append("    <th colspan=\"2\">Action</th>\n");
 		html.append("  </tr>\n");
