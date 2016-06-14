@@ -13,7 +13,7 @@
 		<fieldset>
 <div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
   <label for="id">Student ID</label>
-  <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="Student ID" readonly="readonly"/>  />
+  <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="Student ID" readonly="readonly" />
 </div>
 <div class="fieldrow" id="fieldrow_year" name="fieldrow_year">
   <label for="year">Year</label>

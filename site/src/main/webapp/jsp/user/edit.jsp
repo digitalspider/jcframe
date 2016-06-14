@@ -13,7 +13,7 @@
 		<fieldset>
 <div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
   <label for="id">User ID</label>
-  <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="User ID" readonly="readonly"/>  />
+  <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="User ID" readonly="readonly" />
 </div>
 <div class="fieldrow" id="fieldrow_email" name="fieldrow_email">
   <label for="email">Email</label>
