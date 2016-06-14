@@ -130,11 +130,13 @@ public class Generator {
 		// DisplayHeader
 		html.append("<thead>\n");
 		html.append("  <tr>\n");
-		html.append("    <th>Page ID</th>\n");
+		html.append("    <th><a href=\"${beanUrl}/config/order/id\">"+classType.getSimpleName()+" ID</a></th>\n");
+		String fieldName = "";
 		String fieldHeader = "";
 		for (Method method : methodMap.keySet()) {
-			fieldHeader = ReflectUtil.getFieldHeader(classType, method);
-			html.append("    <th>"+fieldHeader+"</th>\n");
+			fieldName = ReflectUtil.getFieldName(method);
+			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+			html.append("    <th><a href=\"${beanUrl}/config/order/"+fieldName+"\">"+fieldHeader+"</a></th>\n");
 		}
 		html.append("    <th colspan=\"2\">Action</th>\n");
 		html.append("  </tr>\n");
@@ -147,7 +149,7 @@ public class Generator {
 
 		// Handle BaseBean id
 		String template = getListTemplate();
-		String fieldName = "id";
+		fieldName = "id";
 		fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
 		String type = "text";
 		boolean isHtml = false;

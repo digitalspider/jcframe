@@ -23,42 +23,52 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
+<table>
+<thead>
+  <tr>
+    <th><a href="${beanUrl}/config/order/id">User ID</a></th>
+    <th><a href="${beanUrl}/config/order/email">Email</a></th>
+    <th><a href="${beanUrl}/config/order/mobile">Mobile</a></th>
+    <th><a href="${beanUrl}/config/order/lastname">Lastname</a></th>
+    <th><a href="${beanUrl}/config/order/image">Image</a></th>
+    <th><a href="${beanUrl}/config/order/password">Password</a></th>
+    <th><a href="${beanUrl}/config/order/url">Url</a></th>
+    <th><a href="${beanUrl}/config/order/token">Token</a></th>
+    <th><a href="${beanUrl}/config/order/type">Type</a></th>
+    <th><a href="${beanUrl}/config/order/tags">Tags</a></th>
+    <th><a href="${beanUrl}/config/order/mdate">Mdate</a></th>
+    <th><a href="${beanUrl}/config/order/username">Username</a></th>
+    <th><a href="${beanUrl}/config/order/status">Status</a></th>
+    <th><a href="${beanUrl}/config/order/description">Description</a></th>
+    <th><a href="${beanUrl}/config/order/firstname">Firstname</a></th>
+    <th><a href="${beanUrl}/config/order/cdate">Cdate</a></th>
+    <th colspan="2">Action</th>
+  </tr>
+</thead>
+<tbody>
+  <c:forEach items="${beans}" var="bean">
+    <tr>
+      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+      <td><c:out value="${bean.email}" /></td>
+      <td><c:out value="${bean.mobile}" /></td>
+      <td><c:out value="${bean.lastname}" /></td>
+      <td><c:out value="${bean.image}" /></td>
+      <td><c:out value="${bean.password}" /></td>
+      <td><c:out value="${bean.url}" /></td>
+      <td><c:out value="${bean.token}" /></td>
+      <td><c:out value="${bean.type}" /></td>
+      <td><c:out value="${bean.tags}" /></td>
+      <td><c:out value="${bean.mdate}" /></td>
+      <td><c:out value="${bean.username}" /></td>
+      <td><c:out value="${bean.status}" /></td>
+      <td><c:out value="${bean.description}" /></td>
+      <td><c:out value="${bean.firstname}" /></td>
+      <td><c:out value="${bean.cdate}" /></td>
+      <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+      <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+    </tr>  </c:forEach></tbody>
+</table>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Username</th>
-                    <th>URL</th>
-                    <th>Mobile</th>
-                    <th>Type</th>
-                    <th>Tags</th>
-                    <th>Status</th>
-                    <th colspan="2">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <c:forEach items="${beans}" var="bean">
-                    <tr>
-                        <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" escapeXml="false"/></a></td>
-                        <td><c:out value="${bean.firstname}"/></td>
-                        <td><c:out value="${bean.lastname}"/></td>
-                        <td><c:out value="${bean.email}"/></td>
-                        <td><c:out value="${bean.username}"/></td>
-                        <td><c:out value="${bean.url}"/></td>
-                        <td><c:out value="${bean.mobile}"/></td>
-                        <td><c:out value="${bean.type}" /></td>
-                        <td><c:out value="${bean.tags}" /></td>
-                        <td><c:out value="${bean.status}" /></td>
-                        <td><a href="${beanUrl}/edit/<c:out value='${bean.id}' />">Update</a></td>
-                        <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
-                    </tr>
-                </c:forEach>
-            </tbody>
-        </table>
         <p>
             <a href="${beanUrl}/insert">Add User</a>
         </p>
