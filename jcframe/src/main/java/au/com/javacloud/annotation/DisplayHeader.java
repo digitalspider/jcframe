@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Exclude {
-
+@Target(ElementType.FIELD)
+public @interface DisplayHeader {
+    String value();
 }

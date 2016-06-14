@@ -2,6 +2,8 @@ package au.com.javacloud.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -20,8 +22,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.annotation.Exclude;
-import au.com.javacloud.annotation.Header;
+import au.com.javacloud.annotation.DisplayHeader;
+import au.com.javacloud.annotation.ExcludeDB;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
 
@@ -56,7 +58,7 @@ public class ReflectUtil {
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("set")) {
-					if (!method.isAnnotationPresent(Exclude.class)) {
+					if (!method.isAnnotationPresent(ExcludeDB.class)) {
 						Class[] params = method.getParameterTypes();
 						if (params.length == 1) {
 							setterMethods.put(method, params[0]);
@@ -81,7 +83,7 @@ public class ReflectUtil {
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-					if (!method.isAnnotationPresent(Exclude.class)) {
+					if (!method.isAnnotationPresent(ExcludeDB.class)) {
 						Class returnClass = method.getReturnType();
 						getterMethods.put(method, returnClass);
 					}
@@ -118,22 +120,52 @@ public class ReflectUtil {
 		} else {
 			methodName = methodName.substring(3);
 		}
-    	return methodName;
+    	return getFirstLetterLowerCase(methodName);
     }
 
     public static String getFieldName(Method method) {
-		return getFieldName(method.getName().toLowerCase());
+		return getFieldName(method.getName());
     }
     
-    public static String getFieldHeader(Method method) { 
-    	if (method.isAnnotationPresent(Header.class)) {
-    		return method.getAnnotation(Header.class).value();
-    	}
-    	if (method.getName().startsWith("is")) {
-    		return method.getName().substring(2);
-    	}
-    	return method.getName().substring(3); // TODO: Put spaces in between each uppercase letter
+    public static String getFieldHeader(Class classType, Method method) throws NoSuchFieldException {
+		String fieldName = getFieldName(method);
+		return getFieldHeader(classType, fieldName);
     }
+
+	public static String getFieldHeader(Class classType, String fieldName) throws NoSuchFieldException {
+		if (isAnnotationPresent(classType, fieldName, DisplayHeader.class)) {
+			return getAnnotation(classType, fieldName, DisplayHeader.class).value();
+		}
+		return getFirstLetterUpperCase(fieldName); // TODO: Put spaces in between each uppercase letter
+	}
+
+	public static boolean isAnnotationPresent(Class classType, Method method, Class annotationClass) throws NoSuchFieldException {
+		Field field = classType.getDeclaredField(getFieldName(method));
+		return field.isAnnotationPresent(annotationClass);
+	}
+
+	public static boolean isAnnotationPresent(Class classType, String fieldName, Class annotationClass) throws NoSuchFieldException {
+		Field field = classType.getDeclaredField(fieldName);
+		return field.isAnnotationPresent(annotationClass);
+	}
+
+	public static <T extends Annotation> T getAnnotation(Class classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {
+		Field field = classType.getDeclaredField(getFieldName(method));
+		return field.getAnnotation(annotationClass);
+	}
+
+	public static <T extends Annotation> T getAnnotation(Class classType, String fieldName, Class<T> annotationClass) throws NoSuchFieldException {
+		Field field = classType.getDeclaredField(fieldName);
+		return field.getAnnotation(annotationClass);
+	}
+
+	public static String getFirstLetterUpperCase(String name) {
+		return name.substring(0,1).toUpperCase()+name.substring(1);
+	}
+
+	public static String getFirstLetterLowerCase(String name) {
+		return name.substring(0,1).toLowerCase()+name.substring(1);
+	}
 
 	/**
 	 * Scans all classes accessible from the context class loader which belong to the given package and subpackages.

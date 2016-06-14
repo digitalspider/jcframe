@@ -2,8 +2,8 @@ package au.com.javacloud.model;
 
 import java.util.Date;
 
-import au.com.javacloud.annotation.Exclude;
-import au.com.javacloud.annotation.Secure;
+import au.com.javacloud.annotation.DisplayType;
+import au.com.javacloud.annotation.ExcludeDB;
 
 /**
  * Created by david on 22/05/16.
@@ -19,13 +19,14 @@ public class User extends BaseBean {
     private String lastname;
     private String email;
     private String username;
+    @DisplayType("password")
     private String password;
     private String url;
     private String mobile;
     private String token;
     private String image;
 
-    @Exclude
+    @ExcludeDB
     public String getNameColumn() {
         return "email";
     }

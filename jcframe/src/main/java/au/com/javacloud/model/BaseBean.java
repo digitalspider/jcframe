@@ -1,6 +1,6 @@
 package au.com.javacloud.model;
 
-import au.com.javacloud.annotation.Exclude;
+import au.com.javacloud.annotation.ExcludeDB;
 
 /**
  * Created by david on 22/05/16.
@@ -15,10 +15,10 @@ public class BaseBean {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+"["+id+"] displayValue="+displayValue;
+        return getClass().getSimpleName()+"["+id+"] "+displayValue;
     }
 
-    @Exclude
+    @ExcludeDB
     public int getId() {
         return id;
     }
@@ -27,7 +27,7 @@ public class BaseBean {
         this.id = id;
     }
 
-    @Exclude
+    @ExcludeDB
     public String getDisplayValue() {
         return displayValue;
     }

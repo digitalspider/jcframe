@@ -11,7 +11,7 @@
 <body>
 	<form action="${beanUrl}" method="post">
 		<fieldset>
-            ##FIELDS##
+##FIELDS##
 		</fieldset>
 	</form>
 </body>

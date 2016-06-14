@@ -1,10 +1,6 @@
 package au.com.javacloud.model;
 
-import java.util.Date;
-
-import au.com.javacloud.annotation.Exclude;
 import au.com.javacloud.annotation.Hidden;
-import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.annotation.TableName;
 
 /**
@@ -20,7 +16,7 @@ public class Login extends BaseBean {
     public String toString() {
         return super.toString()+ ", username=" + username;
     }
-    
+
 
     public String getUsername() {
         return username;

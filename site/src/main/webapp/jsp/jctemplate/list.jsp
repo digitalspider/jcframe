@@ -23,7 +23,7 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
-        ##FIELDS##
+##FIELDS##
         <p>
             <a href="${beanUrl}/insert">Add Page</a>
         </p>

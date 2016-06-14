@@ -1,7 +1,6 @@
 package au.com.javacloud.dao;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -25,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.annotation.NameColumn;
+import au.com.javacloud.annotation.DisplayValueColumn;
 import au.com.javacloud.annotation.TableName;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
@@ -171,8 +170,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		try {
 			T bean = ReflectUtil.getNewBean(clazz);
 			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
-				columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 			}
 			statement = conn.createStatement();
 			String query = "select id,"+columnName+" from "+tableName;
@@ -202,8 +201,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		ResultSet resultSet = null;
 		try {
 			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
-				columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 			}
 			String query = "select id,"+columnName+" from "+tableName+" where id=?";
 			statement = conn.prepareStatement( query );
@@ -302,8 +301,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception {
 		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz);
 		String columnName = BaseBean.FIELD_ID;
-		if (bean.getClass().isAnnotationPresent(NameColumn.class)) {
-			columnName = bean.getClass().getAnnotation(NameColumn.class).value();
+		if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+			columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 		}
 		for (Method method : methods.keySet()) {
 			Class classType = methods.get(method);

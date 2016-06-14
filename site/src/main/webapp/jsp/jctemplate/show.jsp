@@ -11,6 +11,6 @@
     <a href="${beanUrl}/list">List</a>
     &nbsp;|&nbsp;
     <a href="${beanUrl}/edit/<c:out value="${bean.id}" />">Edit</a>
-    ##FIELDS##
+##FIELDS##
 </body>
 </html>

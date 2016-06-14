@@ -2,11 +2,11 @@ package au.com.javacloud.model;
 
 import java.util.Date;
 
-import au.com.javacloud.annotation.Exclude;
-import au.com.javacloud.annotation.Header;
-import au.com.javacloud.annotation.NameColumn;
+import au.com.javacloud.annotation.DisplayHeader;
+import au.com.javacloud.annotation.DisplayValueColumn;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.annotation.TableName;
+import au.com.javacloud.annotation.DisplayHtml;
 
 /**
  * Created by david on 22/05/16.
@@ -14,19 +14,22 @@ import au.com.javacloud.annotation.TableName;
 
 @Secure
 @TableName("Page")
-@NameColumn("title")
+@DisplayValueColumn("title")
 public class Page extends BaseBean {
     protected Date cdate = new Date();
     protected Date mdate = new Date();
+    @DisplayHtml
     protected String description;
     protected String tags;
     protected String type;
     protected String status;
-    @Header("Author")
+    @DisplayHeader("Author")
     protected User authorId;
-    @Header("Parent Page")
+    @DisplayHeader("Parent Page")
     protected Page parentId;
+    @DisplayHtml
     private String title;
+    @DisplayHtml
     private String content;
     private String url;
 
@@ -45,7 +48,7 @@ public class Page extends BaseBean {
                 ", content=" + content +
                 ", url=" + url;
     }
-        
+
     public Date getCdate() {
         return cdate;
     }

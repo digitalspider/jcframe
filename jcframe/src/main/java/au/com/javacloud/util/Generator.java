@@ -5,8 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.sql.Ref;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
+
+import au.com.javacloud.annotation.IndexPage;
+import au.com.javacloud.annotation.DisplayHtml;
 import au.com.javacloud.model.BaseBean;
 
 /**
@@ -21,7 +25,7 @@ public class Generator {
     public static final String PAGE_INDEX="index.jsp";
     public static final String PLACEHOLDER="##FIELDS##";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         System.out.println("START");
         File editFile = new File(PATH_TEMPLATE+PAGE_EDIT);
         System.out.println("editFile="+editFile.getAbsolutePath());
@@ -32,10 +36,10 @@ public class Generator {
         File indexFile = new File(PATH_TEMPLATE+PAGE_INDEX);
         System.out.println("indexFile="+indexFile.getAbsolutePath());
 
-        String editContent = FileUtils.readFileToString(editFile, "UTF-8");
-        String listContent = FileUtils.readFileToString(listFile, "UTF-8");
-        String showContent = FileUtils.readFileToString(showFile, "UTF-8");
-        String indexContent = FileUtils.readFileToString(indexFile, "UTF-8");
+        String editContentTemplate = FileUtils.readFileToString(editFile, "UTF-8");
+        String listContentTemplate = FileUtils.readFileToString(listFile, "UTF-8");
+        String showContentTemplate = FileUtils.readFileToString(showFile, "UTF-8");
+        String indexContentTemplate = FileUtils.readFileToString(indexFile, "UTF-8");
 
         Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
         for (String beanName : classMap.keySet()) {
@@ -48,34 +52,37 @@ public class Generator {
                 String editHtml = generateEditView(beanName, classType, methodMap);
                 String listHtml = generateListView(beanName, classType, methodMap);
                 String showHtml = generateShowView(beanName, classType, methodMap);
-                String indexHtml = generateIndexView(beanName, classType, methodMap);
 
-                editContent = editContent.replace(PLACEHOLDER, editHtml);
-                showContent = showContent.replace(PLACEHOLDER, showHtml);
-                listContent = listContent.replace(PLACEHOLDER, listHtml);
-                indexContent = indexContent.replace(PLACEHOLDER, indexHtml);
+                String editContent = editContentTemplate.replace(PLACEHOLDER, editHtml);
+				String showContent = showContentTemplate.replace(PLACEHOLDER, showHtml);
+				String listContent = listContentTemplate.replace(PLACEHOLDER, listHtml);
 
 				File beanEditFile = new File(destDir,PAGE_EDIT);
 				File beanListFile = new File(destDir,PAGE_LIST);
 				File beanShowFile = new File(destDir,PAGE_SHOW);
-				File beanIndexFile = new File(destDir,PAGE_INDEX);
 
                 FileUtils.writeStringToFile(beanEditFile, editContent, "UTF-8");
                 FileUtils.writeStringToFile(beanListFile, listContent, "UTF-8");
                 FileUtils.writeStringToFile(beanShowFile, showContent, "UTF-8");
-                FileUtils.writeStringToFile(beanIndexFile, indexContent, "UTF-8");
+
+				if (classType.isAnnotationPresent(IndexPage.class)) {
+					String indexHtml = generateIndexView(beanName, classType, methodMap);
+					String indexContent = indexContentTemplate.replace(PLACEHOLDER, indexHtml);
+					File beanIndexFile = new File(destDir,PAGE_INDEX);
+					FileUtils.writeStringToFile(beanIndexFile, indexContent, "UTF-8");
+				}
             }
         }
         System.out.println("DONE");
     }
 
-	public static String generateShowView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) {
+	public static String generateShowView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
 		
 		// Handle BaseBean id
 		String template = getEditTemplate();
 		String fieldName = "id";
-		String fieldHeader = getFirstLetterUpper(beanName)+" ID";
+		String fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
 		String type = "text";
 		String content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
 		html.append(content);
@@ -83,20 +90,20 @@ public class Generator {
 		for (Method method : methodMap.keySet()) {
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
-			fieldHeader = ReflectUtil.getFieldHeader(method);
+			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 			content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
 			html.append(content);
 		}
 		return html.toString();
 	}
 
-	public static String generateEditView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) {
+	public static String generateEditView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
 
 		// Handle BaseBean id
 		String template = getEditTemplate();
 		String fieldName = "id";
-		String fieldHeader = getFirstLetterUpper(beanName)+" ID";
+		String fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
 		String type = "text";
 		String other = "readonly=\"readonly\"/> ";
 		String content = getTemplatedContent(template, fieldName, fieldHeader, type, other);
@@ -105,36 +112,40 @@ public class Generator {
 		for (Method method : methodMap.keySet()) {
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
-			fieldHeader = ReflectUtil.getFieldHeader(method);
+			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 			content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
 			html.append(content);
 		}
 		return html.toString();
 	}
 
-	public static String generateListView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) {
+	public static String generateListView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
 
 		html.append("<table>\n");
 		
-		// Header
-		html.append("<thead><tr>\n");
-		html.append("  <th>Page ID</th>\n");
+		// DisplayHeader
+		html.append("<thead>\n");
+		html.append("  <tr>\n");
+		html.append("    <th>Page ID</th>\n");
 		String fieldHeader = "";
 		for (Method method : methodMap.keySet()) {
-			fieldHeader = ReflectUtil.getFieldHeader(method);
-			html.append("  <th>"+fieldHeader+"</th>\n");			
+			fieldHeader = ReflectUtil.getFieldHeader(classType, method);
+			html.append("    <th>"+fieldHeader+"</th>\n");
 		}
-		html.append("  <th colspan=\"2\">Action</th>\n");
-		html.append("</tr></thead>\n");
+		html.append("    <th colspan=\"2\">Action</th>\n");
+		html.append("  </tr>\n");
+		html.append("</thead>\n");
 		
 		// Body
-		html.append("<tbody><c:forEach items=\"${beans}\" var=\"bean\"><tr>\n");
+		html.append("<tbody>\n");
+		html.append("  <c:forEach items=\"${beans}\" var=\"bean\">\n");
+		html.append("    <tr>\n");
 
 		// Handle BaseBean id
-		String template = getEditTemplate();
+		String template = getListTemplate();
 		String fieldName = "id";
-		fieldHeader = getFirstLetterUpper(beanName)+" ID";
+		fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
 		String type = "text";
 		boolean isHtml = false;
 		boolean isLink = true;
@@ -143,17 +154,21 @@ public class Generator {
 		
 		// Handle other fields
 		for (Method method : methodMap.keySet()) {
+			isHtml = ReflectUtil.isAnnotationPresent(classType, method,DisplayHtml.class);
+			isLink = ReflectUtil.isBean(methodMap.get(method));
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
-			fieldHeader = ReflectUtil.getFieldHeader(method);
+			fieldHeader = ReflectUtil.getFieldHeader(classType, method);
 			content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isLink);
 			html.append(content);
 		}
 		
-		html.append("<td><a href=\"${beanUrl}/edit/<c:out value='${bean.id}'/>\">Update</a></td>\n");
-		html.append("<td><a href=\"${beanUrl}/delete/<c:out value='${bean.id}'/>\">Delete</a></td>\n");
+		html.append("      <td><a href=\"${beanUrl}/edit/<c:out value='${bean.id}'/>\">Update</a></td>\n");
+		html.append("      <td><a href=\"${beanUrl}/delete/<c:out value='${bean.id}'/>\">Delete</a></td>\n");
 		
-		html.append("</tr></c:forEach></tbody>\n");
+		html.append("    </tr>");
+		html.append("  </c:forEach>");
+		html.append("</tbody>\n");
 		html.append("</table>\n");
 
 
@@ -162,12 +177,7 @@ public class Generator {
 		return html.toString();
 	}
 
-	private static String getFirstLetterUpper(String beanName) {
-		String fieldHeader = beanName.substring(0,1).toUpperCase()+beanName.substring(1);
-		return fieldHeader;
-	}
-
-	public static String generateIndexView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) {
+	public static String generateIndexView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		return generateListView(beanName, classType, methodMap);
 	}
 	
@@ -188,15 +198,17 @@ public class Generator {
 		result = result.replaceAll("\\$\\{type\\}", type);
 		if (isHtml) {
 			result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
+		} else {
+			result = result.replaceAll("\\$\\{isHtml\\}", "");
 		}
 		if (!isLink) {
 			result = result.replaceAll("\\$\\{linkPrefix\\}", "");
 			result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 		} else {
 			if (fieldName.equals(BaseBean.FIELD_ID)) {
-				result = result.replaceAll("\\$\\{linkSuffix\\}", "<a href=\"${beanUrl}/show/<c:out value='${bean.id}'/>\">");
+				result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{beanUrl\\}/show/<c:out value='\\$\\{bean.id\\}'/>\">");
 			} else {
-				result = result.replaceAll("\\$\\{linkSuffix\\}", "<a href=\"${baseUrl}/"+fieldName+"/show/<c:out value='${bean."+fieldName+".id}'/>\">");
+				result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/"+fieldName+"/show/<c:out value='\\$\\{bean."+fieldName+".id\\}'/>\">");
 			}
 			result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 		}
@@ -223,7 +235,7 @@ public class Generator {
 	
 	public static String getListTemplate() {
 		StringBuffer html = new StringBuffer();
-		html.append("<td>${linkPrefix}<c:out value=\"${bean.${fieldName}}\" ${isHtml}/>${linkSuffix}</td>\n");
+		html.append("      <td>${linkPrefix}<c:out value=\"${bean.${fieldName}}\" ${isHtml}/>${linkSuffix}</td>\n");
 		return html.toString();
 	}
 	

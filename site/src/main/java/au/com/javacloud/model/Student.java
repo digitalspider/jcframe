@@ -1,13 +1,11 @@
 package au.com.javacloud.model;
 
-import au.com.javacloud.annotation.Exclude;
-import au.com.javacloud.annotation.NameColumn;
-import au.com.javacloud.annotation.Secure;
+import au.com.javacloud.annotation.DisplayValueColumn;
 
 /**
  * Created by david on 22/05/16.
  */
-@NameColumn("firstName")
+@DisplayValueColumn("firstName")
 public class Student extends BaseBean {
     private String firstName;
     private String lastName;
