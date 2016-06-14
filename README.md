@@ -3,8 +3,8 @@
 The JavaCloud Framework (jcframe) makes building Java web CRUD applications really simple.
 
 This project contains 2 artefacts:
-* A [jcframe](https://github.com/digitalspider/jcsite/tree/master/jcframe) java library for building CRUD applications
-* A [demo website](https://github.com/digitalspider/jcsite/tree/master/website), which is a sample war file using the jcframe code.
+* A [jcframe](https://github.com/digitalspider/jcframe/tree/master/jcframe) java library for building CRUD applications
+* A [demo website](https://github.com/digitalspider/jcframe/tree/master/site), which is a sample war file using the jcframe code.
 
 The development process is:
 * Create a new database table schema, or get the connection properties to existing database
