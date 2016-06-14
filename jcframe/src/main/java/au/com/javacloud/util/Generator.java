@@ -155,12 +155,13 @@ public class Generator {
 
 		// Handle BaseBean id
 		String template = getListTemplate();
+		String templateForBean = getListTemplateForBean();
 		fieldName = "id";
 		fieldHeader = classType.getSimpleName()+" ID";
 		type = "text";
 		boolean isHtml = false;
-		boolean isLink = true;
-		String content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isLink);
+		boolean isBean = true;
+		String content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isBean);
 		html.append(content);
 		
 		// Handle other fields
@@ -169,9 +170,13 @@ public class Generator {
 			fieldName = ReflectUtil.getFieldName(method);
 			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 			isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-			isLink = ReflectUtil.isBean(methodMap.get(method));
+			isBean = ReflectUtil.isBean(methodMap.get(method));
 			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-			content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isLink);
+			if (isBean) {
+				content = getListTemplatedContent(templateForBean, fieldName, fieldHeader, type, isHtml, isBean);
+			} else {
+				content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isBean);
+			}
 			html.append(content);
 		}
 		
@@ -218,7 +223,7 @@ public class Generator {
 		return result;
 	}
 	
-	public static String getListTemplatedContent(String template, String fieldName, String fieldHeader, String type, boolean isHtml, boolean isLink) {
+	public static String getListTemplatedContent(String template, String fieldName, String fieldHeader, String type, boolean isHtml, boolean isBean) {
 		if (type!=null && !type.equals("password")) {
 			String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 			result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
@@ -228,7 +233,7 @@ public class Generator {
 			} else {
 				result = result.replaceAll("\\$\\{isHtml\\}", "");
 			}
-			if (!isLink) {
+			if (!isBean) {
 				result = result.replaceAll("\\$\\{linkPrefix\\}", "");
 				result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 			} else {
@@ -265,6 +270,12 @@ public class Generator {
 	public static String getListTemplate() {
 		StringBuffer html = new StringBuffer();
 		html.append("      <td>${linkPrefix}<c:out value=\"${bean.${fieldName}}\" ${isHtml}/>${linkSuffix}</td>\n");
+		return html.toString();
+	}
+
+	public static String getListTemplateForBean() {
+		StringBuffer html = new StringBuffer();
+		html.append("      <td>${linkPrefix}<c:out value=\"${bean.${fieldName}.displayValue}\" ${isHtml}/>${linkSuffix}</td>\n");
 		return html.toString();
 	}
 	
