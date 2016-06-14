@@ -33,6 +33,9 @@
 </div>
 
 		</fieldset>
+        <div>
+			<input value="Submit" type="submit">
+		</div>
 	</form>
 </body>
 </html>

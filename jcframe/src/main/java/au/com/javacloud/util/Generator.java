@@ -85,7 +85,7 @@ public class Generator {
 		// Handle BaseBean id
 		String template = getShowTemplate();
 		String fieldName = "id";
-		String fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
+		String fieldHeader = classType.getSimpleName()+" ID";
 		String type = "text";
 		String content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
 		html.append(content);
@@ -106,9 +106,9 @@ public class Generator {
 		// Handle BaseBean id
 		String template = getEditTemplate();
 		String fieldName = "id";
-		String fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
+		String fieldHeader = classType.getSimpleName()+" ID";
 		String type = "text";
-		String other = "readonly=\"readonly\"/> ";
+		String other = "readonly=\"readonly\"";
 		String content = getTemplatedContent(template, fieldName, fieldHeader, type, other);
 		html.append(content);
 		
@@ -150,7 +150,7 @@ public class Generator {
 		// Handle BaseBean id
 		String template = getListTemplate();
 		fieldName = "id";
-		fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
+		fieldHeader = classType.getSimpleName()+" ID";
 		String type = "text";
 		boolean isHtml = false;
 		boolean isLink = true;
