@@ -34,67 +34,28 @@
     <build>
         <finalName>site</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <outputFile>target/site-full.jar/</outputFile>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>classworlds:classworlds</exclude>
-                                    <exclude>junit:junit</exclude>
-                                    <exclude>jmock:*</exclude>
-                                    <exclude>*:xml-apis</exclude>
-                                    <exclude>org.apache.maven:lib:tests</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>au.com.javacloud.util.Generator</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <attachClasses>true</attachClasses>
-                    <classesClassifier>classes</classesClassifier>
-                </configuration>
-            </plugin>
-            -->
-            <!-- This is only required for the assembly to include the jc.properties and db.properties -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/site</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+           <plugin>
+		       <artifactId>maven-assembly-plugin</artifactId>
+		       <version>2.4</version>
+		       <configuration>
+		           <descriptor>assembly.xml</descriptor>
+                    <archive>
+                        <manifest>
+                            <mainClass>au.com.javacloud.util.Generator</mainClass>
+                        </manifest>
+                    </archive>
+                    <outputDirectory>target</outputDirectory>
+		       </configuration>
+		       <executions>
+		           <execution>
+		               <id>make-assembly</id>
+		               <phase>package</phase>
+		               <goals>
+		                   <goal>single</goal>
+		               </goals>
+		           </execution>
+		       </executions>
+			</plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -114,22 +75,6 @@
                     </connectors>
                 </configuration>
             </plugin>
-            <!--
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>au.com.javacloud.util.Generator</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <outputDirectory>target/assembly</outputDirectory>
-                </configuration>
-            </plugin>
-            -->
         </plugins>
     </build>
 

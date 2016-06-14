@@ -3,5 +3,5 @@
 cd ..
 mvn clean install
 cd site
-java -cp target/classes/:target/site-full.jar au.com.javacloud.util.Generator
+java -cp target/classes/:target/site-bin.jar au.com.javacloud.util.Generator
 
