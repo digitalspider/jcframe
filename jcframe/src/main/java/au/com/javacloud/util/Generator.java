@@ -13,8 +13,8 @@ import au.com.javacloud.model.BaseBean;
  * Created by david on 26/05/16.
  */
 public class Generator {
-    public static final String PATH_WEBAPP="src/main/webapp/";
-    public static final String PATH_TEMPLATE=PATH_WEBAPP+"template/";
+    public static final String PATH_JSP="src/main/webapp/jsp/";
+    public static final String PATH_TEMPLATE=PATH_JSP+"jctemplate/";
     public static final String PAGE_EDIT="edit.jsp";
     public static final String PAGE_LIST="list.jsp";
     public static final String PAGE_SHOW="show.jsp";
@@ -40,7 +40,7 @@ public class Generator {
         Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
         for (String beanName : classMap.keySet()) {
             if (StringUtils.isNotEmpty(beanName)) {
-                String directory = PATH_WEBAPP + beanName + "/jsp/";
+                String directory = PATH_JSP + beanName + "/";
                 File destDir = new File(directory);
                 System.out.println("destDir="+destDir.getAbsolutePath());
                 Class<? extends BaseBean> classType = classMap.get(beanName);
