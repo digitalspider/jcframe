@@ -172,33 +172,33 @@ public class Generator {
 	}
 	
 	public static String getTemplatedContent(String template, String fieldName, String fieldHeader, String type, String other) {
-		String result = template.replaceAll("${fieldName}", fieldName);
-		result = result.replaceAll("${fieldHeader}", fieldHeader);
-		result = result.replaceAll("${type}", type);
+		String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
+		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
+		result = result.replaceAll("\\$\\{type\\}", type);
 		if (other==null) {
 			other = "";
 		}
-		result = result.replaceAll("${other}", other);
+		result = result.replaceAll("\\$\\{other\\}", other);
 		return result;
 	}
 	
 	public static String getListTemplatedContent(String template, String fieldName, String fieldHeader, String type, boolean isHtml, boolean isLink) {
-		String result = template.replaceAll("${fieldName}", fieldName);
-		result = result.replaceAll("${fieldHeader}", fieldHeader);
-		result = result.replaceAll("${type}", type);
+		String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
+		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
+		result = result.replaceAll("\\$\\{type\\}", type);
 		if (isHtml) {
-			result = result.replaceAll("${isHtml}", "escapeXml=\"false\"");
+			result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
 		}
 		if (!isLink) {
-			result = result.replaceAll("${linkPrefix}", "");
-			result = result.replaceAll("${linkSuffix}", "");
+			result = result.replaceAll("\\$\\{linkPrefix\\}", "");
+			result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 		} else {
 			if (fieldName.equals(BaseBean.FIELD_ID)) {
-				result = result.replaceAll("${linkSuffix}", "<a href=\"${beanUrl}/show/<c:out value='${bean.id}'/>\">");
+				result = result.replaceAll("\\$\\{linkSuffix\\}", "<a href=\"${beanUrl}/show/<c:out value='${bean.id}'/>\">");
 			} else {
-				result = result.replaceAll("${linkSuffix}", "<a href=\"${baseUrl}/"+fieldName+"/show/<c:out value='${bean."+fieldName+".id}'/>\">");
+				result = result.replaceAll("\\$\\{linkSuffix\\}", "<a href=\"${baseUrl}/"+fieldName+"/show/<c:out value='${bean."+fieldName+".id}'/>\">");
 			}
-			result = result.replaceAll("${linkSuffix}", "</a>");
+			result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 		}
 		return result;
 	}
@@ -207,8 +207,7 @@ public class Generator {
 		StringBuffer html = new StringBuffer();
 		html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
 		html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-		html.append("  <input type=\"${type}\" name=\"${fieldName}\" id=\"${fieldName}\" value=\"<c:out value=\"${bean.${fieldName}}\" />\" placeholder=\"${fieldHeader}\" ${other}\n");
-		html.append("/>\n");
+		html.append("  <input type=\"${type}\" name=\"${fieldName}\" id=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
 		html.append("</div>\n");
 		return html.toString();
 	}
