@@ -36,10 +36,10 @@ public class Generator {
         File indexFile = new File(PATH_TEMPLATE+PAGE_INDEX);
         System.out.println("indexFile="+indexFile.getAbsolutePath());
 
-        String editContentTemplate = FileUtils.readFileToString(editFile, "UTF-8");
-        String listContentTemplate = FileUtils.readFileToString(listFile, "UTF-8");
-        String showContentTemplate = FileUtils.readFileToString(showFile, "UTF-8");
-        String indexContentTemplate = FileUtils.readFileToString(indexFile, "UTF-8");
+        final String editContentTemplate = FileUtils.readFileToString(editFile, "UTF-8");
+		final String listContentTemplate = FileUtils.readFileToString(listFile, "UTF-8");
+		final String showContentTemplate = FileUtils.readFileToString(showFile, "UTF-8");
+		final String indexContentTemplate = FileUtils.readFileToString(indexFile, "UTF-8");
 
         Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
         for (String beanName : classMap.keySet()) {
@@ -53,9 +53,12 @@ public class Generator {
                 String listHtml = generateListView(beanName, classType, methodMap);
                 String showHtml = generateShowView(beanName, classType, methodMap);
 
-                String editContent = editContentTemplate.replace(PLACEHOLDER, editHtml);
-				String showContent = showContentTemplate.replace(PLACEHOLDER, showHtml);
-				String listContent = listContentTemplate.replace(PLACEHOLDER, listHtml);
+				String editContent = editContentTemplate.replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+				String listContent = listContentTemplate.replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+				String showContent = showContentTemplate.replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+                editContent = editContent.replace(PLACEHOLDER, editHtml);
+				showContent = showContent.replace(PLACEHOLDER, showHtml);
+				listContent = listContent.replace(PLACEHOLDER, listHtml);
 
 				File beanEditFile = new File(destDir,PAGE_EDIT);
 				File beanListFile = new File(destDir,PAGE_LIST);

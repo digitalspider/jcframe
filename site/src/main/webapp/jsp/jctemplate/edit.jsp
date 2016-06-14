@@ -6,7 +6,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
-<title>Add New Page</title>
+<title>Add New ${beanName}</title>
 </head>
 <body>
 	<form action="${beanUrl}" method="post">

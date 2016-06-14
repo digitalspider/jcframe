@@ -7,7 +7,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-        <title>Show All Pages</title>
+        <title>Show All ${beanName}s</title>
     </head>
     <body>
         <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
