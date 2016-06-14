@@ -80,7 +80,7 @@ public class Generator {
 		StringBuffer html = new StringBuffer();
 		
 		// Handle BaseBean id
-		String template = getEditTemplate();
+		String template = getShowTemplate();
 		String fieldName = "id";
 		String fieldHeader = ReflectUtil.getFirstLetterUpperCase(beanName)+" ID";
 		String type = "text";
