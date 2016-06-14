@@ -32,8 +32,8 @@
   <input type="text" id="image" name="image" value='<c:out value="${bean.image}" />' placeholder="Image"  />
 </div>
 <div class="fieldrow" id="fieldrow_password" name="fieldrow_password">
-  <label for="password">Password</label>
-  <input type="text" id="password" name="password" value='<c:out value="${bean.password}" />' placeholder="Password"  />
+  <label for="password">password</label>
+  <input type="password" id="password" name="password" value='<c:out value="${bean.password}" />' placeholder="password"  />
 </div>
 <div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
   <label for="url">Url</label>

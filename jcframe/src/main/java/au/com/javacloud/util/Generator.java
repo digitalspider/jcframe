@@ -87,14 +87,15 @@ public class Generator {
 		String fieldName = "id";
 		String fieldHeader = classType.getSimpleName()+" ID";
 		String type = "text";
-		String content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
+		String content = getShowTemplatedContent(template, fieldName, fieldHeader, type, null);
 		html.append(content);
 		
 		for (Method method : methodMap.keySet()) {
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
 			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-			content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
+			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+			content = getShowTemplatedContent(template, fieldName, fieldHeader, type, null);
 			html.append(content);
 		}
 		return html.toString();
@@ -109,14 +110,15 @@ public class Generator {
 		String fieldHeader = classType.getSimpleName()+" ID";
 		String type = "text";
 		String other = "readonly=\"readonly\"";
-		String content = getTemplatedContent(template, fieldName, fieldHeader, type, other);
+		String content = getEditTemplatedContent(template, fieldName, fieldHeader, type, other);
 		html.append(content);
 		
 		for (Method method : methodMap.keySet()) {
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
 			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-			content = getTemplatedContent(template, fieldName, fieldHeader, type, null);
+			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+			content = getEditTemplatedContent(template, fieldName, fieldHeader, type, null);
 			html.append(content);
 		}
 		return html.toString();
@@ -133,9 +135,11 @@ public class Generator {
 		html.append("    <th><a href=\"${beanUrl}/config/order/id\">"+classType.getSimpleName()+" ID</a></th>\n");
 		String fieldName = "";
 		String fieldHeader = "";
+		String type = "text";
 		for (Method method : methodMap.keySet()) {
 			fieldName = ReflectUtil.getFieldName(method);
 			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 			html.append("    <th><a href=\"${beanUrl}/config/order/"+fieldName+"\">"+fieldHeader+"</a></th>\n");
 		}
 		html.append("    <th colspan=\"2\">Action</th>\n");
@@ -151,7 +155,7 @@ public class Generator {
 		String template = getListTemplate();
 		fieldName = "id";
 		fieldHeader = classType.getSimpleName()+" ID";
-		String type = "text";
+		type = "text";
 		boolean isHtml = false;
 		boolean isLink = true;
 		String content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isLink);
@@ -159,11 +163,12 @@ public class Generator {
 		
 		// Handle other fields
 		for (Method method : methodMap.keySet()) {
-			isHtml = ReflectUtil.isAnnotationPresent(classType, method,DisplayHtml.class);
-			isLink = ReflectUtil.isBean(methodMap.get(method));
 			Class fieldClass = methodMap.get(method);
 			fieldName = ReflectUtil.getFieldName(method);
-			fieldHeader = ReflectUtil.getFieldHeader(classType, method);
+			fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+			isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
+			isLink = ReflectUtil.isBean(methodMap.get(method));
+			type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 			content = getListTemplatedContent(template, fieldName, fieldHeader, type, isHtml, isLink);
 			html.append(content);
 		}
@@ -185,12 +190,26 @@ public class Generator {
 	public static String generateIndexView(String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		return generateListView(beanName, classType, methodMap);
 	}
-	
-	public static String getTemplatedContent(String template, String fieldName, String fieldHeader, String type, String other) {
+
+	public static String getShowTemplatedContent(String template, String fieldName, String fieldHeader, String type, String other) {
+		if (type!=null && !type.equals("password")) {
+			String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
+			result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
+			result = result.replaceAll("\\$\\{type\\}", type);
+			if (other == null) {
+				other = "";
+			}
+			result = result.replaceAll("\\$\\{other\\}", other);
+			return result;
+		}
+		return "";
+	}
+
+	public static String getEditTemplatedContent(String template, String fieldName, String fieldHeader, String type, String other) {
 		String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
 		result = result.replaceAll("\\$\\{type\\}", type);
-		if (other==null) {
+		if (other == null) {
 			other = "";
 		}
 		result = result.replaceAll("\\$\\{other\\}", other);
@@ -198,26 +217,29 @@ public class Generator {
 	}
 	
 	public static String getListTemplatedContent(String template, String fieldName, String fieldHeader, String type, boolean isHtml, boolean isLink) {
-		String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
-		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
-		result = result.replaceAll("\\$\\{type\\}", type);
-		if (isHtml) {
-			result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
-		} else {
-			result = result.replaceAll("\\$\\{isHtml\\}", "");
-		}
-		if (!isLink) {
-			result = result.replaceAll("\\$\\{linkPrefix\\}", "");
-			result = result.replaceAll("\\$\\{linkSuffix\\}", "");
-		} else {
-			if (fieldName.equals(BaseBean.FIELD_ID)) {
-				result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{beanUrl\\}/show/<c:out value='\\$\\{bean.id\\}'/>\">");
+		if (type!=null && !type.equals("password")) {
+			String result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
+			result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
+			result = result.replaceAll("\\$\\{type\\}", type);
+			if (isHtml) {
+				result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
 			} else {
-				result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/"+fieldName+"/show/<c:out value='\\$\\{bean."+fieldName+".id\\}'/>\">");
+				result = result.replaceAll("\\$\\{isHtml\\}", "");
 			}
-			result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
+			if (!isLink) {
+				result = result.replaceAll("\\$\\{linkPrefix\\}", "");
+				result = result.replaceAll("\\$\\{linkSuffix\\}", "");
+			} else {
+				if (fieldName.equals(BaseBean.FIELD_ID)) {
+					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{beanUrl\\}/show/<c:out value='\\$\\{bean.id\\}'/>\">");
+				} else {
+					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldName + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
+				}
+				result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
+			}
+			return result;
 		}
-		return result;
+		return "";
 	}
 	
 	public static String getEditTemplate() {

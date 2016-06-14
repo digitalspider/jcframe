@@ -31,10 +31,6 @@
   <label for="image">Image</label>
   <div class="field" id="image" name="image"><c:out value="${bean.image}" /></div>
 </div>
-<div class="fieldrow" id="fieldrow_password" name="fieldrow_password">
-  <label for="password">Password</label>
-  <div class="field" id="password" name="password"><c:out value="${bean.password}" /></div>
-</div>
 <div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
   <label for="url">Url</label>
   <div class="field" id="url" name="url"><c:out value="${bean.url}" /></div>
