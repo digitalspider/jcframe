@@ -219,7 +219,7 @@ public class Generator {
 		StringBuffer html = new StringBuffer();
 		html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
 		html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-		html.append("  <input type=\"${type}\" name=\"${fieldName}\" id=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
+		html.append("  <input type=\"${type}\" id=\"${fieldName}\" name=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
 		html.append("</div>\n");
 		return html.toString();
 	}
@@ -228,8 +228,8 @@ public class Generator {
 		StringBuffer html = new StringBuffer();
 		html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
 		html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-		html.append("  <div class=\"field\" id=\"field\"><c:out value=\"${bean.${fieldName}}\" /></div>\n");
-		html.append("/>\n");
+		html.append("  <div class=\"field\" id=\"${fieldName}\" name=\"${fieldName}\"><c:out value=\"${bean.${fieldName}}\" /></div>\n");
+		html.append("</div>\n");
 		return html.toString();
 	}
 	
