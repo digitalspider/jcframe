@@ -45,7 +45,7 @@
 <tbody>
   <c:forEach items="${beans}" var="bean">
     <tr>
-      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id.displayValue}" /></a></td>
+      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
       <td><c:out value="${bean.email}" /></td>
       <td><c:out value="${bean.mobile}" /></td>
       <td><c:out value="${bean.lastname}" /></td>

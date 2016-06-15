@@ -148,7 +148,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldHeader = classType.getSimpleName()+" ID";
 			type = "text";
 			isHtml = false;
-			isBean = true;
+			isBean = false;
 			content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 			html.append(content);
 			
@@ -214,14 +214,15 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					result = result.replaceAll("\\$\\{isHtml\\}", "");
 				}
 				if (!isBean) {
-					result = result.replaceAll("\\$\\{linkPrefix\\}", "");
-					result = result.replaceAll("\\$\\{linkSuffix\\}", "");
-				} else {
 					if (fieldName.equals(BaseBean.FIELD_ID)) {
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{beanUrl\\}/show/<c:out value='\\$\\{bean.id\\}'/>\">");
+						result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 					} else {
-						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldName + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
+						result = result.replaceAll("\\$\\{linkPrefix\\}", "");
+						result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 					}
+				} else {
+					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldName + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
 					result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 				}
 			}
