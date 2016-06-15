@@ -21,12 +21,16 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 	private static final Logger LOG = Logger.getLogger(ViewGeneratorImpl.class);
 
+	Map<ViewType,String> textFieldContentTemplates;
+	Map<ViewType,String> beanFieldContentTemplates;
+
 	@Override
 	public void generatePages() throws Exception {
 		LOG.info("generatePages() STARTED");
-		Map<ViewType,String> pageContentTemplates = getPageContentTemplates(PATH_TEMPLATE_PAGE);
+		Map<ViewType,String> pageContentTemplates = getContentTemplates(PATH_TEMPLATE_PAGE);
 		LOG.debug("pageContentTemplates="+pageContentTemplates);
-		//Map<ViewType,String> fieldContentTemplates = getPageContentTemplates(PATH_TEMPLATE_FIELD);
+		textFieldContentTemplates = getContentTemplates(PATH_TEMPLATE_FIELD_TEXT);
+		beanFieldContentTemplates = getContentTemplates(PATH_TEMPLATE_FIELD_BEAN);
 
 		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
 		for (String beanName : classMap.keySet()) {
@@ -52,7 +56,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-    public Map<ViewType,String> getPageContentTemplates(String templatePageDirectory) throws IOException {
+    public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException {
     	Map<ViewType,String> pageContentTemplates = new HashMap<>();
 		
         for (ViewType viewType : ViewType.values()) {
@@ -63,23 +67,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
         }
 		return pageContentTemplates;
     }
-
-	@Override
-	public Map<ViewType,String> getFieldContentTemplates(String templateFieldDirectory, boolean isBean) throws IOException {
-		Map<ViewType,String> pageContentTemplates = new HashMap<>();
-
-		for (ViewType viewType : ViewType.values()) {
-			String fileName = templateFieldDirectory+viewType.getPageName();
-			if (isBean) {
-				fileName = fileName.replace(".jsp",".bean.jsp");
-			}
-			File templateFile = new File(fileName);
-			LOG.info("templateFieldFile="+templateFile.getAbsolutePath());
-			final String pageContentTemplate = FileUtils.readFileToString(templateFile, "UTF-8");
-			pageContentTemplates.put(viewType, pageContentTemplate);
-		}
-		return pageContentTemplates;
-	}
     
 	@Override
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
@@ -232,43 +219,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 	@Override
 	public String getTemplate(ViewType viewType, boolean isBean) {
-		StringBuffer html = new StringBuffer();
-		switch(viewType) {
-		case SHOW:
-			html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
-			html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-			html.append("  <div class=\"field\" id=\"${fieldName}\" name=\"${fieldName}\"><c:out value=\"${bean.${fieldName}}\" /></div>\n");
-			html.append("</div>\n");
-			break;
-		case EDIT:
-			html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
-			html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-			if (isBean) {
-				html.append("  <!-- Cloudflare setting -->\n");
-				html.append("  <!--email_off-->\n");
-				html.append("  <select name=\"${fieldName}\">\n");
-				html.append("    <option value=\"0\">Select ${fieldHeader} Id...</option>\n");
-				html.append("    <c:forEach items='${lookupMap.get(\"${fieldName}\")}' var=\"lookupBean\">\n");
-				html.append("      <option value='<c:out value=\"${lookupBean.id}\"/>'\n");
-				html.append("      <c:if test=\"${bean.${fieldName}.id == lookupBean.id}\">selected=\"true\"</c:if>\n");
-				html.append("      ><c:out value=\"${lookupBean.id}\"/> - <c:out value=\"${lookupBean.displayValue}\"/></option>\n");
-				html.append("    </c:forEach>\n");
-				html.append("  </select>\n");
-				html.append("  <!--/email_off-->\n");
-			} else {
-				html.append("  <input type=\"${type}\" id=\"${fieldName}\" name=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
-			}
-			html.append("</div>\n");
-			break;
-		case LIST:
-		case INDEX:
-			if (isBean) {
-				html.append("      <td>${linkPrefix}<c:out value=\"${bean.${fieldName}.displayValue}\" ${isHtml}/>${linkSuffix}</td>\n");				
-			} else {
-				html.append("      <td>${linkPrefix}<c:out value=\"${bean.${fieldName}}\" ${isHtml}/>${linkSuffix}</td>\n");
-			}
-			break;
+		if (isBean) {
+			return beanFieldContentTemplates.get(viewType);
+		} else {
+			return textFieldContentTemplates.get(viewType);
 		}
-		return html.toString();
 	}
 }
