@@ -22,6 +22,8 @@ import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.dao.BaseDAOImpl;
 import au.com.javacloud.dao.BaseDataSource;
 import au.com.javacloud.model.BaseBean;
+import au.com.javacloud.view.ViewGenerator;
+import au.com.javacloud.view.ViewGeneratorImpl;
 
 public class Statics {
 
@@ -31,10 +33,12 @@ public class Statics {
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
     private static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
     private static final String DEFAULT_AUTH_CLASS = "au.com.javacloud.auth.BaseAuthServiceImpl";
+	private static final String DEFAULT_VIEWGEN_CLASS = "au.com.javacloud.view.ViewGeneratorImpl";
     private static final String DEFAULT_DS_CLASS = "au.com.javacloud.dao.BaseDataSource";
     
     private static final String PROP_PACKAGE_NAME = "package.name";
     private static final String PROP_AUTH_CLASS = "auth.class";
+	private static final String PROP_VIEWGEN_CLASS = "viewgen.class";
     private static final String PROP_DS_CLASS = "ds.class";
 	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
 
@@ -44,15 +48,18 @@ public class Statics {
 	private static Map<String,Class<? extends BaseBean>> secureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenSecureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
-    private static AuthService authService;
-    private static DataSource dataSource;
+
 	private static String packageName;
+	private static AuthService authService;
+	private static ViewGenerator viewGenerator;
+    private static DataSource dataSource;
 
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
 			packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
 			String authClassName = properties.getProperty(PROP_AUTH_CLASS,DEFAULT_AUTH_CLASS);
+			String viewGeneratorClassName = properties.getProperty(PROP_VIEWGEN_CLASS,DEFAULT_VIEWGEN_CLASS);
 			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
 			String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE,DEFAULT_DB_CONFIG_FILE);
 
@@ -81,6 +88,16 @@ public class Statics {
 				((BaseDataSource)dataSource).setProperties(dbProperties);
 			}
 			LOG.info("dataSource="+dataSource);
+
+			// Register the viewGenerator
+			try {
+				LOG.info("viewGeneratorClassName="+viewGeneratorClassName);
+				viewGenerator = (ViewGenerator) Class.forName(viewGeneratorClassName).newInstance();
+			} catch (Exception e) {
+				LOG.error(e,e);
+				viewGenerator = new ViewGeneratorImpl();
+			}
+			LOG.info("viewGenerator="+viewGenerator);
 
 			// Find all the beanClassTypes
 			try {
@@ -165,6 +182,10 @@ public class Statics {
 
 	public static AuthService getAuthService() {
 		return authService;
+	}
+
+	public static ViewGenerator getViewGenerator() {
+		return viewGenerator;
 	}
 
 	public static DataSource getDataSource() {

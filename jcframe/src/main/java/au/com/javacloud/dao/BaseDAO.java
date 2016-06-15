@@ -18,6 +18,7 @@ import au.com.javacloud.model.BaseBean;
 public interface BaseDAO<T extends BaseBean> {
 
     public static final int MAX_LIMIT=1000;
+    public static final int DEFAULT_LIMIT = 50;
 	
     public String getTableName();
     public Class<T> getBeanClass();

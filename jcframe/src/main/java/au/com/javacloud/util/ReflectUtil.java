@@ -47,20 +47,22 @@ public class ReflectUtil {
 		return false;
 	}
 
-    public static Map<Method,Class> getPublicSetterMethods(Class<?> objectClass, Class excludeAnnotationClass) {
+	/**
+	 * Get all setter methods that start with "set" and match {@link @isRelevantMethod}.
+	 */
+    public static Map<Method,Class> getPublicSetterMethods(Class<? extends BaseBean> objectClass, Class excludeAnnotationClass) {
     	Method[] allMethods = objectClass.getDeclaredMethods();
     	Map<Method,Class> setterMethods = new HashMap<Method,Class>();
     	LOG.debug("set objectClass="+objectClass+" super="+objectClass.getSuperclass());
         if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
-            Class<?> superClass = objectClass.getSuperclass();
+            Class<? extends BaseBean> superClass = (Class<? extends BaseBean>)objectClass.getSuperclass();
             Map<Method,Class> superClassMethods = getPublicSetterMethods(superClass, excludeAnnotationClass);
             setterMethods.putAll(superClassMethods);
         }
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("set")) {
-    				String fieldName = ReflectUtil.getFieldName(method);
-    				if (excludeAnnotationClass==null || (excludeAnnotationClass!=null && !isAnnotationPresent(objectClass,fieldName,excludeAnnotationClass))) {
+					if (isRelevantMethod(method,objectClass,excludeAnnotationClass)) {
 						Class[] params = method.getParameterTypes();
 						if (params.length == 1) {
 							setterMethods.put(method, params[0]);
@@ -73,20 +75,22 @@ public class ReflectUtil {
     	return setterMethods;
     }
 
-    public static Map<Method,Class> getPublicGetterMethods(Class<?> objectClass, Class excludeAnnotationClass) {
+	/**
+	 * Get all getter methods that start with "get" or "is" and match {@link @isRelevantMethod}.
+     */
+    public static Map<Method,Class> getPublicGetterMethods(Class<? extends BaseBean> objectClass, Class excludeAnnotationClass) {
     	Method[] allMethods = objectClass.getDeclaredMethods();
     	Map<Method,Class> getterMethods = new HashMap<Method,Class>();
     	LOG.debug("get objectClass="+objectClass+" super="+objectClass.getSuperclass());
         if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
-            Class<?> superClass = objectClass.getSuperclass();
+            Class<? extends BaseBean> superClass = (Class<? extends BaseBean>)objectClass.getSuperclass();
             Map<Method,Class> superClassMethods = getPublicGetterMethods(superClass, excludeAnnotationClass);
             getterMethods.putAll(superClassMethods);
         }
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-    	        	String fieldName = ReflectUtil.getFieldName(method);
-    	        	if (excludeAnnotationClass==null || (excludeAnnotationClass!=null && !isAnnotationPresent(objectClass,fieldName,excludeAnnotationClass))) {
+    	        	if (isRelevantMethod(method,objectClass,excludeAnnotationClass)) {
     	        		Class returnClass = method.getReturnType();
     	        		getterMethods.put(method, returnClass);
     	        	}
@@ -96,20 +100,35 @@ public class ReflectUtil {
     	LOG.debug("getters="+getterMethods);
     	return getterMethods;
     }
+
+	/**
+	 * Return true if the method has an associated field name which does not have the excludeAnnotationClass present.
+     */
+	public static boolean isRelevantMethod(Method method, Class<? extends BaseBean> beanClass, Class excludeAnnotationClass) {
+		boolean relevant = false;
+		String fieldName = ReflectUtil.getFieldName(method);
+		try {
+			Field fieldForMethod = beanClass.getDeclaredField(fieldName);
+			if (excludeAnnotationClass==null) {
+				relevant = true;
+			} else {
+				if (!fieldForMethod.isAnnotationPresent(excludeAnnotationClass)) {
+					relevant = true;
+				}
+			}
+		} catch (NoSuchFieldException e) {
+			// getter/setter methods are required to have an associated field value, otherwise not relevant
+		}
+		return relevant;
+	}
     
     /**
-     * Remove all methods from the method map where the associated field contains the annotationClass
-     * 
-     * @param beanClass
-     * @param methodMap
-     * @param annotationClass
-     * @return
+     * Only return methods from the method map where the associated field does not contains the excludeAnnotationClass
      */
-    public static Map<Method,Class> getFilteredMethodMap(Class<? extends BaseBean> beanClass, Map<Method,Class> methodMap, Class annotationClass) {
+    public static Map<Method,Class> getFilteredMethodMap(Class<? extends BaseBean> beanClass, Map<Method,Class> methodMap, Class excludeAnnotationClass) {
 		Map<Method,Class> filteredMethodMap = new HashMap<Method, Class>();
 		for (Method method : methodMap.keySet()) {
-			String fieldName = ReflectUtil.getFieldName(method);
-			if (!isAnnotationPresent(beanClass,fieldName,annotationClass)) {
+			if (isRelevantMethod(method,beanClass, excludeAnnotationClass)) {
 				filteredMethodMap.put(method,methodMap.get(method));
 			}
 		}

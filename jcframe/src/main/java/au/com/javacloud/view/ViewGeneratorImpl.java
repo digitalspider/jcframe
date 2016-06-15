@@ -7,24 +7,76 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.DisplayHtml;
+import au.com.javacloud.annotation.ExcludeDBWrite;
+import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
+import au.com.javacloud.util.Statics;
 
 public class ViewGeneratorImpl implements ViewGenerator {
 
-    public Map<ViewType,String> getPageContentTemplates(String templateDirectory) throws IOException {
+	private static final Logger LOG = Logger.getLogger(ViewGeneratorImpl.class);
+
+	@Override
+	public void generatePages() throws Exception {
+		Map<ViewType,String> pageContentTemplates = getPageContentTemplates(PATH_TEMPLATE_PAGE);
+		//Map<ViewType,String> fieldContentTemplates = getPageContentTemplates(PATH_TEMPLATE_FIELD);
+
+		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
+		for (String beanName : classMap.keySet()) {
+			if (StringUtils.isNotEmpty(beanName)) {
+				String directory = PATH_JSP + beanName + "/";
+				File destDir = new File(directory);
+				System.out.println("destDir="+destDir.getAbsolutePath());
+				Class<? extends BaseBean> classType = classMap.get(beanName);
+				Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, ExcludeDBWrite.class);
+
+				for (ViewType viewType : ViewType.values()) {
+					if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
+						String html = generateView(viewType, beanName, classType, methodMap);
+						String pageContent = pageContentTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+						pageContent = pageContent.replace(PLACEHOLDER, html);
+						File outputFile = new File(destDir,viewType.getPageName());
+						FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+    public Map<ViewType,String> getPageContentTemplates(String templatePageDirectory) throws IOException {
     	Map<ViewType,String> pageContentTemplates = new HashMap<>();
 		
         for (ViewType viewType : ViewType.values()) {
-        	File templateFile = new File(templateDirectory+viewType.getPageName());
-        	System.out.println("editFile="+templateFile.getAbsolutePath());
+        	File templateFile = new File(templatePageDirectory+viewType.getPageName());
+        	LOG.info("templatePageFile="+templateFile.getAbsolutePath());
         	final String pageContentTemplate = FileUtils.readFileToString(templateFile, "UTF-8");
         	pageContentTemplates.put(viewType, pageContentTemplate);
         }
 		return pageContentTemplates;
     }
+
+	@Override
+	public Map<ViewType,String> getFieldContentTemplates(String templateFieldDirectory, boolean isBean) throws IOException {
+		Map<ViewType,String> pageContentTemplates = new HashMap<>();
+
+		for (ViewType viewType : ViewType.values()) {
+			String fileName = templateFieldDirectory+viewType.getPageName();
+			if (isBean) {
+				fileName = fileName.replace(".jsp",".bean.jsp");
+			}
+			File templateFile = new File(fileName);
+			LOG.info("templateFieldFile="+templateFile.getAbsolutePath());
+			final String pageContentTemplate = FileUtils.readFileToString(templateFile, "UTF-8");
+			pageContentTemplates.put(viewType, pageContentTemplate);
+		}
+		return pageContentTemplates;
+	}
     
 	@Override
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
@@ -198,5 +250,4 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		}
 		return html.toString();
 	}
-
 }

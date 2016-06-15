@@ -37,7 +37,6 @@ import au.com.javacloud.util.ReflectUtil;
 public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	private static final Logger LOG = Logger.getLogger(BaseDAOImpl.class);
-	public static final int DEFAULT_LIMIT = 50;
 
 	protected DataSource dataSource;
 	protected String tableName;
@@ -295,7 +294,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public List<String> getBeanFieldNames() {
-		return ReflectUtil.getBeanFieldNames(clazz, ExcludeDBWrite.class);
+		return ReflectUtil.getBeanFieldNames(clazz, null);
 	}
 
 	@SuppressWarnings("rawtypes")
