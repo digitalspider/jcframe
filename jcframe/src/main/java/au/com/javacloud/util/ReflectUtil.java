@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.annotation.DisplayHeader;
 import au.com.javacloud.annotation.DisplayType;
 import au.com.javacloud.annotation.ExcludeDBRead;
 import au.com.javacloud.annotation.ExcludeDBWrite;
@@ -102,6 +103,27 @@ public class ReflectUtil {
     }
 
 	/**
+	 * Get all getter methods that start with "get" or "is" and match {@link @isRelevantMethod}.
+	 */
+	public static Map<String,Field> getFields(Class<? extends BaseBean> objectClass) {
+		Field[] allFields = objectClass.getDeclaredFields();
+		Map<String,Field> fields = new HashMap<String,Field>();
+		LOG.debug("get objectClass="+objectClass+" super="+objectClass.getSuperclass());
+		if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
+			Class<? extends BaseBean> superClass = (Class<? extends BaseBean>)objectClass.getSuperclass();
+			Map<String,Field> superFields = getFields(superClass);
+			fields.putAll(superFields);
+		}
+		for (Field field : allFields) {
+			if (!Modifier.isAbstract(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
+				fields.put(field.getName(), field);
+			}
+		}
+		LOG.debug("fields="+fields);
+		return fields;
+	}
+
+	/**
 	 * Return true if the method has an associated field name which does not have the excludeAnnotationClass present.
      */
 	public static boolean isRelevantMethod(Method method, Class<? extends BaseBean> beanClass, Class excludeAnnotationClass) {
@@ -169,8 +191,8 @@ public class ReflectUtil {
     }
 
 	public static String getFieldHeader(Class classType, String fieldName) throws NoSuchFieldException {
-		if (isAnnotationPresent(classType, fieldName, DisplayType.class)) {
-			return getAnnotation(classType, fieldName, DisplayType.class).value();
+		if (isAnnotationPresent(classType, fieldName, DisplayHeader.class)) {
+			return getAnnotation(classType, fieldName, DisplayHeader.class).value();
 		}
 		return getFirstLetterUpperCase(fieldName); // TODO: Put spaces in between each uppercase letter
 	}
@@ -183,23 +205,25 @@ public class ReflectUtil {
 	}
 
 	public static boolean isAnnotationPresent(Class classType, String fieldName, Class annotationClass) {
-		try {
-			Field field = classType.getDeclaredField(fieldName);
+		Map<String,Field> fields = getFields(classType);
+		Field field = fields.get(fieldName);
+		if (field!=null) {
 			return field.isAnnotationPresent(annotationClass);
-		} catch (NoSuchFieldException e) {
-			LOG.error(e,e);
 		}
 		return false;
 	}
 
 	public static <T extends Annotation> T getAnnotation(Class classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {
-		Field field = classType.getDeclaredField(getFieldName(method));
-		return field.getAnnotation(annotationClass);
+		return getAnnotation(classType, getFieldName(method), annotationClass);
 	}
 
 	public static <T extends Annotation> T getAnnotation(Class classType, String fieldName, Class<T> annotationClass) throws NoSuchFieldException {
-		Field field = classType.getDeclaredField(fieldName);
-		return field.getAnnotation(annotationClass);
+		Map<String,Field> fields = getFields(classType);
+		Field field = fields.get(fieldName);
+		if (field!=null) {
+			return field.getAnnotation(annotationClass);
+		}
+		throw new NoSuchFieldException(fieldName);
 	}
 
 	public static String getFirstLetterUpperCase(String name) {

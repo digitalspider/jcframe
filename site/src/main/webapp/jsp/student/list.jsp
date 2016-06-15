@@ -37,7 +37,7 @@
 <tbody>
   <c:forEach items="${beans}" var="bean">
     <tr>
-      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id.displayValue}" /></a></td>
       <td><c:out value="${bean.year}" /></td>
       <td><c:out value="${bean.firstName}" /></td>
       <td><c:out value="${bean.lastName}" /></td>

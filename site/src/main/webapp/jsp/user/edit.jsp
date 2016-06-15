@@ -32,8 +32,8 @@
   <input type="text" id="image" name="image" value='<c:out value="${bean.image}" />' placeholder="Image"  />
 </div>
 <div class="fieldrow" id="fieldrow_password" name="fieldrow_password">
-  <label for="password">password</label>
-  <input type="password" id="password" name="password" value='<c:out value="${bean.password}" />' placeholder="password"  />
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password" value='<c:out value="${bean.password}" />' placeholder="Password"  />
 </div>
 <div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
   <label for="url">Url</label>
@@ -51,10 +51,6 @@
   <label for="tags">Tags</label>
   <input type="text" id="tags" name="tags" value='<c:out value="${bean.tags}" />' placeholder="Tags"  />
 </div>
-<div class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
-  <label for="mdate">Mdate</label>
-  <input type="text" id="mdate" name="mdate" value='<c:out value="${bean.mdate}" />' placeholder="Mdate"  />
-</div>
 <div class="fieldrow" id="fieldrow_username" name="fieldrow_username">
   <label for="username">Username</label>
   <input type="text" id="username" name="username" value='<c:out value="${bean.username}" />' placeholder="Username"  />
@@ -70,10 +66,6 @@
 <div class="fieldrow" id="fieldrow_firstname" name="fieldrow_firstname">
   <label for="firstname">Firstname</label>
   <input type="text" id="firstname" name="firstname" value='<c:out value="${bean.firstname}" />' placeholder="Firstname"  />
-</div>
-<div class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
-  <label for="cdate">Cdate</label>
-  <input type="text" id="cdate" name="cdate" value='<c:out value="${bean.cdate}" />' placeholder="Cdate"  />
 </div>
 
 		</fieldset>

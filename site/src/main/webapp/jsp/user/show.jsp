@@ -47,10 +47,6 @@
   <label for="tags">Tags</label>
   <div class="field" id="tags" name="tags"><c:out value="${bean.tags}" /></div>
 </div>
-<div class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
-  <label for="mdate">Mdate</label>
-  <div class="field" id="mdate" name="mdate"><c:out value="${bean.mdate}" /></div>
-</div>
 <div class="fieldrow" id="fieldrow_username" name="fieldrow_username">
   <label for="username">Username</label>
   <div class="field" id="username" name="username"><c:out value="${bean.username}" /></div>
@@ -66,10 +62,6 @@
 <div class="fieldrow" id="fieldrow_firstname" name="fieldrow_firstname">
   <label for="firstname">Firstname</label>
   <div class="field" id="firstname" name="firstname"><c:out value="${bean.firstname}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
-  <label for="cdate">Cdate</label>
-  <div class="field" id="cdate" name="cdate"><c:out value="${bean.cdate}" /></div>
 </div>
 
 </body>

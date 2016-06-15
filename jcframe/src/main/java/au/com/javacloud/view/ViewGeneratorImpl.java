@@ -23,7 +23,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 	@Override
 	public void generatePages() throws Exception {
+		LOG.info("generatePages() STARTED");
 		Map<ViewType,String> pageContentTemplates = getPageContentTemplates(PATH_TEMPLATE_PAGE);
+		LOG.debug("pageContentTemplates="+pageContentTemplates);
 		//Map<ViewType,String> fieldContentTemplates = getPageContentTemplates(PATH_TEMPLATE_FIELD);
 
 		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
@@ -31,7 +33,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			if (StringUtils.isNotEmpty(beanName)) {
 				String directory = PATH_JSP + beanName + "/";
 				File destDir = new File(directory);
-				System.out.println("destDir="+destDir.getAbsolutePath());
+				LOG.info("destDir="+destDir.getAbsolutePath());
 				Class<? extends BaseBean> classType = classMap.get(beanName);
 				Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, ExcludeDBWrite.class);
 
@@ -46,6 +48,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				}
 			}
 		}
+		LOG.info("generatePages() DONE");
 	}
 
 	@Override
@@ -85,30 +88,28 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		switch (viewType) {
 		case SHOW:
 		case EDIT:
-			if (viewType == ViewType.SHOW) {
-				// Handle BaseBean id
-				String fieldName = "id";
-				String fieldHeader = classType.getSimpleName()+" ID";
-				String type = "text";
-				String other = null;
-				boolean isHtml = false;
-				boolean isBean = false;
-				if (viewType == ViewType.EDIT) {
-					other = "readonly=\"readonly\"";
-				}
-				String content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+			// Handle BaseBean id
+			String fieldName = "id";
+			String fieldHeader = classType.getSimpleName()+" ID";
+			String type = "text";
+			String other = null;
+			boolean isHtml = false;
+			boolean isBean = false;
+			if (viewType == ViewType.EDIT) {
+				other = "readonly=\"readonly\"";
+			}
+			String content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+			html.append(content);
+
+			// Handle remaining fields
+			for (Method method : methodMap.keySet()) {
+				Class fieldClass = methodMap.get(method);
+				fieldName = ReflectUtil.getFieldName(method);
+				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+				type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+				other = null;
+				content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 				html.append(content);
-				
-				// Handle remaining fields
-				for (Method method : methodMap.keySet()) {
-					Class fieldClass = methodMap.get(method);
-					fieldName = ReflectUtil.getFieldName(method);
-					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-					other = null;
-					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
-					html.append(content);
-				}
 			}
 			break;
 		case LIST:
@@ -119,10 +120,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append("<thead>\n");
 			html.append("  <tr>\n");
 			html.append("    <th><a href=\"${beanUrl}/config/order/id\">"+classType.getSimpleName()+" ID</a></th>\n");
-			String fieldName = "";
-			String fieldHeader = "";
-			String type = "text";
-			String other = null;
+			fieldName = "";
+			fieldHeader = "";
+			type = "text";
+			other = null;
 			for (Method method : methodMap.keySet()) {
 				fieldName = ReflectUtil.getFieldName(method);
 				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
@@ -144,9 +145,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldName = "id";
 			fieldHeader = classType.getSimpleName()+" ID";
 			type = "text";
-			boolean isHtml = false;
-			boolean isBean = true;
-			String content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+			isHtml = false;
+			isBean = true;
+			content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 			html.append(content);
 			
 			// Handle other fields
@@ -182,6 +183,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, String type, String other, boolean isHtml, boolean isBean) {
 		String result = "";
+		if (type==null) {
+			return result;
+		}
 		result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
 		result = result.replaceAll("\\$\\{type\\}", type);
@@ -191,7 +195,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		result = result.replaceAll("\\$\\{other\\}", other);
 		switch(viewType) {
 		case SHOW:
-			if (type!=null && type.equals("password")) {
+			if (type.equals("password")) {
 				result="";
 			}
 			break;
@@ -199,7 +203,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			break;
 		case LIST:
 		case INDEX:
-			if (type!=null && type.equals("password")) {
+			if (type.equals("password")) {
 				result="";
 			} else {
 				if (isHtml) {

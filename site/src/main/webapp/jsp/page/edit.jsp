@@ -11,68 +11,51 @@
 <body>
 	<form action="${beanUrl}" method="post">
 		<fieldset>
-			<div>
-				<label for="id">Page ID</label>
-				<input type="text" name="id" value="<c:out value="${bean.id}" />"
-					readonly="readonly" placeholder="Page ID" />
-			</div>
-			<div>
-				<label for="title">Title</label>
-				<input type="text" name="title" value="<c:out value="${bean.title}" />" placeholder="Title" />
-			</div>
-			<div>
-				<label for="description">Description</label>
-				<input type="text" name="description" value="<c:out value="${bean.description}" />" placeholder="Description" />
-			</div>
-			<div>
-				<label for="content">Content</label>
-				<input type="text" name="content" value="<c:out value="${bean.content}" />" placeholder="Content" />
-			</div>
-			<div>
-				<label for="url">URL</label>
-				<input type="text" name="url" value="<c:out value="${bean.url}" />" placeholder="Url" />
-			</div>
-			<div>
-				<label for="type">Type</label>
-				<input type="text" name="type" value="<c:out value="${bean.type}" />" placeholder="Type" />
-			</div>
-			<div>
-				<label for="tags">Tags</label>
-				<input type="text" name="tags" value="<c:out value="${bean.tags}" />" placeholder="Tags" />
-			</div>
-			<div>
-				<label for="status">Status</label>
-				<input type="text" name="status" value="<c:out value="${bean.status}" />" placeholder="Status" />
-			</div>
-			<div>
-				<label for="authorId">Author Id</label>
-				<!-- Cloudflare setting -->
-				<!--email_off-->
-				<select name="authorId">
-				    <option value="">Select Author Id...</option>
-                    <c:forEach items='${lookupMap.get("authorId")}' var="authorBean">
-                       <option value='<c:out value="${authorBean.id}"/>'
-                            <c:if test="${bean.authorId.id == authorBean.id}">selected="true"</c:if>
-                       ><c:out value="${authorBean.id}"/> - <c:out value="${authorBean.displayValue}"/></option>
-                    </c:forEach>
-				</select>
-				<!--/email_off-->
-			</div>
-			<div>
-				<label for="parentId">Parent Id</label>
-				<select name="parentId">
-				    <option value="">Select Parent Id...</option>
-                    <c:forEach items='${lookupMap.get("parentId")}' var="parentBean">
-                       <option value='<c:out value="${parentBean.id}"/>'
-                            <c:if test="${bean.parentId.id == parentBean.id}">selected="true"</c:if>
-                       ><c:out value="${parentBean.id}"/> - <c:out value="${parentBean.displayValue}"/></option>
-                    </c:forEach>
-				</select>
-			</div>
-			<div>
-				<input type="submit" value="Submit" />
-			</div>
+<div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
+  <label for="id">Page ID</label>
+  <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="Page ID" readonly="readonly" />
+</div>
+<div class="fieldrow" id="fieldrow_title" name="fieldrow_title">
+  <label for="title">Title</label>
+  <input type="text" id="title" name="title" value='<c:out value="${bean.title}" />' placeholder="Title"  />
+</div>
+<div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
+  <label for="url">Url</label>
+  <input type="text" id="url" name="url" value='<c:out value="${bean.url}" />' placeholder="Url"  />
+</div>
+<div class="fieldrow" id="fieldrow_content" name="fieldrow_content">
+  <label for="content">Content</label>
+  <input type="text" id="content" name="content" value='<c:out value="${bean.content}" />' placeholder="Content"  />
+</div>
+<div class="fieldrow" id="fieldrow_type" name="fieldrow_type">
+  <label for="type">Type</label>
+  <input type="text" id="type" name="type" value='<c:out value="${bean.type}" />' placeholder="Type"  />
+</div>
+<div class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
+  <label for="tags">Tags</label>
+  <input type="text" id="tags" name="tags" value='<c:out value="${bean.tags}" />' placeholder="Tags"  />
+</div>
+<div class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
+  <label for="authorId">Author</label>
+  <input type="text" id="authorId" name="authorId" value='<c:out value="${bean.authorId}" />' placeholder="Author"  />
+</div>
+<div class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
+  <label for="parentId">Parent Page</label>
+  <input type="text" id="parentId" name="parentId" value='<c:out value="${bean.parentId}" />' placeholder="Parent Page"  />
+</div>
+<div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
+  <label for="description">Description</label>
+  <input type="text" id="description" name="description" value='<c:out value="${bean.description}" />' placeholder="Description"  />
+</div>
+<div class="fieldrow" id="fieldrow_status" name="fieldrow_status">
+  <label for="status">Status</label>
+  <input type="text" id="status" name="status" value='<c:out value="${bean.status}" />' placeholder="Status"  />
+</div>
+
 		</fieldset>
+        <div>
+			<input value="Submit" type="submit">
+		</div>
 	</form>
 </body>
 </html>
