@@ -37,11 +37,31 @@
 </div>
 <div class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
   <label for="authorId">Author</label>
-  <input type="text" id="authorId" name="authorId" value='<c:out value="${bean.authorId}" />' placeholder="Author"  />
+  <!-- Cloudflare setting -->
+  <!--email_off-->
+  <select name="authorId">
+    <option value=">Select Author Id...</option>
+    <c:forEach items='${lookupMap.get("authorId")}' var="lookupBean">
+      <option value='<c:out value="${lookupBean.id}"/>'
+      <c:if test="${bean.authorId.id == lookupBean.id}">selected="true"</c:if>
+      ><c:out value="${lookupBean.id}"/> - <c:out value="${lookupBean.displayValue}"/></option>
+    </c:forEach>
+  </select>
+  <!--/email_off-->
 </div>
 <div class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
   <label for="parentId">Parent Page</label>
-  <input type="text" id="parentId" name="parentId" value='<c:out value="${bean.parentId}" />' placeholder="Parent Page"  />
+  <!-- Cloudflare setting -->
+  <!--email_off-->
+  <select name="parentId">
+    <option value=">Select Parent Page Id...</option>
+    <c:forEach items='${lookupMap.get("parentId")}' var="lookupBean">
+      <option value='<c:out value="${lookupBean.id}"/>'
+      <c:if test="${bean.parentId.id == lookupBean.id}">selected="true"</c:if>
+      ><c:out value="${lookupBean.id}"/> - <c:out value="${lookupBean.displayValue}"/></option>
+    </c:forEach>
+  </select>
+  <!--/email_off-->
 </div>
 <div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
   <label for="description">Description</label>

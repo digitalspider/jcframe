@@ -108,6 +108,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 				type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 				other = null;
+				isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
+				isBean = ReflectUtil.isBean(methodMap.get(method));
 				content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 				html.append(content);
 			}
@@ -240,7 +242,21 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case EDIT:
 			html.append("<div class=\"fieldrow\" id=\"fieldrow_${fieldName}\" name=\"fieldrow_${fieldName}\">\n");
 			html.append("  <label for=\"${fieldName}\">${fieldHeader}</label>\n");
-			html.append("  <input type=\"${type}\" id=\"${fieldName}\" name=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
+			if (isBean) {
+				html.append("  <!-- Cloudflare setting -->\n");
+				html.append("  <!--email_off-->\n");
+				html.append("  <select name=\"${fieldName}\">\n");
+				html.append("    <option value=\">Select ${fieldHeader} Id...</option>\n");
+				html.append("    <c:forEach items='${lookupMap.get(\"${fieldName}\")}' var=\"lookupBean\">\n");
+				html.append("      <option value='<c:out value=\"${lookupBean.id}\"/>'\n");
+				html.append("      <c:if test=\"${bean.${fieldName}.id == lookupBean.id}\">selected=\"true\"</c:if>\n");
+				html.append("      ><c:out value=\"${lookupBean.id}\"/> - <c:out value=\"${lookupBean.displayValue}\"/></option>\n");
+				html.append("    </c:forEach>\n");
+				html.append("  </select>\n");
+				html.append("  <!--/email_off-->\n");
+			} else {
+				html.append("  <input type=\"${type}\" id=\"${fieldName}\" name=\"${fieldName}\" value='<c:out value=\"${bean.${fieldName}}\" />' placeholder=\"${fieldHeader}\" ${other} />\n");
+			}
 			html.append("</div>\n");
 			break;
 		case LIST:
