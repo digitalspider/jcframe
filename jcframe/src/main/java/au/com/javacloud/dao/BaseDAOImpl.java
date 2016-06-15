@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.DisplayValueColumn;
+import au.com.javacloud.annotation.ExcludeDBRead;
+import au.com.javacloud.annotation.ExcludeDBWrite;
 import au.com.javacloud.annotation.TableName;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
@@ -293,13 +295,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public List<String> getBeanFieldNames() {
-		return ReflectUtil.getBeanFieldNames(clazz);
+		return ReflectUtil.getBeanFieldNames(clazz, ExcludeDBWrite.class);
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception {
-		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz);
+		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz, ExcludeDBRead.class);
 		String columnName = BaseBean.FIELD_ID;
 		if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
 			columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
@@ -361,8 +363,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public PreparedStatement prepareStatementForSave(Connection conn, T bean) throws Exception {
 		boolean updateStmt = false;
+		Map<Method,Class> methods = ReflectUtil.getPublicGetterMethods(clazz, ExcludeDBWrite.class);
+
 		List<String> columns = new ArrayList<String>();
-		Map<Method,Class> methods = ReflectUtil.getPublicGetterMethods(clazz);
 		for (Method method : methods.keySet()) {
 			String fieldName = ReflectUtil.getFieldName(method);
 			columns.add(fieldName);

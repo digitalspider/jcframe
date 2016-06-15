@@ -1,11 +1,13 @@
 package au.com.javacloud.model;
 
+import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.DisplayValueColumn;
 
 /**
  * Created by david on 22/05/16.
  */
 @DisplayValueColumn("firstName")
+@DisplayOrder("firstName,lastName,course,year")
 public class Student extends BaseBean {
     private String firstName;
     private String lastName;

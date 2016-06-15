@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import au.com.javacloud.annotation.ExcludeDBWrite;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.auth.ACLException;
@@ -138,7 +139,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		}
 
 		// Configure lookupMap
-    	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass());
+    	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass(), ExcludeDBWrite.class);
     	for (Method method : fieldMethods.keySet()) {
     		Class lookupClass = fieldMethods.get(method);
 			LOG.debug("lookupClass="+lookupClass.getName());
@@ -344,7 +345,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     @SuppressWarnings("rawtypes")
 	protected T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		T bean = ReflectUtil.getNewBean(clazz);
-		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz);
+		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz, ExcludeDBWrite.class);
 		for (Method method : methods.keySet()) {
 			Class classType = methods.get(method);
 			String fieldName = ReflectUtil.getFieldName(method);

@@ -2,14 +2,20 @@ package au.com.javacloud.model;
 
 import java.util.Date;
 
+import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.DisplayType;
-import au.com.javacloud.annotation.ExcludeDB;
+import au.com.javacloud.annotation.DisplayValueColumn;
+import au.com.javacloud.annotation.ExcludeDBWrite;
 
 /**
  * Created by david on 22/05/16.
  */
+@DisplayValueColumn("email")
+@DisplayOrder("username,email,firstname,lastname,type,description")
 public class User extends BaseBean {
+	@ExcludeDBWrite	
     private Date cdate = new Date();
+	@ExcludeDBWrite
     private Date mdate = new Date();
     private String description;
     private String tags;
@@ -25,11 +31,6 @@ public class User extends BaseBean {
     private String mobile;
     private String token;
     private String image;
-
-    @ExcludeDB
-    public String getNameColumn() {
-        return "email";
-    }
 
     @Override
     public String toString() {

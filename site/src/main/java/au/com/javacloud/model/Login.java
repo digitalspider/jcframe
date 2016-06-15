@@ -1,12 +1,12 @@
 package au.com.javacloud.model;
 
-import au.com.javacloud.annotation.Hidden;
+import au.com.javacloud.annotation.HiddenBean;
 import au.com.javacloud.annotation.TableName;
 
 /**
  * Created by david on 22/05/16.
  */
-@Hidden
+@HiddenBean
 @TableName("User")
 public class Login extends BaseBean {
     private String username;

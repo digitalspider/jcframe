@@ -1,13 +1,15 @@
 package au.com.javacloud.model;
 
-import au.com.javacloud.annotation.ExcludeDB;
+import au.com.javacloud.annotation.ExcludeDBWrite;
 
 /**
  * Created by david on 22/05/16.
  */
 
 public class BaseBean {
+	@ExcludeDBWrite
     protected int id;
+    @ExcludeDBWrite
     protected String displayValue;
 
     public final static String FIELD_ID = "id";
@@ -18,7 +20,6 @@ public class BaseBean {
         return getClass().getSimpleName()+"["+id+"] "+displayValue;
     }
 
-    @ExcludeDB
     public int getId() {
         return id;
     }
@@ -27,7 +28,6 @@ public class BaseBean {
         this.id = id;
     }
 
-    @ExcludeDB
     public String getDisplayValue() {
         return displayValue;
     }

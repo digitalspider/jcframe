@@ -22,9 +22,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.annotation.DisplayHeader;
 import au.com.javacloud.annotation.DisplayType;
-import au.com.javacloud.annotation.ExcludeDB;
+import au.com.javacloud.annotation.ExcludeDBRead;
+import au.com.javacloud.annotation.ExcludeDBWrite;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
 
@@ -47,24 +47,25 @@ public class ReflectUtil {
 		return false;
 	}
 
-    public static Map<Method,Class> getPublicSetterMethods(Class<?> objectClass) {
+    public static Map<Method,Class> getPublicSetterMethods(Class<?> objectClass, Class excludeAnnotationClass) {
     	Method[] allMethods = objectClass.getDeclaredMethods();
     	Map<Method,Class> setterMethods = new HashMap<Method,Class>();
     	LOG.debug("set objectClass="+objectClass+" super="+objectClass.getSuperclass());
         if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
             Class<?> superClass = objectClass.getSuperclass();
-            Map<Method,Class> superClassMethods = getPublicSetterMethods(superClass);
+            Map<Method,Class> superClassMethods = getPublicSetterMethods(superClass, excludeAnnotationClass);
             setterMethods.putAll(superClassMethods);
         }
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("set")) {
-					if (!method.isAnnotationPresent(ExcludeDB.class)) {
+    				String fieldName = ReflectUtil.getFieldName(method);
+    				if (excludeAnnotationClass==null || (excludeAnnotationClass!=null && !isAnnotationPresent(objectClass,fieldName,excludeAnnotationClass))) {
 						Class[] params = method.getParameterTypes();
 						if (params.length == 1) {
 							setterMethods.put(method, params[0]);
 						}
-					}
+    				}
     	        }
     	    }
     	}
@@ -72,27 +73,47 @@ public class ReflectUtil {
     	return setterMethods;
     }
 
-    public static Map<Method,Class> getPublicGetterMethods(Class<?> objectClass) {
+    public static Map<Method,Class> getPublicGetterMethods(Class<?> objectClass, Class excludeAnnotationClass) {
     	Method[] allMethods = objectClass.getDeclaredMethods();
     	Map<Method,Class> getterMethods = new HashMap<Method,Class>();
     	LOG.debug("get objectClass="+objectClass+" super="+objectClass.getSuperclass());
         if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
             Class<?> superClass = objectClass.getSuperclass();
-            Map<Method,Class> superClassMethods = getPublicGetterMethods(superClass);
+            Map<Method,Class> superClassMethods = getPublicGetterMethods(superClass, excludeAnnotationClass);
             getterMethods.putAll(superClassMethods);
         }
     	for (Method method : allMethods) {
     	    if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
     	        if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-					if (!method.isAnnotationPresent(ExcludeDB.class)) {
-						Class returnClass = method.getReturnType();
-						getterMethods.put(method, returnClass);
-					}
+    	        	String fieldName = ReflectUtil.getFieldName(method);
+    	        	if (excludeAnnotationClass==null || (excludeAnnotationClass!=null && !isAnnotationPresent(objectClass,fieldName,excludeAnnotationClass))) {
+    	        		Class returnClass = method.getReturnType();
+    	        		getterMethods.put(method, returnClass);
+    	        	}
     	        }
     	    }
     	}
     	LOG.debug("getters="+getterMethods);
     	return getterMethods;
+    }
+    
+    /**
+     * Remove all methods from the method map where the associated field contains the annotationClass
+     * 
+     * @param beanClass
+     * @param methodMap
+     * @param annotationClass
+     * @return
+     */
+    public static Map<Method,Class> getFilteredMethodMap(Class<? extends BaseBean> beanClass, Map<Method,Class> methodMap, Class annotationClass) {
+		Map<Method,Class> filteredMethodMap = new HashMap<Method, Class>();
+		for (Method method : methodMap.keySet()) {
+			String fieldName = ReflectUtil.getFieldName(method);
+			if (!isAnnotationPresent(beanClass,fieldName,annotationClass)) {
+				filteredMethodMap.put(method,methodMap.get(method));
+			}
+		}
+		return filteredMethodMap;
     }
 
     public static <U extends BaseBean> U getNewBean(Class<U> clazz) {
@@ -104,8 +125,8 @@ public class ReflectUtil {
     	return null;
     }
 
-	public static <U extends BaseBean> List<String> getBeanFieldNames(Class<U> clazz) {
-		Set<Method> methods = ReflectUtil.getPublicGetterMethods(clazz).keySet();
+	public static <U extends BaseBean> List<String> getBeanFieldNames(Class<U> clazz, Class excludeAnnnotationClass) {
+		Set<Method> methods = ReflectUtil.getPublicGetterMethods(clazz,excludeAnnnotationClass).keySet();
 		List<String> beanFieldNames = new ArrayList<String>();
 		for (Method method : methods) {
             String fieldName = ReflectUtil.getFieldName(method);
@@ -142,9 +163,14 @@ public class ReflectUtil {
 		return "text";
 	}
 
-	public static boolean isAnnotationPresent(Class classType, String fieldName, Class annotationClass) throws NoSuchFieldException {
-		Field field = classType.getDeclaredField(fieldName);
-		return field.isAnnotationPresent(annotationClass);
+	public static boolean isAnnotationPresent(Class classType, String fieldName, Class annotationClass) {
+		try {
+			Field field = classType.getDeclaredField(fieldName);
+			return field.isAnnotationPresent(annotationClass);
+		} catch (NoSuchFieldException e) {
+			LOG.error(e,e);
+		}
+		return false;
 	}
 
 	public static <T extends Annotation> T getAnnotation(Class classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {

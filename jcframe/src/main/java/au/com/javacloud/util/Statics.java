@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.BeanClass;
-import au.com.javacloud.annotation.Hidden;
+import au.com.javacloud.annotation.HiddenBean;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.auth.AuthService;
 import au.com.javacloud.auth.BaseAuthServiceImpl;
@@ -88,7 +88,7 @@ public class Statics {
 				// Initialise default classTypeMap, daoMap and controllerMap
 				List<Class> beanClassTypes = ReflectUtil.getClasses(packageName, BaseBean.class, true);
 				for (Class classType : beanClassTypes) {
-					if (!classType.isAnnotationPresent(Hidden.class)) {
+					if (!classType.isAnnotationPresent(HiddenBean.class)) {
 						if (!classType.isAnnotationPresent(Secure.class)) {
 							classTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 						}
