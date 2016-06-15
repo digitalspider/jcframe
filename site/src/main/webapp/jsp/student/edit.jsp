@@ -19,13 +19,13 @@
   <label for="year">Year</label>
   <input type="text" id="year" name="year" value='<c:out value="${bean.year}" />' placeholder="Year"  />
 </div>
-<div class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
-  <label for="firstName">FirstName</label>
-  <input type="text" id="firstName" name="firstName" value='<c:out value="${bean.firstName}" />' placeholder="FirstName"  />
-</div>
 <div class="fieldrow" id="fieldrow_lastName" name="fieldrow_lastName">
   <label for="lastName">LastName</label>
   <input type="text" id="lastName" name="lastName" value='<c:out value="${bean.lastName}" />' placeholder="LastName"  />
+</div>
+<div class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
+  <label for="firstName">FirstName</label>
+  <input type="text" id="firstName" name="firstName" value='<c:out value="${bean.firstName}" />' placeholder="FirstName"  />
 </div>
 <div class="fieldrow" id="fieldrow_course" name="fieldrow_course">
   <label for="course">Course</label>

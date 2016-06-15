@@ -28,8 +28,8 @@
   <tr>
     <th><a href="${beanUrl}/config/order/id">Student ID</a></th>
     <th><a href="${beanUrl}/config/order/year">Year</a></th>
-    <th><a href="${beanUrl}/config/order/firstName">FirstName</a></th>
     <th><a href="${beanUrl}/config/order/lastName">LastName</a></th>
+    <th><a href="${beanUrl}/config/order/firstName">FirstName</a></th>
     <th><a href="${beanUrl}/config/order/course">Course</a></th>
     <th colspan="2">Action</th>
   </tr>
@@ -39,8 +39,8 @@
     <tr>
       <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
       <td><c:out value="${bean.year}" /></td>
-      <td><c:out value="${bean.firstName}" /></td>
       <td><c:out value="${bean.lastName}" /></td>
+      <td><c:out value="${bean.firstName}" /></td>
       <td><c:out value="${bean.course}" /></td>
       <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
       <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>

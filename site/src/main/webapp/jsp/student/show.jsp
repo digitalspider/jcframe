@@ -19,13 +19,13 @@
   <label for="year">Year</label>
   <div class="field" id="year" name="year"><c:out value="${bean.year}" /></div>
 </div>
-<div class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
-  <label for="firstName">FirstName</label>
-  <div class="field" id="firstName" name="firstName"><c:out value="${bean.firstName}" /></div>
-</div>
 <div class="fieldrow" id="fieldrow_lastName" name="fieldrow_lastName">
   <label for="lastName">LastName</label>
   <div class="field" id="lastName" name="lastName"><c:out value="${bean.lastName}" /></div>
+</div>
+<div class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
+  <label for="firstName">FirstName</label>
+  <div class="field" id="firstName" name="firstName"><c:out value="${bean.firstName}" /></div>
 </div>
 <div class="fieldrow" id="fieldrow_course" name="fieldrow_course">
   <label for="course">Course</label>

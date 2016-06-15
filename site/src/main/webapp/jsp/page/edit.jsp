@@ -40,7 +40,7 @@
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select name="authorId">
-    <option value=">Select Author Id...</option>
+    <option value="0">Select Author Id...</option>
     <c:forEach items='${lookupMap.get("authorId")}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'
       <c:if test="${bean.authorId.id == lookupBean.id}">selected="true"</c:if>
@@ -54,7 +54,7 @@
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select name="parentId">
-    <option value=">Select Parent Page Id...</option>
+    <option value="0">Select Parent Page Id...</option>
     <c:forEach items='${lookupMap.get("parentId")}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'
       <c:if test="${bean.parentId.id == lookupBean.id}">selected="true"</c:if>

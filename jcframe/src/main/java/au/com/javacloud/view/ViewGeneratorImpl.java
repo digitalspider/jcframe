@@ -247,7 +247,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				html.append("  <!-- Cloudflare setting -->\n");
 				html.append("  <!--email_off-->\n");
 				html.append("  <select name=\"${fieldName}\">\n");
-				html.append("    <option value=\">Select ${fieldHeader} Id...</option>\n");
+				html.append("    <option value=\"0\">Select ${fieldHeader} Id...</option>\n");
 				html.append("    <c:forEach items='${lookupMap.get(\"${fieldName}\")}' var=\"lookupBean\">\n");
 				html.append("      <option value='<c:out value=\"${lookupBean.id}\"/>'\n");
 				html.append("      <c:if test=\"${bean.${fieldName}.id == lookupBean.id}\">selected=\"true\"</c:if>\n");
