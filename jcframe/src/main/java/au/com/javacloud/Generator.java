@@ -1,4 +1,4 @@
-package au.com.javacloud.util;
+package au.com.javacloud;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import au.com.javacloud.annotation.ExcludeDBWrite;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
+import au.com.javacloud.util.Statics;
 import au.com.javacloud.view.ViewGenerator;
 import au.com.javacloud.view.ViewGeneratorImpl;
 import au.com.javacloud.view.ViewType;
