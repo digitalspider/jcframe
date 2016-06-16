@@ -22,9 +22,11 @@ import au.com.javacloud.annotation.DisplayOrder;
 public class Page extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
+	@DisplayHeader("Created Date")
     protected Date cdate = new Date();
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
+	@DisplayHeader("Last Modified Date")
 	protected Date mdate = new Date();
     @DisplayHtml
     protected String description;

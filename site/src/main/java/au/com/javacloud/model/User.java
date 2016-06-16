@@ -2,6 +2,7 @@ package au.com.javacloud.model;
 
 import java.util.Date;
 
+import au.com.javacloud.annotation.DisplayHeader;
 import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.DisplayType;
 import au.com.javacloud.annotation.DisplayValueColumn;
@@ -16,9 +17,11 @@ import au.com.javacloud.annotation.ExcludeView;
 public class User extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
+	@DisplayHeader("Created Date")
     private Date cdate = new Date();
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
+	@DisplayHeader("Last Modified Date")
     private Date mdate = new Date();
     private String description;
     private String tags;
