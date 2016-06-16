@@ -6,6 +6,7 @@ import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.DisplayType;
 import au.com.javacloud.annotation.DisplayValueColumn;
 import au.com.javacloud.annotation.ExcludeDBWrite;
+import au.com.javacloud.annotation.ExcludeView;
 
 /**
  * Created by david on 22/05/16.
@@ -13,8 +14,10 @@ import au.com.javacloud.annotation.ExcludeDBWrite;
 @DisplayValueColumn("email")
 @DisplayOrder("username,email,firstname,lastname,type,description")
 public class User extends BaseBean {
-	@ExcludeDBWrite	
+	@ExcludeView(pages="edit,list")
+	@ExcludeDBWrite
     private Date cdate = new Date();
+	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
     private Date mdate = new Date();
     private String description;

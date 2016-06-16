@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.DisplayHeader;
 import au.com.javacloud.annotation.DisplayType;
-import au.com.javacloud.annotation.ExcludeDBRead;
-import au.com.javacloud.annotation.ExcludeDBWrite;
 import au.com.javacloud.dao.BaseDAO;
 import au.com.javacloud.model.BaseBean;
 
@@ -190,21 +188,21 @@ public class ReflectUtil {
 		return getFieldName(method.getName());
     }
 
-	public static String getFieldHeader(Class classType, String fieldName) throws NoSuchFieldException {
+	public static String getFieldHeader(Class<? extends BaseBean> classType, String fieldName) throws NoSuchFieldException {
 		if (isAnnotationPresent(classType, fieldName, DisplayHeader.class)) {
 			return getAnnotation(classType, fieldName, DisplayHeader.class).value();
 		}
 		return getFirstLetterUpperCase(fieldName); // TODO: Put spaces in between each uppercase letter
 	}
 
-	public static String getFieldDisplayType(Class classType, String fieldName) throws NoSuchFieldException {
+	public static String getFieldDisplayType(Class<? extends BaseBean> classType, String fieldName) throws NoSuchFieldException {
 		if (isAnnotationPresent(classType, fieldName, DisplayType.class)) {
 			return getAnnotation(classType, fieldName, DisplayType.class).value();
 		}
 		return "text";
 	}
 
-	public static boolean isAnnotationPresent(Class classType, String fieldName, Class annotationClass) {
+	public static boolean isAnnotationPresent(Class<? extends BaseBean> classType, String fieldName, Class annotationClass) {
 		Map<String,Field> fields = getFields(classType);
 		Field field = fields.get(fieldName);
 		if (field!=null) {
@@ -213,11 +211,11 @@ public class ReflectUtil {
 		return false;
 	}
 
-	public static <T extends Annotation> T getAnnotation(Class classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {
+	public static <T extends Annotation> T getAnnotation(Class<? extends BaseBean> classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {
 		return getAnnotation(classType, getFieldName(method), annotationClass);
 	}
 
-	public static <T extends Annotation> T getAnnotation(Class classType, String fieldName, Class<T> annotationClass) throws NoSuchFieldException {
+	public static <T extends Annotation> T getAnnotation(Class<? extends BaseBean> classType, String fieldName, Class<T> annotationClass) throws NoSuchFieldException {
 		Map<String,Field> fields = getFields(classType);
 		Field field = fields.get(fieldName);
 		if (field!=null) {

@@ -1,6 +1,7 @@
 package au.com.javacloud.model;
 
 import au.com.javacloud.annotation.ExcludeDBWrite;
+import au.com.javacloud.annotation.ExcludeView;
 
 /**
  * Created by david on 22/05/16.
@@ -9,6 +10,7 @@ import au.com.javacloud.annotation.ExcludeDBWrite;
 public class BaseBean {
 	@ExcludeDBWrite
     protected int id;
+	@ExcludeView
     @ExcludeDBWrite
     protected String displayValue;
 

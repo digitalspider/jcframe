@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.DisplayHtml;
-import au.com.javacloud.annotation.ExcludeDBWrite;
+import au.com.javacloud.annotation.ExcludeView;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
 import au.com.javacloud.util.ReflectUtil;
@@ -39,7 +39,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				File destDir = new File(directory);
 				LOG.info("destDir="+destDir.getAbsolutePath());
 				Class<? extends BaseBean> classType = classMap.get(beanName);
-				Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, ExcludeDBWrite.class);
+				Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, null);
 
 				for (ViewType viewType : ViewType.values()) {
 					if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
@@ -88,17 +88,30 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			String content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 			html.append(content);
 
+			// TODO: implement display order sorting
+			
 			// Handle remaining fields
 			for (Method method : methodMap.keySet()) {
-				Class fieldClass = methodMap.get(method);
+				boolean displayForView = true;
 				fieldName = ReflectUtil.getFieldName(method);
-				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-				type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-				other = null;
-				isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-				isBean = ReflectUtil.isBean(methodMap.get(method));
-				content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
-				html.append(content);
+				if (ReflectUtil.isAnnotationPresent(classType, fieldName, ExcludeView.class)) {
+					String value = ReflectUtil.getAnnotation(classType, fieldName, ExcludeView.class).pages();
+					if (value.equals("all")) {
+						displayForView = false;
+					} else if (value.contains(viewType.name().toLowerCase())) {
+						displayForView = false;
+					}
+				}
+				if (displayForView) {
+					Class fieldClass = methodMap.get(method);
+					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+					other = null;
+					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
+					isBean = ReflectUtil.isBean(methodMap.get(method));
+					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+					html.append(content);
+				}
 			}
 			break;
 		case LIST:

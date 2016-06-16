@@ -5,6 +5,7 @@ import java.util.Date;
 import au.com.javacloud.annotation.DisplayHeader;
 import au.com.javacloud.annotation.DisplayValueColumn;
 import au.com.javacloud.annotation.ExcludeDBWrite;
+import au.com.javacloud.annotation.ExcludeView;
 import au.com.javacloud.annotation.Secure;
 import au.com.javacloud.annotation.TableName;
 import au.com.javacloud.annotation.DisplayHtml;
@@ -19,8 +20,10 @@ import au.com.javacloud.annotation.DisplayOrder;
 @DisplayValueColumn("title")
 @DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")
 public class Page extends BaseBean {
+	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
     protected Date cdate = new Date();
+	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	protected Date mdate = new Date();
     @DisplayHtml
