@@ -5,12 +5,15 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.annotation.DisplayHtml;
+import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.ExcludeView;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
@@ -72,41 +75,36 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
 		
+		String[] orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
+		Map<Method, Class> sortedMethodMap = sortMethodMap(classType, methodMap, orderList);
+		
+		String fieldName;
+		String fieldHeader;
+		String type = "text";
+		String other = null;
+		boolean isHtml = false;
+		boolean isBean = false;
+		String content;
+		
 		switch (viewType) {
 		case SHOW:
 		case EDIT:
-			// Handle BaseBean id
-			String fieldName = "id";
-			String fieldHeader = classType.getSimpleName()+" ID";
-			String type = "text";
-			String other = null;
-			boolean isHtml = false;
-			boolean isBean = false;
-			if (viewType == ViewType.EDIT) {
-				other = "readonly=\"readonly\"";
-			}
-			String content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
-			html.append(content);
-
-			// TODO: implement display order sorting
-			
-			// Handle remaining fields
-			for (Method method : methodMap.keySet()) {
-				boolean displayForView = true;
+			// Handle fields
+			for (Method method : sortedMethodMap.keySet()) {
 				fieldName = ReflectUtil.getFieldName(method);
-				if (ReflectUtil.isAnnotationPresent(classType, fieldName, ExcludeView.class)) {
-					String value = ReflectUtil.getAnnotation(classType, fieldName, ExcludeView.class).pages();
-					if (value.equals("all")) {
-						displayForView = false;
-					} else if (value.contains(viewType.name().toLowerCase())) {
-						displayForView = false;
-					}
-				}
-				if (displayForView) {
-					Class fieldClass = methodMap.get(method);
-					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+				if (validForView(viewType, classType, fieldName)) {
+					Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 					other = null;
+					content = "";
+					if (fieldName.equals(BaseBean.FIELD_ID)) {
+						fieldHeader = classType.getSimpleName()+" ID";
+						if (viewType == ViewType.EDIT) {
+							other = "readonly=\"readonly\"";
+						}
+					} else {
+						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					}
+					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 					isBean = ReflectUtil.isBean(methodMap.get(method));
 					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
@@ -126,12 +124,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldHeader = "";
 			type = "text";
 			other = null;
-			for (Method method : methodMap.keySet()) {
+			for (Method method : sortedMethodMap.keySet()) {
 				fieldName = ReflectUtil.getFieldName(method);
-				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-				type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-				if (!type.equals("password")) {
-					html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
+				if (validForView(viewType, classType, fieldName)) {
+					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+					if (!type.equals("password")) {
+						html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
+					}
 				}
 			}
 			html.append("    <th colspan=\"2\">Action</th>\n");
@@ -143,30 +143,28 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append("  <c:forEach items=\"${beans}\" var=\"bean\">\n");
 			html.append("    <tr>\n");
 
-			// Handle BaseBean id
-			fieldName = "id";
-			fieldHeader = classType.getSimpleName()+" ID";
-			type = "text";
-			isHtml = false;
-			isBean = false;
-			content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
-			html.append(content);
-			
-			// Handle other fields
-			for (Method method : methodMap.keySet()) {
-				Class fieldClass = methodMap.get(method);
+			// Handle fields
+			for (Method method : sortedMethodMap.keySet()) {
+				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 				fieldName = ReflectUtil.getFieldName(method);
-				fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-				isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-				isBean = ReflectUtil.isBean(methodMap.get(method));
-				type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-				content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
-				html.append(content);
+				if (validForView(viewType, classType, fieldName)) {
+					if (fieldName.equals(BaseBean.FIELD_ID)) {
+						fieldHeader = classType.getSimpleName()+" ID";
+					} else {
+						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					}
+					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
+					isBean = ReflectUtil.isBean(methodMap.get(method));
+					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+					html.append(content);
+				}
 			}
-			
+			// Actions
 			html.append("      <td><a href=\"${beanUrl}/edit/<c:out value='${bean.id}'/>\">Update</a></td>\n");
 			html.append("      <td><a href=\"${beanUrl}/delete/<c:out value='${bean.id}'/>\">Delete</a></td>\n");
 			
+			// End Body
 			html.append("    </tr>");
 			html.append("  </c:forEach>");
 			html.append("</tbody>\n");
@@ -174,6 +172,54 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			break;
 		}
 		return html.toString();
+	}
+
+	@Override
+	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName) {
+		boolean displayForView = true;
+		if (ReflectUtil.isAnnotationPresent(classType, fieldName, ExcludeView.class)) {
+			try {
+				String value = ReflectUtil.getAnnotation(classType, fieldName, ExcludeView.class).pages();
+				if (value.equals("all")) {
+					displayForView = false;
+				} else if (value.contains(viewType.name().toLowerCase())) {
+					displayForView = false;
+				}
+			} catch (NoSuchFieldException e) {
+				LOG.error(e,e);
+				return false;
+			}
+		}
+		return displayForView;
+	}
+
+	@Override
+	public Map<Method, Class> sortMethodMap(Class<? extends BaseBean> classType, Map<Method, Class> methodMap, String[] orderList) {
+		Set<Method> methods = methodMap.keySet();
+		Map<Method,Class> sortedMethodMap = new TreeMap<Method,Class>();
+		// Insert first id field
+		for (Method method : methods) {
+			String fieldName = ReflectUtil.getFieldName(method);
+			if (fieldName.equals("id")) {
+				sortedMethodMap.put(method, methodMap.get(method));
+				methodMap.remove(method);
+				break;
+			}
+		}
+		// Insert methods in the orderList
+		for (String orderedField : orderList) {
+			for (Method method : methods) {
+				String fieldName = ReflectUtil.getFieldName(method);
+				if (fieldName.equals(orderedField)) {
+					sortedMethodMap.put(method, methodMap.get(method));
+					methodMap.remove(method);
+					break;
+				}
+			}
+		}
+		// Add remaining values
+		sortedMethodMap.putAll(methodMap);
+		return sortedMethodMap;
 	}
 
 	@Override

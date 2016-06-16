@@ -19,6 +19,10 @@ public interface ViewGenerator {
 
 	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
 	
+	public Map<Method, Class> sortMethodMap(Class<? extends BaseBean> classType, Map<Method, Class> methodMap, String[] orderList);
+	
+	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName);
+	
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception;
 
 	public String getTemplatedContent(ViewType viewType, String fieldName, String fieldHeader, String type, String other, boolean isHtml, boolean isBean);

@@ -116,7 +116,7 @@ public class Statics {
 						}
 						hiddenSecureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					}
-					BaseDAO dao = new BaseDAOImpl<>();
+					BaseDAO<? extends BaseBean> dao = new BaseDAOImpl<>();
 					dao.init(classType, dataSource);
 					daoMap.put(classType, dao);
 					BaseController controller = new BaseControllerImpl();
@@ -124,8 +124,22 @@ public class Statics {
 					controllerMap.put(classType, controller);
 				}
 				LOG.info("classTypeMap="+classTypeMap);
-				// Insert custom daos
+				
+				// Find custom daos
 				List<Class> classTypes = ReflectUtil.getClasses(packageName, BaseDAO.class, true);
+				// Allow for a complete BaseDAO override!
+				for (Class classType : classTypes) {
+					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
+					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
+						BaseDAO overrideDao = (BaseDAO) classType.newInstance();
+						overrideDao.init(beanClassType, dataSource);
+						for (Class key : daoMap.keySet()) {
+							daoMap.put(key, overrideDao);
+						}
+						break;
+					}
+				}
+				// Insert custom daos
 				for (Class classType : classTypes) {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
@@ -135,8 +149,22 @@ public class Statics {
 					}
 				}
 				LOG.info("daoMap="+daoMap);
-				// Insert custom controllers
+				
+				// Find custom controllers
 				classTypes = ReflectUtil.getClasses(packageName, BaseController.class, true);
+				// Allow for a complete BaseController override!
+				for (Class classType : classTypes) {
+					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
+					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
+						BaseController overrideController = (BaseController) classType.newInstance();
+						overrideController.init(beanClassType, authService);
+						for (Class key : controllerMap.keySet()) {
+							controllerMap.put(key, overrideController);
+						}
+						break;
+					}
+				}
+				// Insert custom controllers
 				for (Class classType : classTypes) {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
