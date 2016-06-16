@@ -19,7 +19,7 @@ public interface ViewGenerator {
 
 	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
 	
-	public Map<Method, Class> sortMethodMap(Class<? extends BaseBean> classType, Map<Method, Class> methodMap, String[] orderList);
+	public Map<Method, Class> sortMethodMap(Map<Method, Class> methodMap, String[] orderList);
 	
 	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName);
 	

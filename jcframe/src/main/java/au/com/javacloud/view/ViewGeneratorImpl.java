@@ -76,7 +76,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		StringBuffer html = new StringBuffer();
 		
 		String[] orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
-		Map<Method, Class> sortedMethodMap = sortMethodMap(classType, methodMap, orderList);
+		Map<Method, Class> sortedMethodMap = sortMethodMap(methodMap, orderList);
 		
 		String fieldName;
 		String fieldHeader;
@@ -194,7 +194,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public Map<Method, Class> sortMethodMap(Class<? extends BaseBean> classType, Map<Method, Class> methodMap, String[] orderList) {
+	public Map<Method, Class> sortMethodMap(Map<Method, Class> methodMap, String[] orderList) {
 		Set<Method> methods = methodMap.keySet();
 		Map<Method,Class> sortedMethodMap = new TreeMap<Method,Class>();
 		// Insert first id field
