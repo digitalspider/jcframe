@@ -3,12 +3,17 @@ package au.com.javacloud.view;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -17,6 +22,7 @@ import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.ExcludeView;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
+import au.com.javacloud.util.MethodWrapper;
 import au.com.javacloud.util.ReflectUtil;
 import au.com.javacloud.util.Statics;
 
@@ -76,7 +82,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		StringBuffer html = new StringBuffer();
 		
 		String[] orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
-		Map<Method, Class> sortedMethodMap = sortMethodMap(methodMap, orderList);
+		Map<MethodWrapper, Class> sortedMethodMap = sortMethodMap(methodMap, orderList);
 		
 		String fieldName;
 		String fieldHeader;
@@ -90,7 +96,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case SHOW:
 		case EDIT:
 			// Handle fields
-			for (Method method : sortedMethodMap.keySet()) {
+			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
+				Method method = methodWrapper.getMethod();
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
 					Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
@@ -106,7 +113,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					}
 					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-					isBean = ReflectUtil.isBean(methodMap.get(method));
+					isBean = ReflectUtil.isBean(fieldClass);
 					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 					html.append(content);
 				}
@@ -124,7 +131,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldHeader = "";
 			type = "text";
 			other = null;
-			for (Method method : sortedMethodMap.keySet()) {
+			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
+				Method method = methodWrapper.getMethod();
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
 					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
@@ -144,7 +152,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append("    <tr>\n");
 
 			// Handle fields
-			for (Method method : sortedMethodMap.keySet()) {
+			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
+				Method method = methodWrapper.getMethod();
 				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
@@ -154,7 +163,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 					}
 					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-					isBean = ReflectUtil.isBean(methodMap.get(method));
+					isBean = ReflectUtil.isBean(fieldClass);
 					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
 					html.append(content);
@@ -194,15 +203,15 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public Map<Method, Class> sortMethodMap(Map<Method, Class> methodMap, String[] orderList) {
-		Set<Method> methods = methodMap.keySet();
-		Map<Method,Class> sortedMethodMap = new TreeMap<Method,Class>();
+	public Map<MethodWrapper, Class> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList) {
+		List<Method> methods = new ArrayList<Method>(methodMap.keySet());
+		Map<MethodWrapper,Class> sortedMethodMap = new TreeMap<MethodWrapper,Class>();
 		// Insert first id field
 		for (Method method : methods) {
 			String fieldName = ReflectUtil.getFieldName(method);
 			if (fieldName.equals("id")) {
-				sortedMethodMap.put(method, methodMap.get(method));
-				methodMap.remove(method);
+				sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+				methods.remove(method);
 				break;
 			}
 		}
@@ -211,14 +220,16 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			for (Method method : methods) {
 				String fieldName = ReflectUtil.getFieldName(method);
 				if (fieldName.equals(orderedField)) {
-					sortedMethodMap.put(method, methodMap.get(method));
-					methodMap.remove(method);
+					sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+					methods.remove(method);
 					break;
 				}
 			}
 		}
 		// Add remaining values
-		sortedMethodMap.putAll(methodMap);
+		for (Method method : methods) {
+			sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+		}
 		return sortedMethodMap;
 	}
 

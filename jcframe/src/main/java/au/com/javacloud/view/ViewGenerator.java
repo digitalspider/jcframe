@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import au.com.javacloud.model.BaseBean;
+import au.com.javacloud.util.MethodWrapper;
 
 public interface ViewGenerator {
 
@@ -19,7 +20,7 @@ public interface ViewGenerator {
 
 	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
 	
-	public Map<Method, Class> sortMethodMap(Map<Method, Class> methodMap, String[] orderList);
+	public Map<MethodWrapper, Class> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList);
 	
 	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName);
 	
