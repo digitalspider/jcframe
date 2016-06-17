@@ -2,10 +2,10 @@ package au.com.javacloud.view;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import au.com.javacloud.model.BaseBean;
-import au.com.javacloud.util.MethodWrapper;
 
 public interface ViewGenerator {
 
@@ -20,7 +20,7 @@ public interface ViewGenerator {
 
 	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
 	
-	public Map<MethodWrapper, Class> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList);
+	public List<Method> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList);
 	
 	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName);
 	

@@ -6,14 +6,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -22,7 +18,7 @@ import au.com.javacloud.annotation.DisplayOrder;
 import au.com.javacloud.annotation.ExcludeView;
 import au.com.javacloud.annotation.IndexPage;
 import au.com.javacloud.model.BaseBean;
-import au.com.javacloud.util.MethodWrapper;
+import au.com.javacloud.util.MethodComparator;
 import au.com.javacloud.util.ReflectUtil;
 import au.com.javacloud.util.Statics;
 
@@ -82,7 +78,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		StringBuffer html = new StringBuffer();
 		
 		String[] orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
-		Map<MethodWrapper, Class> sortedMethodMap = sortMethodMap(methodMap, orderList);
+		List<Method> sortedMethodMap = sortMethodMap(methodMap, orderList);
 		
 		String fieldName;
 		String fieldHeader;
@@ -96,8 +92,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case SHOW:
 		case EDIT:
 			// Handle fields
-			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
-				Method method = methodWrapper.getMethod();
+			for (Method method : sortedMethodMap) {
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
 					Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
@@ -131,8 +126,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldHeader = "";
 			type = "text";
 			other = null;
-			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
-				Method method = methodWrapper.getMethod();
+			for (Method method : sortedMethodMap) {
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
 					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
@@ -152,8 +146,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append("    <tr>\n");
 
 			// Handle fields
-			for (MethodWrapper methodWrapper : sortedMethodMap.keySet()) {
-				Method method = methodWrapper.getMethod();
+			for (Method method : sortedMethodMap) {
 				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
@@ -203,14 +196,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public Map<MethodWrapper, Class> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList) {
+	public List<Method> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList) {
 		List<Method> methods = new ArrayList<Method>(methodMap.keySet());
-		Map<MethodWrapper,Class> sortedMethodMap = new TreeMap<MethodWrapper,Class>();
+		List<Method> sortedMethodList = new ArrayList<Method>();
 		// Insert first id field
 		for (Method method : methods) {
 			String fieldName = ReflectUtil.getFieldName(method);
 			if (fieldName.equals("id")) {
-				sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+				sortedMethodList.add(method);
 				methods.remove(method);
 				break;
 			}
@@ -220,17 +213,18 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			for (Method method : methods) {
 				String fieldName = ReflectUtil.getFieldName(method);
 				if (fieldName.equals(orderedField)) {
-					sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+					sortedMethodList.add(method);
 					methods.remove(method);
 					break;
 				}
 			}
 		}
 		// Add remaining values
+		Collections.sort(methods,new MethodComparator());
 		for (Method method : methods) {
-			sortedMethodMap.put(new MethodWrapper(method), methodMap.get(method));
+			sortedMethodList.add(method);
 		}
-		return sortedMethodMap;
+		return sortedMethodList;
 	}
 
 	@Override
