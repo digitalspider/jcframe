@@ -14,7 +14,8 @@ public interface ViewGenerator {
 	public static final String PATH_TEMPLATE_FIELD = PATH_TEMPLATE_PAGE+"field/";
 	public static final String PATH_TEMPLATE_FIELD_TEXT = PATH_TEMPLATE_FIELD+"text/";
 	public static final String PATH_TEMPLATE_FIELD_BEAN = PATH_TEMPLATE_FIELD+"bean/";
-	public static final String PLACEHOLDER = "##FIELDS##";
+	public static final String PLACEHOLDER_FIELDS = "##FIELDS##";
+	public static final String PLACEHOLDER_FIELDHEADERS = "##FIELDHEADERS##";
 
 	public void generatePages(List<String> beans) throws Exception;
 

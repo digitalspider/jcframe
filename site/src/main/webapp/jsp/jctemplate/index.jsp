@@ -23,9 +23,24 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
+        <table>
+        <thead>
+          <tr>
+##FIELDHEADERS##
+            <th colspan="2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach items="${beans}" var="bean">
+            <tr>
 ##FIELDS##
+              <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+              <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+            </tr>  </c:forEach></tbody>
+        </table>
+
         <p>
-            <a href="${beanUrl}/insert">Add Page</a>
+            <a href="${beanUrl}/insert">Add ${beanName}</a>
         </p>
     </body>
 </html>

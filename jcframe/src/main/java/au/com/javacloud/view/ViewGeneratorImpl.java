@@ -51,7 +51,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
 							String html = generateView(viewType, beanName, classType, methodMap);
 							String pageContent = pageContentTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
-							pageContent = pageContent.replace(PLACEHOLDER, html);
+							String[] htmlParts = html.split("@@@"); // split on delimiter
+							if (htmlParts.length==2) {
+								pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
+								pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
+							} else {
+								pageContent = pageContent.replace(PLACEHOLDER_FIELDS, html);
+							}
 							File outputFile = new File(destDir, viewType.getPageName());
 							FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
 						}
@@ -65,10 +71,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
     public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException {
     	Map<ViewType,String> pageContentTemplates = new HashMap<>();
-		
+		boolean displayLog = true;
         for (ViewType viewType : ViewType.values()) {
         	File templateFile = new File(templatePageDirectory+viewType.getPageName());
-        	LOG.info("templatePageFile="+templateFile.getAbsolutePath());
+			if (displayLog) {
+				LOG.info("templateFile=" + templateFile.getAbsolutePath());
+				displayLog = false;
+			}
         	final String pageContentTemplate = FileUtils.readFileToString(templateFile, "UTF-8");
         	pageContentTemplates.put(viewType, pageContentTemplate);
         }
@@ -118,11 +127,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			break;
 		case LIST:
 		case INDEX:
-			html.append("<table>\n");
-			
-			// DisplayHeader
-			html.append("<thead>\n");
-			html.append("  <tr>\n");
+			// Display headers
 			fieldName = "";
 			fieldHeader = "";
 			type = "text";
@@ -130,23 +135,21 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			for (Method method : sortedMethodMap) {
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
-					fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					if (fieldName.equals(BaseBean.FIELD_ID)) {
+						fieldHeader = classType.getSimpleName()+" ID";
+					} else {
+						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+					}
 					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					if (!type.equals("password")) {
 						html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
 					}
 				}
 			}
-			html.append("    <th colspan=\"2\">Action</th>\n");
-			html.append("  </tr>\n");
-			html.append("</thead>\n");
-			
-			// Body
-			html.append("<tbody>\n");
-			html.append("  <c:forEach items=\"${beans}\" var=\"bean\">\n");
-			html.append("    <tr>\n");
 
-			// Handle fields
+			html.append("@@@"); // DELIMITER for HEADERS
+
+			// Display fields
 			for (Method method : sortedMethodMap) {
 				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 				fieldName = ReflectUtil.getFieldName(method);
@@ -163,15 +166,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					html.append(content);
 				}
 			}
-			// Actions
-			html.append("      <td><a href=\"${beanUrl}/edit/<c:out value='${bean.id}'/>\">Update</a></td>\n");
-			html.append("      <td><a href=\"${beanUrl}/delete/<c:out value='${bean.id}'/>\">Delete</a></td>\n");
-			
-			// End Body
-			html.append("    </tr>");
-			html.append("  </c:forEach>");
-			html.append("</tbody>\n");
-			html.append("</table>\n");				
 			break;
 		}
 		return html.toString();

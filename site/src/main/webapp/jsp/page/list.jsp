@@ -23,10 +23,10 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
-<table>
-<thead>
-  <tr>
-    <th><a href="${beanUrl}/config/order/id">Id</a></th>
+        <table>
+        <thead>
+          <tr>
+    <th><a href="${beanUrl}/config/order/id">Page ID</a></th>
     <th><a href="${beanUrl}/config/order/title">Title</a></th>
     <th><a href="${beanUrl}/config/order/url">Url</a></th>
     <th><a href="${beanUrl}/config/order/description">Description</a></th>
@@ -36,26 +36,30 @@
     <th><a href="${beanUrl}/config/order/status">Status</a></th>
     <th><a href="${beanUrl}/config/order/authorId">Author</a></th>
     <th><a href="${beanUrl}/config/order/parentId">Parent Page</a></th>
-    <th colspan="2">Action</th>
-  </tr>
-</thead>
-<tbody>
-  <c:forEach items="${beans}" var="bean">
-    <tr>
-      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
-      <td><c:out value="${bean.title}" escapeXml="false"/></td>
-      <td><c:out value="${bean.url}" /></td>
-      <td><c:out value="${bean.description}" escapeXml="false"/></td>
-      <td><c:out value="${bean.content}" escapeXml="false"/></td>
-      <td><c:out value="${bean.tags}" /></td>
-      <td><c:out value="${bean.type}" /></td>
-      <td><c:out value="${bean.status}" /></td>
-      <td><a href="${baseUrl}/authorId/show/<c:out value='${bean.authorId.id}'/>"><c:out value="${bean.authorId.displayValue}" /></a></td>
-      <td><a href="${baseUrl}/parentId/show/<c:out value='${bean.parentId.id}'/>"><c:out value="${bean.parentId.displayValue}" /></a></td>
-      <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-      <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
-    </tr>  </c:forEach></tbody>
-</table>
+
+            <th colspan="2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach items="${beans}" var="bean">
+            <tr>
+              <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+              <td><c:out value="${bean.title}" escapeXml="false"/></td>
+              <td><c:out value="${bean.url}" /></td>
+              <td><c:out value="${bean.description}" escapeXml="false"/></td>
+              <td><c:out value="${bean.content}" escapeXml="false"/></td>
+              <td><c:out value="${bean.tags}" /></td>
+              <td><c:out value="${bean.type}" /></td>
+              <td><c:out value="${bean.status}" /></td>
+              <td><a href="${baseUrl}/authorId/show/<c:out value='${bean.authorId.id}'/>"><c:out value="${bean.authorId.displayValue}" /></a></td>
+              <td><a href="${baseUrl}/parentId/show/<c:out value='${bean.parentId.id}'/>"><c:out value="${bean.parentId.displayValue}" /></a></td>
+
+              <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+              <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+            </tr>
+          </c:forEach>
+        </tbody>
+        </table>
 
         <p>
             <a href="${beanUrl}/insert">Add Page</a>
