@@ -30,7 +30,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	Map<ViewType,String> beanFieldContentTemplates;
 
 	@Override
-	public void generatePages() throws Exception {
+	public void generatePages(List<String> beans) throws Exception {
 		LOG.info("generatePages() STARTED");
 		Map<ViewType,String> pageContentTemplates = getContentTemplates(PATH_TEMPLATE_PAGE);
 		LOG.debug("pageContentTemplates="+pageContentTemplates);
@@ -40,19 +40,21 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
 		for (String beanName : classMap.keySet()) {
 			if (StringUtils.isNotEmpty(beanName)) {
-				String directory = PATH_JSP + beanName + "/";
-				File destDir = new File(directory);
-				LOG.info("destDir="+destDir.getAbsolutePath());
-				Class<? extends BaseBean> classType = classMap.get(beanName);
-				Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, null);
+				if (beans.isEmpty() || beans.contains(beanName)) {
+					String directory = PATH_JSP + beanName + "/";
+					File destDir = new File(directory);
+					LOG.info("destDir=" + destDir.getAbsolutePath());
+					Class<? extends BaseBean> classType = classMap.get(beanName);
+					Map<Method, Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, null);
 
-				for (ViewType viewType : ViewType.values()) {
-					if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
-						String html = generateView(viewType, beanName, classType, methodMap);
-						String pageContent = pageContentTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
-						pageContent = pageContent.replace(PLACEHOLDER, html);
-						File outputFile = new File(destDir,viewType.getPageName());
-						FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
+					for (ViewType viewType : ViewType.values()) {
+						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
+							String html = generateView(viewType, beanName, classType, methodMap);
+							String pageContent = pageContentTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+							pageContent = pageContent.replace(PLACEHOLDER, html);
+							File outputFile = new File(destDir, viewType.getPageName());
+							FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
+						}
 					}
 				}
 			}
@@ -121,7 +123,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			// DisplayHeader
 			html.append("<thead>\n");
 			html.append("  <tr>\n");
-			html.append("    <th><a href=\"${beanUrl}/config/order/id\">"+classType.getSimpleName()+" ID</a></th>\n");
 			fieldName = "";
 			fieldHeader = "";
 			type = "text";

@@ -23,17 +23,25 @@
   <label for="url">Url</label>
   <input type="text" id="url" name="url" value='<c:out value="${bean.url}" />' placeholder="Url"  />
 </div>
+<div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
+  <label for="description">Description</label>
+  <input type="text" id="description" name="description" value='<c:out value="${bean.description}" />' placeholder="Description"  />
+</div>
 <div class="fieldrow" id="fieldrow_content" name="fieldrow_content">
   <label for="content">Content</label>
   <input type="text" id="content" name="content" value='<c:out value="${bean.content}" />' placeholder="Content"  />
+</div>
+<div class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
+  <label for="tags">Tags</label>
+  <input type="text" id="tags" name="tags" value='<c:out value="${bean.tags}" />' placeholder="Tags"  />
 </div>
 <div class="fieldrow" id="fieldrow_type" name="fieldrow_type">
   <label for="type">Type</label>
   <input type="text" id="type" name="type" value='<c:out value="${bean.type}" />' placeholder="Type"  />
 </div>
-<div class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
-  <label for="tags">Tags</label>
-  <input type="text" id="tags" name="tags" value='<c:out value="${bean.tags}" />' placeholder="Tags"  />
+<div class="fieldrow" id="fieldrow_status" name="fieldrow_status">
+  <label for="status">Status</label>
+  <input type="text" id="status" name="status" value='<c:out value="${bean.status}" />' placeholder="Status"  />
 </div>
 <div class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
   <label for="authorId">Author</label>
@@ -62,14 +70,6 @@
     </c:forEach>
   </select>
   <!--/email_off-->
-</div>
-<div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
-  <label for="description">Description</label>
-  <input type="text" id="description" name="description" value='<c:out value="${bean.description}" />' placeholder="Description"  />
-</div>
-<div class="fieldrow" id="fieldrow_status" name="fieldrow_status">
-  <label for="status">Status</label>
-  <input type="text" id="status" name="status" value='<c:out value="${bean.status}" />' placeholder="Status"  />
 </div>
 
 		</fieldset>

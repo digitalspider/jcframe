@@ -16,7 +16,7 @@ public interface ViewGenerator {
 	public static final String PATH_TEMPLATE_FIELD_BEAN = PATH_TEMPLATE_FIELD+"bean/";
 	public static final String PLACEHOLDER = "##FIELDS##";
 
-	public void generatePages() throws Exception;
+	public void generatePages(List<String> beans) throws Exception;
 
 	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
 	

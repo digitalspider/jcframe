@@ -2,6 +2,9 @@ package au.com.javacloud;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -22,8 +25,14 @@ public class Generator {
 
     public static void main(String[] args) throws Exception {
         System.out.println("START");
-		ViewGenerator viewGenerator = Statics.getViewGenerator();
-        viewGenerator.generatePages();
+        List<String> beans = new ArrayList<String>();
+        if (args.length>0) {
+            System.out.println("args.length="+args.length);
+            beans = Arrays.asList(args[0].split(","));
+        }
+        System.out.println("beans="+beans);
+        ViewGenerator viewGenerator = Statics.getViewGenerator();
+        viewGenerator.generatePages(beans);
         System.out.println("DONE");
     }
 }
