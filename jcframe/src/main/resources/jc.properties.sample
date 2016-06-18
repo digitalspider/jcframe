@@ -1,7 +1,8 @@
 # JavaCloud configuration file
 
-#bean.package.name=au.com.javacloud.model
-#controller.package.name=au.com.javacloud.controller
+#package.name=au.com.javacloud.jcframe
+
 #auth.class=au.com.javacloud.auth.BaseAuthServiceImpl
+#viewgen.class=au.com.javacloud.view.ViewGeneratorImpl
 #ds.class=au.com.javacloud.dao.BaseDataSource
-#ds.config.file=db.properties.sample
+#ds.config.file=db.properties

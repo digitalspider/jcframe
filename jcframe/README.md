@@ -22,6 +22,7 @@ Special **annotation** can be added to BaseBeans.
 @DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")
 public class Page extends BaseBean {
 }
+```
 
 The **BaseController** interface provides:
 ```java

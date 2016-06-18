@@ -23,13 +23,15 @@ The development process is:
       <version>1.0-SNAPSHOT</version>
     </dependency>
 ```
-* Controllers are automatically created for each *bean*, however you can create custom ones like this:
+* DAO and Controllers are automatically created for each *bean*, however you can create custom ones like this:
+ * For more details see [jcframe](https://github.com/digitalspider/jcframe/tree/master/jcframe)
+ * For complete override of all Controllers set **@BeanClass(BaseBean.class)**
 ```java
 import java.security.Principal;
 import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.Page;
 
-@BeanClass(bean = Page.class)
+@BeanClass(Page.class)
 public class PageController extends BaseControllerImpl<Page,Principal> {
     @Override
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -76,10 +78,12 @@ password=test
 ```properties
 # JavaCloud configuration file
 
-package.model.name=au.com.javacloud.model
+package.name=com.mysite
+
 #auth.class=au.com.javacloud.auth.BaseAuthServiceImpl
+#viewgen.class=au.com.javacloud.view.ViewGeneratorImpl
 #ds.class=au.com.javacloud.dao.BaseDataSource
-#ds.config.file=db.properties.sample
+#ds.config.file=db.properties
 ```
 * Build your application
  * <code>mvn package</code>

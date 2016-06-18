@@ -41,7 +41,7 @@
 		           <descriptor>assembly.xml</descriptor>
                     <archive>
                         <manifest>
-                            <mainClass>au.com.javacloud.Generator</mainClass>
+                            <mainClass>au.com.javacloud.jcframe.Generator</mainClass>
                         </manifest>
                     </archive>
                     <outputDirectory>target</outputDirectory>

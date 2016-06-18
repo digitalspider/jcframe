@@ -14,7 +14,7 @@
 
     <tag>
         <name>substring</name>
-        <tag-class>au.com.javacloud.taglib.SubstringTag</tag-class>
+        <tag-class>com.mysite.taglib.SubstringTag</tag-class>
         <example>Substring function.</example>
         <attribute>
           <name>input</name>
