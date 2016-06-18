@@ -2,6 +2,8 @@ package au.com.javacloud.jcframe.controller;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -70,6 +72,10 @@ public interface BaseController<T extends BaseBean, U> {
 
     public void upload() throws Exception;
 
+    public void reloadLookupMap() throws ServletException;
+    public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean);
+    public void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, int id);
+
     public Class<T> getBeanClass();
 
     public String getBeanName();
@@ -86,5 +92,8 @@ public interface BaseController<T extends BaseBean, U> {
     
     public String getConfigProperty(String key);
     public void setConfigProperty(String key, String value);
+
+    public Map<String, List<BaseBean>> getLookupMap();
+    public Map<Class<? extends BaseBean>, List<String>> getLookupDaoFieldMap();
 
 }

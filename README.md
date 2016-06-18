@@ -56,7 +56,7 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
         <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
     </tr>
 </c:forEach>
-<a href="${beanUrl}/insert">Add Page</a>
+<a href="${beanUrl}/insertStmt">Add Page</a>
 ```
 * Create a new file for the database configuration in
  * src/main/resources/**db.properties**

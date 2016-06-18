@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected Class<T> clazz;
     protected String beanName = "bean";
     protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
+	protected Map<Class<? extends BaseBean>,List<String>> lookupDaoFieldMap = new HashMap<Class<? extends BaseBean>,List<String>>();
     protected String indexUrl = "/";
     protected String listUrl = "/";
 	protected String showUrl = "/";
@@ -105,14 +107,19 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     @SuppressWarnings("rawtypes")
 	@Override
     public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
-    	this.servletContext = servletContext;
-    	this.servletConfig = servletConfig;
+		this.servletContext = servletContext;
+		this.servletConfig = servletConfig;
 		dao.initHttp(servletConfig);
 		filePath = servletContext.getInitParameter("file-upload");
 		if (StringUtils.isBlank(filePath)) {
 			filePath = System.getProperty("java.io.tmpdir");
 		}
+		reloadLookupMap();
+	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void reloadLookupMap() throws ServletException {
 		// Configure lookupMap
     	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass(), ExcludeDBWrite.class);
     	for (Method method : fieldMethods.keySet()) {
@@ -122,14 +129,59 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     			try {
         			BaseDAO lookupDao = Statics.getDaoMap().get(lookupClass);
         			String fieldName = ReflectUtil.getFieldName(method);
+					List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
+					if (fieldNames==null) {
+						fieldNames = new ArrayList<String>();
+						lookupDaoFieldMap.put(lookupClass, fieldNames);
+					}
+					fieldNames.add(fieldName);
 					LOG.debug("fieldName="+fieldName+" lookupDao="+lookupDao);
         			lookupMap.put(fieldName,lookupDao.getLookup());
+					lookupDao.registerController(this);
     			} catch (Exception e) {
 					LOG.error(e,e);
     			}
     		}
     	}
     }
+
+	@Override
+	public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean) {
+		LOG.debug("lookupClass="+lookupClass.getName());
+		try {
+			List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
+			if (fieldNames!=null) {
+				for (String fieldName : fieldNames) {
+					List<BaseBean> beans = lookupMap.get(fieldName);
+					LOG.info("Adding bean "+bean);
+					beans.add(bean);
+				}
+			}
+		} catch (Exception e) {
+			LOG.error(e,e);
+		}
+	}
+
+	@Override
+	public void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, int id) {
+		LOG.debug("lookupClass="+lookupClass.getName());
+		try {
+			List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
+			if (fieldNames!=null) {
+				for (String fieldName : fieldNames) {
+					List<BaseBean> beans = lookupMap.get(fieldName);
+					for (BaseBean bean : beans) {
+						if (bean.getId() == id) {
+							beans.remove(bean);
+							break;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			LOG.error(e,e);
+		}
+	}
 
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		LOG.info("doAction() "+action+" START");
@@ -545,6 +597,16 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	public ServletContext getServletContext() {
 		return servletContext;
+	}
+
+	@Override
+	public Map<Class<? extends BaseBean>, List<String>> getLookupDaoFieldMap() {
+		return lookupDaoFieldMap;
+	}
+
+	@Override
+	public Map<String, List<BaseBean>> getLookupMap() {
+		return lookupMap;
 	}
 
 }

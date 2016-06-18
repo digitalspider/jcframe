@@ -13,6 +13,7 @@ import java.util.List;
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
 
+import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
 
 public interface BaseDAO<T extends BaseBean> {
@@ -23,7 +24,7 @@ public interface BaseDAO<T extends BaseBean> {
     public String getTableName();
     public Class<T> getBeanClass();
     public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception;
-    public PreparedStatement prepareStatementForSave(Connection conn, T bean) throws Exception;
+    public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception;
     public List<String> getBeanFieldNames();
     
     public void saveOrUpdate(T bean) throws Exception;
@@ -38,6 +39,7 @@ public interface BaseDAO<T extends BaseBean> {
 
     public void init(Class<T> clazz, DataSource dataSource);
     public void initHttp(ServletConfig config);
+    public void registerController(BaseController controller);
     public Connection getConnection() throws SQLException;
 
     public void toggleOrderBy(String orderBy);

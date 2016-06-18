@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayType;
@@ -174,6 +175,27 @@ public class ReflectUtil {
 		return beanFieldNames;
 	}
 
+	public static <T extends BaseBean> String getDisplayValueFromBean(T bean) {
+		String displayValue = ""+bean.getId();
+		String columnName = BaseBean.FIELD_ID;
+		if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+			columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
+		}
+		try {
+			Method method = bean.getClass().getDeclaredMethod("get" + ReflectUtil.getFirstLetterUpperCase(columnName));
+			displayValue = ""+method.invoke(bean);
+		} catch (Exception e) {
+			LOG.error(e.getMessage());
+			try {
+				Method method = bean.getClass().getDeclaredMethod("is" + ReflectUtil.getFirstLetterUpperCase(columnName));
+				displayValue = ""+method.invoke(bean);
+			} catch (Exception e2) {
+				LOG.error(e2.getMessage());
+				displayValue = "" + bean.getId();
+			}
+		}
+		return displayValue;
+	}
 
     public static String getFieldName(String methodName) {
 		if (methodName.startsWith("is")) {

@@ -28,6 +28,7 @@ import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
+import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 
@@ -46,6 +47,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected int limit = DEFAULT_LIMIT;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private Connection conn;
+	private List<BaseController> controllers = new ArrayList<BaseController>();
 
 	@Override
 	public void init(Class<T> clazz, DataSource dataSource) {
@@ -58,6 +60,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	public void initHttp(ServletConfig config) {
 		if (dataSource instanceof BaseDataSource) {
 			((BaseDataSource)dataSource).setRealPath(config.getServletContext().getRealPath("/"));
+		}
+	}
+
+	@Override
+	public void registerController(BaseController controller) {
+		if (!controllers.contains(controller)) {
+			controllers.add(controller);
 		}
 	}
 
@@ -76,13 +85,26 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public void saveOrUpdate( T bean ) throws Exception {
-		PreparedStatement statement = null;
+		PreparedStatementWrapper statement = null;
 		Connection conn = getConnection();
 		try {
 			statement = prepareStatementForSave(conn, bean);
-			statement.executeUpdate();
+			int affectedRows = statement.getPreparedStatement().executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Creating bean failed, no rows affected. bean="+bean);
+			}
+			if (statement.isInsertStmt()) {
+				ResultSet generatedKeys = statement.getPreparedStatement().getGeneratedKeys();
+				if (generatedKeys.next()) {
+					bean.setId(generatedKeys.getInt(1));
+					bean.setDisplayValue(ReflectUtil.getDisplayValueFromBean(bean));
+				} else {
+					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
+				}
+				fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), bean, DAOEventType.INSERT));
+			}
 		} finally {
-			if (statement!=null) statement.close();
+			if (statement!=null) statement.getPreparedStatement().close();
 		}
 	}
 
@@ -133,6 +155,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		statement.setInt(1, id);
 		statement.executeUpdate();
 		statement.close();
+		fireDAOUpdate(new DAOActionEvent<T>(id, null, DAOEventType.DELETE));
 	}
 
 	@Override
@@ -360,7 +383,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public PreparedStatement prepareStatementForSave(Connection conn, T bean) throws Exception {
+	public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception {
 		boolean updateStmt = false;
 		Map<Method,Class> methods = ReflectUtil.getPublicGetterMethods(clazz, ExcludeDBWrite.class);
 
@@ -375,7 +398,15 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			query = "update "+tableName+" set "+ getUpdateColumnsSQL(columns)+" where id=?";
 		}
         LOG.debug("query="+query+" columns="+columns);
-		PreparedStatement preparedStatement = conn.prepareStatement( query );
+		PreparedStatement preparedStatement;
+		if (updateStmt) {
+			preparedStatement = conn.prepareStatement(query);
+		} else {
+			preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+		}
+		PreparedStatementWrapper preparedStatementWrapper = new PreparedStatementWrapper(preparedStatement);
+		preparedStatementWrapper.setInsertStmt(!updateStmt);
+		preparedStatementWrapper.setSql(query);
 
 		int index = 0;
 		for (Method method : methods.keySet()) {
@@ -449,7 +480,21 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		if (updateStmt) {
 			preparedStatement.setInt(++index, bean.getId());
 		}
-		return preparedStatement;
+		return preparedStatementWrapper;
+	}
+
+	public void fireDAOUpdate(DAOActionEvent event) {
+		for (BaseController controller : controllers) {
+			switch (event.getEventType()) {
+				case INSERT:
+					controller.addToLookupMap(clazz, event.getBean());
+					break;
+				case DELETE:
+					controller.deleteFromLookupMap(clazz, event.getId());
+					break;
+			}
+
+		}
 	}
 
 	/**

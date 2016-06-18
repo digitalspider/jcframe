@@ -14,7 +14,8 @@
 ##FIELDS##
 		</fieldset>
         <div>
-			<input value="Submit" type="submit">
+			<input class="button" type="submit" value="Submit">
+			<input class="button" type="button" onclick="window.location='${beanUrl}';return false;" value="Cancel" />
 		</div>
 	</form>
 </body>
