@@ -32,9 +32,9 @@ public class Statics {
     private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
     private static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
-    private static final String DEFAULT_AUTH_CLASS = "BaseAuthServiceImpl";
-	private static final String DEFAULT_VIEWGEN_CLASS = "ViewGeneratorImpl";
-    private static final String DEFAULT_DS_CLASS = "BaseDataSource";
+    private static final String DEFAULT_AUTH_CLASS = DEFAULT_PACKAGE_NAME+".auth.BaseAuthServiceImpl";
+	private static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
+    private static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
     
     private static final String PROP_PACKAGE_NAME = "package.name";
     private static final String PROP_AUTH_CLASS = "auth.class";
@@ -49,7 +49,6 @@ public class Statics {
 	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenSecureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 
-	private static String packageName;
 	private static AuthService authService;
 	private static ViewGenerator viewGenerator;
     private static DataSource dataSource;
@@ -57,7 +56,7 @@ public class Statics {
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
-			packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
+			String packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
 			String authClassName = properties.getProperty(PROP_AUTH_CLASS,DEFAULT_AUTH_CLASS);
 			String viewGeneratorClassName = properties.getProperty(PROP_VIEWGEN_CLASS,DEFAULT_VIEWGEN_CLASS);
 			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
