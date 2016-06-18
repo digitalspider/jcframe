@@ -11,6 +11,11 @@
     </head>
     <body>
         <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+        <% if (request.getUserPrincipal()==null) { %>
+            <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
+        <% } else { %>
+            <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
+        <% } %>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/1">Page1</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/2">Page2</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/find/id/1">Find ID 1</a>&nbsp;|&nbsp;

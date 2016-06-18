@@ -9,6 +9,12 @@
 <title>Add New User</title>
 </head>
 <body>
+    <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+    <% if (request.getUserPrincipal()==null) { %>
+        <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
+    <% } else { %>
+        <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
+    <% } %>&nbsp;|&nbsp;
 	<form action="${beanUrl}" method="post">
 		<fieldset>
 <div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
