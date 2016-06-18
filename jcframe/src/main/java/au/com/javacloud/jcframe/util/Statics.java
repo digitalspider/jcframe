@@ -29,7 +29,7 @@ public class Statics {
 
 	private static final Logger LOG = Logger.getLogger(Statics.class);
 
-    private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud";
+    private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
     private static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
     private static final String DEFAULT_AUTH_CLASS = "BaseAuthServiceImpl";
@@ -103,7 +103,10 @@ public class Statics {
 			try {
 				LOG.info("packageName="+packageName);
 				// Initialise default classTypeMap, daoMap and controllerMap
-				List<Class> beanClassTypes = ReflectUtil.getClasses(packageName, BaseBean.class, true);
+				List<Class> beanClassTypes = ReflectUtil.getClasses(DEFAULT_PACKAGE_NAME, BaseBean.class, true);
+				if (!packageName.equals(DEFAULT_PACKAGE_NAME)) {
+					beanClassTypes.addAll(ReflectUtil.getClasses(packageName, BaseBean.class, true));
+				}
 				for (Class classType : beanClassTypes) {
 					if (!classType.isAnnotationPresent(HiddenBean.class)) {
 						if (!classType.isAnnotationPresent(Secure.class)) {
@@ -126,7 +129,10 @@ public class Statics {
 				LOG.info("classTypeMap="+classTypeMap);
 				
 				// Find custom daos
-				List<Class> classTypes = ReflectUtil.getClasses(packageName, BaseDAO.class, true);
+				List<Class> classTypes = ReflectUtil.getClasses(DEFAULT_PACKAGE_NAME, BaseDAO.class, true);
+				if (!packageName.equals(DEFAULT_PACKAGE_NAME)) {
+					classTypes.addAll(ReflectUtil.getClasses(packageName, BaseDAO.class, true));
+				}
 				// Allow for a complete BaseDAO override!
 				for (Class classType : classTypes) {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
@@ -151,7 +157,10 @@ public class Statics {
 				LOG.info("daoMap="+daoMap);
 				
 				// Find custom controllers
-				classTypes = ReflectUtil.getClasses(packageName, BaseController.class, true);
+				classTypes = ReflectUtil.getClasses(DEFAULT_PACKAGE_NAME, BaseController.class, true);
+				if (!packageName.equals(DEFAULT_PACKAGE_NAME)) {
+					classTypes.addAll(ReflectUtil.getClasses(packageName, BaseController.class, true));
+				}
 				// Allow for a complete BaseController override!
 				for (Class classType : classTypes) {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
@@ -187,7 +196,7 @@ public class Statics {
 		if (controllerClassType.isAnnotationPresent(BeanClass.class)) {
 			BeanClass baseClassAnnotation = (BeanClass) controllerClassType.getAnnotation(BeanClass.class);
 			if (baseClassAnnotation!=null) {
-				Class<T> classType = (Class<T>) baseClassAnnotation.bean();
+				Class<T> classType = (Class<T>) baseClassAnnotation.value();
 				return classType;
 			}
 		}
