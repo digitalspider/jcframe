@@ -15,7 +15,7 @@ import au.com.javacloud.annotation.DisplayOrder;
  * Created by david on 22/05/16.
  */
 
-@Secure
+@Secure(roles = "admin")
 @TableName("Page")
 @DisplayValueColumn("title")
 @DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")

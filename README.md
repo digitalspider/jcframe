@@ -9,11 +9,11 @@ This project contains 2 artefacts:
 The development process is:
 * Create a new database table schema, or get the connection properties to existing database
 * Use a tool to generate a series of *beans* against the database schema
- * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
  * A **bean** is an object representing a table in the database, extends **BaseBean**
+ * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
 * Import this JCFrame jar file into your maven
  * Download the source code using <code> git clone https://github.com/digitalspider/jcsite.git </code>
- * Run <code>maven clean install</code>
+ * Run <code>mvn clean install</code>
 * Create a new WebApplication project and include the maven depenedency in *pom.xml*
 ```xml
     <!-- JavaCloud Framework -->
@@ -37,12 +37,12 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
     }
 }
 ```
-* Create some jsp pages for the *bean* "page"
+* Generate some jsp pages for the *bean* "page" by running "site/generate.sh page"
  * src/main/webapp/jsp/page/list.jsp
  * src/main/webapp/jsp/page/show.jsp
  * src/main/webapp/jsp/page/edit.jsp
  * src/main/webapp/jsp/page/index.jsp (optional)
-* Populate these pages using the variable **${bean}** or **${beans}**
+* These pages use the variables **${bean}** or **${beans}**
  * e.g. content for *list.jsp*
 ```html
 <c:forEach items="${beans}" var="bean">
