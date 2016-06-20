@@ -11,6 +11,11 @@
     </head>
     <body>
         <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+        <% if (request.getUserPrincipal()==null) { %>
+            <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
+        <% } else { %>
+            <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
+        <% } %>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/1">Page1</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/2">Page2</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/find/id/1">Find ID 1</a>&nbsp;|&nbsp;
@@ -23,7 +28,24 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
+        <table>
+        <thead>
+          <tr>
+##FIELDHEADERS##
+            <th colspan="2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach items="${beans}" var="bean">
+            <tr>
 ##FIELDS##
+              <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+              <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+            </tr>
+          </c:forEach>
+        </tbody>
+        </table>
+
         <p>
             <a href="${beanUrl}/insert">Add ${beanName}</a>
         </p>

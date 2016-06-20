@@ -9,11 +9,11 @@ This project contains 2 artefacts:
 The development process is:
 * Create a new database table schema, or get the connection properties to existing database
 * Use a tool to generate a series of *beans* against the database schema
- * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
  * A **bean** is an object representing a table in the database, extends **BaseBean**
+ * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
 * Import this JCFrame jar file into your maven
  * Download the source code using <code> git clone https://github.com/digitalspider/jcsite.git </code>
- * Run <code>maven clean install</code>
+ * Run <code>mvn clean install</code>
 * Create a new WebApplication project and include the maven depenedency in *pom.xml*
 ```xml
     <!-- JavaCloud Framework -->
@@ -23,13 +23,15 @@ The development process is:
       <version>1.0-SNAPSHOT</version>
     </dependency>
 ```
-* Controllers are automatically created for each *bean*, however you can create custom ones like this:
+* DAO and Controllers are automatically created for each *bean*, however you can create custom ones like this:
+ * For more details see [jcframe](https://github.com/digitalspider/jcframe/tree/master/jcframe)
+ * For complete override of all Controllers set **@BeanClass(BaseBean.class)**
 ```java
 import java.security.Principal;
 import au.com.javacloud.annotation.BeanClass;
 import au.com.javacloud.model.Page;
 
-@BeanClass(bean = Page.class)
+@BeanClass(Page.class)
 public class PageController extends BaseControllerImpl<Page,Principal> {
     @Override
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -37,12 +39,12 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
     }
 }
 ```
-* Create some jsp pages for the *bean* "page"
+* Generate some jsp pages for the *bean* "page" by running "site/generate.sh page"
  * src/main/webapp/jsp/page/list.jsp
  * src/main/webapp/jsp/page/show.jsp
  * src/main/webapp/jsp/page/edit.jsp
  * src/main/webapp/jsp/page/index.jsp (optional)
-* Populate these pages using the variable **${bean}** or **${beans}**
+* These pages use the variables **${bean}** or **${beans}**
  * e.g. content for *list.jsp*
 ```html
 <c:forEach items="${beans}" var="bean">
@@ -54,7 +56,7 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
         <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
     </tr>
 </c:forEach>
-<a href="${beanUrl}/insert">Add Page</a>
+<a href="${beanUrl}/insertStmt">Add Page</a>
 ```
 * Create a new file for the database configuration in
  * src/main/resources/**db.properties**
@@ -76,10 +78,12 @@ password=test
 ```properties
 # JavaCloud configuration file
 
-package.model.name=au.com.javacloud.model
+package.name=com.mysite
+
 #auth.class=au.com.javacloud.auth.BaseAuthServiceImpl
+#viewgen.class=au.com.javacloud.view.ViewGeneratorImpl
 #ds.class=au.com.javacloud.dao.BaseDataSource
-#ds.config.file=db.properties.sample
+#ds.config.file=db.properties
 ```
 * Build your application
  * <code>mvn package</code>

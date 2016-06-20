@@ -9,8 +9,14 @@
 
     <body>
         <h2>Login</h2>
+        <%
+            String refererUrl = request.getHeader("Referer");
+            String url = request.getRequestURL().toString();
+            String contextUrl = url.substring(0, url.length() - request.getRequestURI().length()) + request.getContextPath();
+            String redirectUrl = "?redirect="+refererUrl.substring((""+contextUrl+"/jc").length());
+        %>
 
-        <form id="loginForm" method="POST" action="<%=request.getContextPath()%>/jc/login/login?redirect=/page">
+        <form id="loginForm" method="POST" action="<%=request.getContextPath()%>/jc/login/login<%=redirectUrl%>">
             <table>
                 <tr>
                     <td>Username</td>

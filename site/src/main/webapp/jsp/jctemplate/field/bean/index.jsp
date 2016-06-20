@@ -1,1 +1,1 @@
-<td>${linkPrefix}<c:out value="${bean.${fieldName}.displayValue}" ${isHtml}/>${linkSuffix}</td>
+              <td>${linkPrefix}<c:out value="${bean.${fieldName}.displayValue}" ${isHtml}/>${linkSuffix}</td>

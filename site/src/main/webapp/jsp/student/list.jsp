@@ -11,6 +11,11 @@
     </head>
     <body>
         <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
+        <% if (request.getUserPrincipal()==null) { %>
+            <strong><a href="<%=request.getContextPath()%>/login.jsp">Login</a></strong>
+        <% } else { %>
+            <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
+        <% } %>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/1">Page1</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/list/2">Page2</a>&nbsp;|&nbsp;
         <a href="${beanUrl}/find/id/1">Find ID 1</a>&nbsp;|&nbsp;
@@ -23,29 +28,33 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
-<table>
-<thead>
-  <tr>
+        <table>
+        <thead>
+          <tr>
     <th><a href="${beanUrl}/config/order/id">Student ID</a></th>
-    <th><a href="${beanUrl}/config/order/year">Year</a></th>
-    <th><a href="${beanUrl}/config/order/lastName">LastName</a></th>
     <th><a href="${beanUrl}/config/order/firstName">FirstName</a></th>
+    <th><a href="${beanUrl}/config/order/lastName">LastName</a></th>
     <th><a href="${beanUrl}/config/order/course">Course</a></th>
-    <th colspan="2">Action</th>
-  </tr>
-</thead>
-<tbody>
-  <c:forEach items="${beans}" var="bean">
-    <tr>
-      <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
-      <td><c:out value="${bean.year}" /></td>
-      <td><c:out value="${bean.lastName}" /></td>
-      <td><c:out value="${bean.firstName}" /></td>
-      <td><c:out value="${bean.course}" /></td>
-      <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-      <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
-    </tr>  </c:forEach></tbody>
-</table>
+    <th><a href="${beanUrl}/config/order/year">Year</a></th>
+
+            <th colspan="2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach items="${beans}" var="bean">
+            <tr>
+              <td><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></td>
+              <td><c:out value="${bean.firstName}" /></td>
+              <td><c:out value="${bean.lastName}" /></td>
+              <td><c:out value="${bean.course}" /></td>
+              <td><c:out value="${bean.year}" /></td>
+
+              <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
+              <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
+            </tr>
+          </c:forEach>
+        </tbody>
+        </table>
 
         <p>
             <a href="${beanUrl}/insert">Add Student</a>
