@@ -17,54 +17,95 @@
     <a href="${beanUrl}/list">List</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/edit/<c:out value="${bean.id}" />">Edit</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/delete/<c:out value="${bean.id}" />">Delete</a>
-<div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-  <label for="id">Page ID</label>
+    <table border="1">
+<tr>
+<td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
+    <label for="id">Page ID</label>
+</td>
+<td>
   <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_title" name="fieldrow_title">
-  <label for="title">Title</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_title" name="fieldrow_title">
+    <label for="title">Title</label>
+</td>
+<td>
   <div class="field" id="title" name="title"><c:out value="${bean.title}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
-  <label for="url">Url</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_url" name="fieldrow_url">
+    <label for="url">Url</label>
+</td>
+<td>
   <div class="field" id="url" name="url"><c:out value="${bean.url}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
-  <label for="description">Description</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_description" name="fieldrow_description">
+    <label for="description">Description</label>
+</td>
+<td>
   <div class="field" id="description" name="description"><c:out value="${bean.description}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_content" name="fieldrow_content">
-  <label for="content">Content</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_content" name="fieldrow_content">
+    <label for="content">Content</label>
+</td>
+<td>
   <div class="field" id="content" name="content"><c:out value="${bean.content}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
-  <label for="tags">Tags</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
+    <label for="tags">Tags</label>
+</td>
+<td>
   <div class="field" id="tags" name="tags"><c:out value="${bean.tags}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_type" name="fieldrow_type">
-  <label for="type">Type</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_type" name="fieldrow_type">
+    <label for="type">Type</label>
+</td>
+<td>
   <div class="field" id="type" name="type"><c:out value="${bean.type}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_status" name="fieldrow_status">
-  <label for="status">Status</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
+    <label for="status">Status</label>
+</td>
+<td>
   <div class="field" id="status" name="status"><c:out value="${bean.status}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
   <label for="authorId">Author</label>
+</td>
+<td
   <div class="field" id="authorId" name="authorId"><c:out value="${bean.authorId}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
   <label for="parentId">Parent Page</label>
+</td>
+<td
   <div class="field" id="parentId" name="parentId"><c:out value="${bean.parentId}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
-  <label for="cdate">Created Date</label>
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
+    <label for="cdate">Created Date</label>
+</td>
+<td>
   <div class="field" id="cdate" name="cdate"><c:out value="${bean.cdate}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
-  <label for="mdate">Last Modified Date</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
+    <label for="mdate">Last Modified Date</label>
+</td>
+<td>
   <div class="field" id="mdate" name="mdate"><c:out value="${bean.mdate}" /></div>
-</div>
-
+</td>
+</tr>
+    </table>
+    <input class="button" type="button" onclick="window.location='${beanUrl}/edit/<c:out value="${bean.id}" />';return false;" value="Edit" />
 </body>
 </html>

@@ -16,41 +16,76 @@
         <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
     <% } %>&nbsp;|&nbsp;
 	<form action="${beanUrl}" method="post">
-		<fieldset>
-<div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
+		<table border="1">
+<tr>
+<td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
   <label for="id">Page ID</label>
+</td>
+<td>
   <input type="text" id="id" name="id" value='<c:out value="${bean.id}" />' placeholder="Page ID" readonly="readonly" />
-</div>
-<div class="fieldrow" id="fieldrow_title" name="fieldrow_title">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_title" name="fieldrow_title">
   <label for="title">Title</label>
+</td>
+<td>
   <input type="text" id="title" name="title" value='<c:out value="${bean.title}" />' placeholder="Title"  />
-</div>
-<div class="fieldrow" id="fieldrow_url" name="fieldrow_url">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_url" name="fieldrow_url">
   <label for="url">Url</label>
+</td>
+<td>
   <input type="text" id="url" name="url" value='<c:out value="${bean.url}" />' placeholder="Url"  />
-</div>
-<div class="fieldrow" id="fieldrow_description" name="fieldrow_description">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_description" name="fieldrow_description">
   <label for="description">Description</label>
+</td>
+<td>
   <input type="text" id="description" name="description" value='<c:out value="${bean.description}" />' placeholder="Description"  />
-</div>
-<div class="fieldrow" id="fieldrow_content" name="fieldrow_content">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_content" name="fieldrow_content">
   <label for="content">Content</label>
+</td>
+<td>
   <input type="text" id="content" name="content" value='<c:out value="${bean.content}" />' placeholder="Content"  />
-</div>
-<div class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
   <label for="tags">Tags</label>
+</td>
+<td>
   <input type="text" id="tags" name="tags" value='<c:out value="${bean.tags}" />' placeholder="Tags"  />
-</div>
-<div class="fieldrow" id="fieldrow_type" name="fieldrow_type">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_type" name="fieldrow_type">
   <label for="type">Type</label>
+</td>
+<td>
   <input type="text" id="type" name="type" value='<c:out value="${bean.type}" />' placeholder="Type"  />
-</div>
-<div class="fieldrow" id="fieldrow_status" name="fieldrow_status">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
   <label for="status">Status</label>
+</td>
+<td>
   <input type="text" id="status" name="status" value='<c:out value="${bean.status}" />' placeholder="Status"  />
-</div>
-<div class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
+</td>
+</tr>
+<tr>
+<td class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
   <label for="authorId">Author</label>
+</td>
+<td>
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select name="authorId">
@@ -62,9 +97,12 @@
     </c:forEach>
   </select>
   <!--/email_off-->
-</div>
-<div class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
   <label for="parentId">Parent Page</label>
+</td>
+<td>
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select name="parentId">
@@ -76,12 +114,12 @@
     </c:forEach>
   </select>
   <!--/email_off-->
-</div>
-
-		</fieldset>
+</td>
+</tr>
+		</table>
         <div>
 			<input class="button" type="submit" value="Submit">
-			<input class="button" type="button" onclick="window.location='${beanUrl}';return false;" value="Cancel" />
+			<input class="button" type="button" onclick="window.location='${beanUrl}/show/<c:out value="${bean.id}" />';return false;" value="Cancel" />
 		</div>
 	</form>
 </body>

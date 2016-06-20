@@ -1,5 +1,8 @@
-<div class="fieldrow" id="fieldrow_${fieldName}" name="fieldrow_${fieldName}">
+<tr>
+<td class="fieldrow" id="fieldrow_${fieldName}" name="fieldrow_${fieldName}">
   <label for="${fieldName}">${fieldHeader}</label>
+</td>
+<td>
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select name="${fieldName}">
@@ -11,4 +14,5 @@
     </c:forEach>
   </select>
   <!--/email_off-->
-</div>
+</td>
+</tr>

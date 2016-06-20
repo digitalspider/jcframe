@@ -16,12 +16,12 @@
         <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
     <% } %>&nbsp;|&nbsp;
 	<form action="${beanUrl}" method="post">
-		<fieldset>
+		<table border="1">
 ##FIELDS##
-		</fieldset>
+		</table>
         <div>
 			<input class="button" type="submit" value="Submit">
-			<input class="button" type="button" onclick="window.location='${beanUrl}';return false;" value="Cancel" />
+			<input class="button" type="button" onclick="window.location='${beanUrl}/show/<c:out value="${bean.id}" />';return false;" value="Cancel" />
 		</div>
 	</form>
 </body>

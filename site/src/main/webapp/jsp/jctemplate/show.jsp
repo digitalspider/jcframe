@@ -17,6 +17,9 @@
     <a href="${beanUrl}/list">List</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/edit/<c:out value="${bean.id}" />">Edit</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/delete/<c:out value="${bean.id}" />">Delete</a>
+    <table border="1">
 ##FIELDS##
+    </table>
+    <input class="button" type="button" onclick="window.location='${beanUrl}/edit/<c:out value="${bean.id}" />';return false;" value="Edit" />
 </body>
 </html>

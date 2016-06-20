@@ -17,26 +17,44 @@
     <a href="${beanUrl}/list">List</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/edit/<c:out value="${bean.id}" />">Edit</a>&nbsp;|&nbsp;
     <a href="${beanUrl}/delete/<c:out value="${bean.id}" />">Delete</a>
-<div class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-  <label for="id">Student ID</label>
+    <table border="1">
+<tr>
+<td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
+    <label for="id">Student ID</label>
+</td>
+<td>
   <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
-  <label for="firstName">FirstName</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
+    <label for="firstName">FirstName</label>
+</td>
+<td>
   <div class="field" id="firstName" name="firstName"><c:out value="${bean.firstName}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_lastName" name="fieldrow_lastName">
-  <label for="lastName">LastName</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_lastName" name="fieldrow_lastName">
+    <label for="lastName">LastName</label>
+</td>
+<td>
   <div class="field" id="lastName" name="lastName"><c:out value="${bean.lastName}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_course" name="fieldrow_course">
-  <label for="course">Course</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_course" name="fieldrow_course">
+    <label for="course">Course</label>
+</td>
+<td>
   <div class="field" id="course" name="course"><c:out value="${bean.course}" /></div>
-</div>
-<div class="fieldrow" id="fieldrow_year" name="fieldrow_year">
-  <label for="year">Year</label>
+</td>
+</tr><tr>
+<td class="fieldrow" id="fieldrow_year" name="fieldrow_year">
+    <label for="year">Year</label>
+</td>
+<td>
   <div class="field" id="year" name="year"><c:out value="${bean.year}" /></div>
-</div>
-
+</td>
+</tr>
+    </table>
+    <input class="button" type="button" onclick="window.location='${beanUrl}/edit/<c:out value="${bean.id}" />';return false;" value="Edit" />
 </body>
 </html>
