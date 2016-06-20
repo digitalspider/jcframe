@@ -7,6 +7,7 @@ import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
+import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.LinkField;
@@ -43,9 +44,11 @@ public class User extends BaseBean {
     private String image;
     @LinkTable("userroles")
     @ExcludeDBWrite
+    @ExcludeDBRead
     private List<Role> roles;
     @LinkField("author")
     @ExcludeDBWrite
+    @ExcludeDBRead
     private List<Page> pages;
 
     @Override

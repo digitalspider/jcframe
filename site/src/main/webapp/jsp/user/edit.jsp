@@ -90,6 +90,14 @@
 </td>
 </tr>
 <tr>
+<td class="fieldrow" id="fieldrow_pages" name="fieldrow_pages">
+  <label for="pages">Pages</label>
+</td>
+<td>
+  <input type="text" id="pages" name="pages" value='<c:out value="${bean.pages}" />' placeholder="Pages"  />
+</td>
+</tr>
+<tr>
 <td class="fieldrow" id="fieldrow_password" name="fieldrow_password">
   <label for="password">Password</label>
 </td>
