@@ -96,6 +96,13 @@
   <div class="field" id="mobile" name="mobile"><c:out value="${bean.mobile}" /></div>
 </td>
 </tr><tr>
+<td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
+    <label for="roles">Roles</label>
+</td>
+<td>
+  <div class="field" id="roles" name="roles"><c:out value="${bean.roles}" /></div>
+</td>
+</tr><tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
     <label for="status">Status</label>
 </td>

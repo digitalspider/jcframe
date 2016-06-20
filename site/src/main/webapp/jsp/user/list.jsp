@@ -40,6 +40,7 @@
     <th><a href="${beanUrl}/config/order/description">Description</a></th>
     <th><a href="${beanUrl}/config/order/image">Image</a></th>
     <th><a href="${beanUrl}/config/order/mobile">Mobile</a></th>
+    <th><a href="${beanUrl}/config/order/roles">Roles</a></th>
     <th><a href="${beanUrl}/config/order/status">Status</a></th>
     <th><a href="${beanUrl}/config/order/tags">Tags</a></th>
     <th><a href="${beanUrl}/config/order/token">Token</a></th>
@@ -60,6 +61,7 @@
               <td><c:out value="${bean.description}" /></td>
               <td><c:out value="${bean.image}" /></td>
               <td><c:out value="${bean.mobile}" /></td>
+              <td><c:out value="${bean.roles}" /></td>
               <td><c:out value="${bean.status}" /></td>
               <td><c:out value="${bean.tags}" /></td>
               <td><c:out value="${bean.token}" /></td>

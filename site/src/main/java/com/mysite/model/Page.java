@@ -35,9 +35,9 @@ public class Page extends BaseBean {
     protected String type;
     protected String status;
     @DisplayHeader("Author")
-    protected User authorId;
+    protected User author;
     @DisplayHeader("Parent Page")
-    protected Page parentId;
+    protected Page parent;
     @DisplayHtml
     private String title;
     @DisplayHtml
@@ -53,8 +53,8 @@ public class Page extends BaseBean {
                 ", tags=" + tags +
                 ", type=" + type +
                 ", status=" + status +
-                ", authorId=" + authorId +
-                ", parentId=" + parentId +
+                ", author=" + author +
+                ", parent=" + parent +
                 ", title=" + title +
                 ", content=" + content +
                 ", url=" + url;
@@ -108,20 +108,20 @@ public class Page extends BaseBean {
         this.status = status;
     }
 
-    public User getAuthorId() {
-        return authorId;
+    public User getAuthor() {
+        return author;
     }
 
-    public void setAuthorId(User authorId) {
-        this.authorId = authorId;
+    public void setAuthor(User authorId) {
+        this.author = author;
     }
 
-    public Page getParentId() {
-        return parentId;
+    public Page getParent() {
+        return parent;
     }
 
-    public void setParentId(Page parentId) {
-        this.parentId = parentId;
+    public void setParent(Page parent) {
+        this.parent = parent;
     }
 
     public String getTitle() {

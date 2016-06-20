@@ -98,6 +98,14 @@
 </td>
 </tr>
 <tr>
+<td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
+  <label for="roles">Roles</label>
+</td>
+<td>
+  <input type="text" id="roles" name="roles" value='<c:out value="${bean.roles}" />' placeholder="Roles"  />
+</td>
+</tr>
+<tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
   <label for="status">Status</label>
 </td>

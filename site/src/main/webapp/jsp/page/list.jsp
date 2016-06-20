@@ -39,8 +39,8 @@
     <th><a href="${beanUrl}/config/order/tags">Tags</a></th>
     <th><a href="${beanUrl}/config/order/type">Type</a></th>
     <th><a href="${beanUrl}/config/order/status">Status</a></th>
-    <th><a href="${beanUrl}/config/order/authorId">Author</a></th>
-    <th><a href="${beanUrl}/config/order/parentId">Parent Page</a></th>
+    <th><a href="${beanUrl}/config/order/author">Author</a></th>
+    <th><a href="${beanUrl}/config/order/parent">Parent Page</a></th>
 
             <th colspan="2">Action</th>
           </tr>
@@ -56,8 +56,8 @@
               <td><c:out value="${bean.tags}" /></td>
               <td><c:out value="${bean.type}" /></td>
               <td><c:out value="${bean.status}" /></td>
-              <td><a href="${baseUrl}/user/show/<c:out value='${bean.authorId.id}'/>"><c:out value="${bean.authorId.displayValue}" /></a></td>
-              <td><a href="${baseUrl}/page/show/<c:out value='${bean.parentId.id}'/>"><c:out value="${bean.parentId.displayValue}" /></a></td>
+              <td><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author.displayValue}" /></a></td>
+              <td><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent.displayValue}" /></a></td>
 
               <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
               <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>

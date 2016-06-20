@@ -82,34 +82,34 @@
 </td>
 </tr>
 <tr>
-<td class="fieldrow" id="fieldrow_authorId" name="fieldrow_authorId">
-  <label for="authorId">Author</label>
+<td class="fieldrow" id="fieldrow_author" name="fieldrow_author">
+  <label for="author">Author</label>
 </td>
 <td>
   <!-- Cloudflare setting -->
   <!--email_off-->
-  <select name="authorId">
+  <select name="author">
     <option value="0">Select Author Id...</option>
-    <c:forEach items='${lookupMap.get("authorId")}' var="lookupBean">
+    <c:forEach items='${lookupMap.get("author")}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'
-      <c:if test="${bean.authorId.id == lookupBean.id}">selected="true"</c:if>
+      <c:if test="${bean.author.id == lookupBean.id}">selected="true"</c:if>
       ><c:out value="${lookupBean.id}"/> - <c:out value="${lookupBean.displayValue}"/></option>
     </c:forEach>
   </select>
   <!--/email_off-->
 </td>
 </tr><tr>
-<td class="fieldrow" id="fieldrow_parentId" name="fieldrow_parentId">
-  <label for="parentId">Parent Page</label>
+<td class="fieldrow" id="fieldrow_parent" name="fieldrow_parent">
+  <label for="parent">Parent Page</label>
 </td>
 <td>
   <!-- Cloudflare setting -->
   <!--email_off-->
-  <select name="parentId">
+  <select name="parent">
     <option value="0">Select Parent Page Id...</option>
-    <c:forEach items='${lookupMap.get("parentId")}' var="lookupBean">
+    <c:forEach items='${lookupMap.get("parent")}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'
-      <c:if test="${bean.parentId.id == lookupBean.id}">selected="true"</c:if>
+      <c:if test="${bean.parent.id == lookupBean.id}">selected="true"</c:if>
       ><c:out value="${lookupBean.id}"/> - <c:out value="${lookupBean.displayValue}"/></option>
     </c:forEach>
   </select>
