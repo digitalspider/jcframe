@@ -2,13 +2,14 @@ package com.mysite.model;
 
 import au.com.javacloud.jcframe.annotation.HiddenBean;
 import au.com.javacloud.jcframe.annotation.TableName;
+import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.
  */
 @HiddenBean
 @TableName("User")
-public class Login extends au.com.javacloud.jcframe.model.BaseBean {
+public class Login extends BaseBean {
     private String username;
     private String password;
 

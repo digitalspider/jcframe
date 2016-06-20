@@ -434,17 +434,19 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					LOG.debug("result.class="+result.getClass().getSimpleName());
 					Collection c = (Collection) result;
 					String resString = "";
+					boolean isBean = false;
 					for (Object o : c) {
 						if (resString.length()>0) {
 							resString+=",";
 						}
 						if (o instanceof BaseBean) {
+							isBean = true;
 							resString += ((BaseBean)o).getId();
 						} else {
-							resString += o.toString();
+							resString += o.toString().trim();
 						}
 					}
-					preparedStatement.setInt(++index, ((BaseBean)result).getId());
+					preparedStatement.setString(++index, resString);
 				}
 			} else {
 				// Handle primitives

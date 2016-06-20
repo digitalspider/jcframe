@@ -10,6 +10,7 @@ import au.com.javacloud.jcframe.annotation.Secure;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.annotation.DisplayHtml;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
+import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.
@@ -19,7 +20,7 @@ import au.com.javacloud.jcframe.annotation.DisplayOrder;
 @TableName("Page")
 @DisplayValueColumn("title")
 @DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")
-public class Page extends au.com.javacloud.jcframe.model.BaseBean {
+public class Page extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")

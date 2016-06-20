@@ -1,6 +1,7 @@
 package com.mysite.model;
 
 import java.util.Date;
+import java.util.List;
 
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
@@ -8,13 +9,14 @@ import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
+import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.
  */
 @DisplayValueColumn("email")
 @DisplayOrder("username,email,firstname,lastname,type,description")
-public class User extends au.com.javacloud.jcframe.model.BaseBean {
+public class User extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")
@@ -24,7 +26,7 @@ public class User extends au.com.javacloud.jcframe.model.BaseBean {
 	@DisplayHeader("Last Modified Date")
     private Date mdate = new Date();
     private String description;
-    private String tags;
+    private List<String> tags;
     private String type;
     private String status;
     private String firstname;
@@ -37,6 +39,7 @@ public class User extends au.com.javacloud.jcframe.model.BaseBean {
     private String mobile;
     private String token;
     private String image;
+    private List<Role> roles;
 
     @Override
     public String toString() {
@@ -78,11 +81,11 @@ public class User extends au.com.javacloud.jcframe.model.BaseBean {
         this.description = description;
     }
 
-    public String getTags() {
+    public List<String> getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 

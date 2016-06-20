@@ -20,12 +20,12 @@ CREATE TABLE page (
 	content text NOT NULL,
 	url     text NOT NULL,
 	status  text NOT NULL,
-	authorId integer NOT NULL,
-	parentId integer,
+	author integer NOT NULL,
+	parent integer,
 	tags    text
 );
 
-INSERT into page (title,description,content,url,status,authorId,parentId,tags) VALUES ("page1","extract page1","<p style='color:blue;'>this is page1</p>", "/page1","OK",1,null,null);
+INSERT into page (title,description,content,url,status,author,parent,tags) VALUES ("page1","extract page1","<p style='color:blue;'>this is page1</p>", "/page1","OK",1,null,null);
 
 CREATE TABLE user (
 	id	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,3 +47,19 @@ CREATE TABLE user (
 );
 
 INSERT into user (email, username, password, firstname, lastname, url, type, status) VALUES ("d@g.com","dv","dv","david", "vittor", "/dv", "ADMIN", "OK");
+
+CREATE TABLE roles (
+	id      INTEGER PRIMARY KEY AUTOINCREMENT,
+	rolename text NOT NULL
+);
+
+INSERT INTO roles(rolename) VALUES ('user');
+INSERT INTO roles(rolename) VALUES ('super');
+INSERT INTO roles(rolename) VALUES ('admin');
+
+CREATE TABLE userroles (
+	userid INTEGER NOT NULL,
+	roleid INTEGER NOT NULL,
+	PRIMARY KEY (userid, roleid)
+);
+

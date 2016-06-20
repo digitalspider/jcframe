@@ -87,8 +87,11 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
-		
-		String[] orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
+
+		String[] orderList = new String[0];
+		if (classType.isAnnotationPresent(DisplayOrder.class)) {
+			orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
+		}
 		List<Method> sortedMethodMap = sortMethodMap(methodMap, orderList);
 		
 		String fieldName;

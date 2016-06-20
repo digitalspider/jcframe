@@ -327,7 +327,7 @@ public class ReflectUtil {
 
 
 	public static <T extends BaseBean> void invokeSetterMethodForCollection(T bean, Method method, Class classType, String value) throws Exception {
-		if (ReflectUtil.isCollection(classType)) {
+		if (ReflectUtil.isCollection(classType) && value!=null) {
 			String[] valueArray = value.split(",");
 			BaseDAO fieldDao = Statics.getDaoMap().get(classType);
 			if (fieldDao!=null && valueArray.length>0 && StringUtils.isNumeric(valueArray[0])) {

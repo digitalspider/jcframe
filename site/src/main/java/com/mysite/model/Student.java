@@ -2,13 +2,14 @@ package com.mysite.model;
 
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
+import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.
  */
 @DisplayValueColumn("firstName")
 @DisplayOrder("firstName,lastName,course,year")
-public class Student extends au.com.javacloud.jcframe.model.BaseBean {
+public class Student extends BaseBean {
     private String firstName;
     private String lastName;
     private String course;
