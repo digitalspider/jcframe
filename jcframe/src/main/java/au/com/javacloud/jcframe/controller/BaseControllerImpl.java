@@ -459,10 +459,16 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	@Override
 	public void find()  throws Exception {
 		if (pathParts.size() > 3) {
+			boolean exact = false;
 			String field = pathParts.get(2);
 			String value = pathParts.get(3);
+			if (value!=null && value.startsWith("=")) {
+				value = value.substring(1);
+				exact = true;
+			}
 			int pageNo = pathParts.getInt(4);
-			List<T> beans = dao.find(field, value, pageNo);
+
+			List<T> beans = dao.find(field, value, pageNo, exact);
 			int count = dao.count(field, value);
 			if (handleJson(beans)) {
 				return;

@@ -264,7 +264,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public List<T> find(String field, String value, int pageNo) throws Exception {
+	public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception {
 		List<T> results = new ArrayList<T>();
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
@@ -273,12 +273,19 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			if (pageNo<1) { pageNo=1; }
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			String query = "select * from "+tableName+" where "+field+" like ?";
+			if (exact) {
+				query = "select * from "+tableName+" where "+field+" = ?";
+			}
 			if (!StringUtils.isBlank(orderBy)) {
 				query += " order by "+orderBy;
 			}
 			query += " limit "+limit+" offset "+((pageNo-1)*limit);
 			statement = conn.prepareStatement( query );
-			statement.setString(1, "%"+value+"%");
+			if (exact) {
+				statement.setString(1, value);
+			} else {
+				statement.setString(1, "%" + value + "%");
+			}
 			resultSet = statement.executeQuery();
 			while( resultSet.next() ) {
 				T bean = ReflectUtil.getNewBean(clazz);

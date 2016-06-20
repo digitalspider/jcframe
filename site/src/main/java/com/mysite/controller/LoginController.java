@@ -41,7 +41,7 @@ public class LoginController extends BaseControllerImpl<Login,Principal> {
                     throw new Exception("Username and password are both required!");
                 }
                 LOG.info("username=" + username);
-                List<Login> users = dao.find("username", username, 0);
+                List<Login> users = dao.find("username", username, 0, true);
                 if (!users.isEmpty()) {
                     if (users.size() > 1) {
                         throw new Exception("Too many users with username=" + username);
