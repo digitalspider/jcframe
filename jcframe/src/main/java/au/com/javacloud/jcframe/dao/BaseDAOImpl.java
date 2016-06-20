@@ -96,7 +96,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				} else {
 					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
 				}
-				daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), bean, DAOEventType.INSERT));
+				daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
 			}
 		} finally {
 			if (statement!=null) statement.getPreparedStatement().close();
@@ -150,7 +150,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		statement.setInt(1, id);
 		statement.executeUpdate();
 		statement.close();
-		daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(id, null, DAOEventType.DELETE));
+		daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(id, clazz, null, DAOEventType.DELETE));
 	}
 
 	@Override

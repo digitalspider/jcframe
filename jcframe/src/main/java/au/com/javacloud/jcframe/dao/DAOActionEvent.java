@@ -7,17 +7,23 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 public class DAOActionEvent<T extends BaseBean> {
     private int id;
+    Class<T> beanClass;
     private T bean;
     private DAOEventType eventType;
 
-    public DAOActionEvent(int id, T bean, DAOEventType eventType) {
+    public DAOActionEvent(int id, Class<T> beanClass, T bean, DAOEventType eventType) {
         this.id = id;
+        this.beanClass = beanClass;
         this.bean = bean;
         this.eventType = eventType;
     }
 
     public int getId() {
         return id;
+    }
+
+    public Class<T> getBeanClass() {
+        return beanClass;
     }
 
     public T getBean() {

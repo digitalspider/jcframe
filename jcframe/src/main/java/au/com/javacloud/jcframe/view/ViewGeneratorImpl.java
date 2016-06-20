@@ -120,7 +120,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 					isBean = ReflectUtil.isBean(fieldClass);
-					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+					content = getTemplatedContent(viewType, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
 					html.append(content);
 				}
 			}
@@ -162,7 +162,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 					isBean = ReflectUtil.isBean(fieldClass);
 					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-					content = getTemplatedContent(viewType, fieldName, fieldHeader, type, other, isHtml, isBean);
+					content = getTemplatedContent(viewType, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
 					html.append(content);
 				}
 			}
@@ -223,13 +223,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String fieldName, String fieldHeader, String type, String other, boolean isHtml, boolean isBean) {
+	public String getTemplatedContent(ViewType viewType, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean) {
 		String template = getTemplate(viewType, isBean);
-		return getTemplatedContent(viewType, template, fieldName, fieldHeader, type, other, isHtml, isBean);
+		return getTemplatedContent(viewType, template, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, String type, String other, boolean isHtml, boolean isBean) {
+	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean) {
 		String result = "";
 		if (type==null) {
 			return result;
@@ -268,7 +268,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 					}
 				} else {
-					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldName + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
+					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
 					result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 				}
 			}

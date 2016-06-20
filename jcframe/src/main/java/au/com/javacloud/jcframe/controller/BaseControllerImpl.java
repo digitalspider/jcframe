@@ -141,11 +141,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	}
     }
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void reloadLookupMap() {
 		for (String fieldName : lookupFields.keySet()) {
-			Class lookupClass = lookupFields.get(fieldName);
+			Class<? extends BaseBean> lookupClass = lookupFields.get(fieldName);
 			lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
 		}
 	}
