@@ -42,8 +42,10 @@ public class User extends BaseBean {
     private String token;
     private String image;
     @LinkTable("userroles")
+    @ExcludeDBWrite
     private List<Role> roles;
     @LinkField("author")
+    @ExcludeDBWrite
     private List<Page> pages;
 
     @Override
@@ -188,5 +190,13 @@ public class User extends BaseBean {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<Page> getPages() {
+        return pages;
+    }
+
+    public void setPages(List<Page> pages) {
+        this.pages = pages;
     }
 }
