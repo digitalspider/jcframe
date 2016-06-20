@@ -22,6 +22,8 @@ import au.com.javacloud.jcframe.auth.BaseAuthServiceImpl;
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.dao.BaseDAOImpl;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.service.DAOLookupServiceImpl;
 import au.com.javacloud.jcframe.view.ViewGenerator;
 import au.com.javacloud.jcframe.view.ViewGeneratorImpl;
 
@@ -33,11 +35,13 @@ public class Statics {
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
     private static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
     private static final String DEFAULT_AUTH_CLASS = DEFAULT_PACKAGE_NAME+".auth.BaseAuthServiceImpl";
+	private static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupServiceImpl";
 	private static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
     private static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
     
     private static final String PROP_PACKAGE_NAME = "package.name";
     private static final String PROP_AUTH_CLASS = "auth.class";
+	private static final String PROP_DAOLOOKUP_CLASS = "daolookup.class";
 	private static final String PROP_VIEWGEN_CLASS = "viewgen.class";
     private static final String PROP_DS_CLASS = "ds.class";
 	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
@@ -52,12 +56,14 @@ public class Statics {
 	private static AuthService authService;
 	private static ViewGenerator viewGenerator;
     private static DataSource dataSource;
+	private static DAOLookupService daoLookupService;
 
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
 			String packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
 			String authClassName = properties.getProperty(PROP_AUTH_CLASS,DEFAULT_AUTH_CLASS);
+			String daoLookupServiceClassName = properties.getProperty(PROP_DAOLOOKUP_CLASS,DEFAULT_DAOLOOKUP_CLASS);
 			String viewGeneratorClassName = properties.getProperty(PROP_VIEWGEN_CLASS,DEFAULT_VIEWGEN_CLASS);
 			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
 			String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE,DEFAULT_DB_CONFIG_FILE);
@@ -73,6 +79,16 @@ public class Statics {
 				authService = new BaseAuthServiceImpl();
 			}
 			LOG.info("authService="+authService);
+
+			// Register the daoLookupService
+			try {
+				LOG.info("daoLookupServiceClassName="+daoLookupServiceClassName);
+				daoLookupService = (DAOLookupService)Class.forName(daoLookupServiceClassName).newInstance();
+			} catch (Exception e) {
+				LOG.error(e,e);
+				daoLookupService = new DAOLookupServiceImpl();
+			}
+			LOG.info("daoLookupService="+daoLookupService);
 
 			// Register the dataSource
 			try {
@@ -119,10 +135,10 @@ public class Statics {
 						hiddenSecureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					}
 					BaseDAO<? extends BaseBean> dao = new BaseDAOImpl<>();
-					dao.init(classType, dataSource);
+					dao.init(classType, dataSource, daoLookupService);
 					daoMap.put(classType, dao);
 					BaseController controller = new BaseControllerImpl();
-					controller.init(classType, authService);
+					controller.init(classType, authService, daoLookupService);
 					controllerMap.put(classType, controller);
 				}
 				LOG.info("classTypeMap="+classTypeMap);
@@ -137,7 +153,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
 						BaseDAO overrideDao = (BaseDAO) classType.newInstance();
-						overrideDao.init(beanClassType, dataSource);
+						overrideDao.init(beanClassType, dataSource, daoLookupService);
 						for (Class key : daoMap.keySet()) {
 							daoMap.put(key, overrideDao);
 						}
@@ -149,7 +165,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
 						BaseDAO dao = (BaseDAO) classType.newInstance();
-						dao.init(beanClassType, dataSource);
+						dao.init(beanClassType, dataSource, daoLookupService);
 						daoMap.put(beanClassType, dao);
 					}
 				}
@@ -165,7 +181,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
 						BaseController overrideController = (BaseController) classType.newInstance();
-						overrideController.init(beanClassType, authService);
+						overrideController.init(beanClassType, authService, daoLookupService);
 						for (Class key : controllerMap.keySet()) {
 							controllerMap.put(key, overrideController);
 						}
@@ -177,7 +193,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
 						BaseController controller = (BaseController) classType.newInstance();
-						controller.init(beanClassType, authService);
+						controller.init(beanClassType, authService, daoLookupService);
 						controllerMap.put(beanClassType, controller);
 					}
 				}
@@ -227,7 +243,11 @@ public class Statics {
 	public static DataSource getDataSource() {
 		return dataSource;
 	}
-    
+
+	public static DAOLookupService getDaoLookupService() {
+		return daoLookupService;
+	}
+
     public static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> getDaoMap() {
     	return daoMap;
     }

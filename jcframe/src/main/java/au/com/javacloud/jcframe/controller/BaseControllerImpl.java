@@ -37,6 +37,7 @@ import au.com.javacloud.jcframe.auth.AuthService;
 import au.com.javacloud.jcframe.auth.AuthenticationException;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.util.GsonExclusionStrategy;
 import au.com.javacloud.jcframe.util.HttpUtil;
 import au.com.javacloud.jcframe.util.PathParts;
@@ -54,7 +55,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected Class<T> clazz;
     protected String beanName = "bean";
     protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
-	protected Map<Class<? extends BaseBean>,List<String>> lookupDaoFieldMap = new HashMap<Class<? extends BaseBean>,List<String>>();
+	protected Map<String,Class<? extends BaseBean>> lookupFields = new HashMap<String, Class<? extends BaseBean>>();
     protected String indexUrl = "/";
     protected String listUrl = "/";
 	protected String showUrl = "/";
@@ -75,6 +76,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	private int maxMemSize = 4 * 1024;
 	private ServletConfig servletConfig;
 	private ServletContext servletContext;
+	private DAOLookupService daoLookupService;
 
 	public String toString() {
 		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"]";
@@ -82,13 +84,14 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	@SuppressWarnings("unchecked")
     public void init(Class<T> clazz) {	
-		init(clazz, Statics.getAuthService());
+		init(clazz, Statics.getAuthService(), Statics.getDaoLookupService());
 	}
 
 	@SuppressWarnings("unchecked")
-    public void init(Class<T> clazz, AuthService<U> authService) {
+    public void init(Class<T> clazz, AuthService<U> authService, DAOLookupService daoLookupService) {
 		this.clazz = clazz;
 		this.authService = authService;
+		this.daoLookupService = daoLookupService;
 		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
@@ -114,12 +117,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		if (StringUtils.isBlank(filePath)) {
 			filePath = System.getProperty("java.io.tmpdir");
 		}
-		reloadLookupMap();
+		initLookupMap();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void reloadLookupMap() throws ServletException {
+	public void initLookupMap() {
 		// Configure lookupMap
     	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass(), ExcludeDBWrite.class);
     	for (Method method : fieldMethods.keySet()) {
@@ -127,17 +130,10 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			LOG.debug("lookupClass="+lookupClass.getName());
     		if (ReflectUtil.isBean(lookupClass)) {
     			try {
-        			BaseDAO lookupDao = Statics.getDaoMap().get(lookupClass);
         			String fieldName = ReflectUtil.getFieldName(method);
-					List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
-					if (fieldNames==null) {
-						fieldNames = new ArrayList<String>();
-						lookupDaoFieldMap.put(lookupClass, fieldNames);
-					}
-					fieldNames.add(fieldName);
-					LOG.debug("fieldName="+fieldName+" lookupDao="+lookupDao);
-        			lookupMap.put(fieldName,lookupDao.getLookup());
-					lookupDao.registerController(this);
+					lookupFields.put(fieldName, lookupClass);
+					lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
+					daoLookupService.registerController(lookupClass, this);
     			} catch (Exception e) {
 					LOG.error(e,e);
     			}
@@ -145,41 +141,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	}
     }
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean) {
-		LOG.debug("lookupClass="+lookupClass.getName());
-		try {
-			List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
-			if (fieldNames!=null) {
-				for (String fieldName : fieldNames) {
-					List<BaseBean> beans = lookupMap.get(fieldName);
-					LOG.info("Adding bean "+bean);
-					beans.add(bean);
-				}
-			}
-		} catch (Exception e) {
-			LOG.error(e,e);
-		}
-	}
-
-	@Override
-	public void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, int id) {
-		LOG.debug("lookupClass="+lookupClass.getName());
-		try {
-			List<String> fieldNames = lookupDaoFieldMap.get(lookupClass);
-			if (fieldNames!=null) {
-				for (String fieldName : fieldNames) {
-					List<BaseBean> beans = lookupMap.get(fieldName);
-					for (BaseBean bean : beans) {
-						if (bean.getId() == id) {
-							beans.remove(bean);
-							break;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			LOG.error(e,e);
+	public void reloadLookupMap() {
+		for (String fieldName : lookupFields.keySet()) {
+			Class lookupClass = lookupFields.get(fieldName);
+			lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
 		}
 	}
 
@@ -600,13 +567,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	@Override
-	public Map<Class<? extends BaseBean>, List<String>> getLookupDaoFieldMap() {
-		return lookupDaoFieldMap;
-	}
-
-	@Override
 	public Map<String, List<BaseBean>> getLookupMap() {
 		return lookupMap;
 	}
 
+	@Override
+	public Map<String, Class<? extends BaseBean>> getLookupFields() {
+		return lookupFields;
+	}
 }

@@ -44,7 +44,6 @@
 			<id>snapshots</id>
 			<name>Internal Snapshots</name>
 			<url>http://10.0.0.11:8081/nexus/repository/snapshots</url>
-			<uniqueVersion>false</uniqueVersion> <!-- has no effect from 3.0 version onwards -->
 		</snapshotRepository>
 		-->
 	</distributionManagement>

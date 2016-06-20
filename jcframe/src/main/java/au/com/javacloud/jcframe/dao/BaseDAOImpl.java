@@ -30,6 +30,7 @@ import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 
 /**
@@ -47,26 +48,20 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected int limit = DEFAULT_LIMIT;
 	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private Connection conn;
-	private List<BaseController> controllers = new ArrayList<BaseController>();
+	private DAOLookupService daoLookupService;
 
 	@Override
-	public void init(Class<T> clazz, DataSource dataSource) {
+	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) {
 		this.clazz = clazz;
 		this.dataSource = dataSource;
-		this.tableName= getTableName();
+		this.tableName = getTableName();
+		this.daoLookupService = daoLookupService;
 	}
 
 	@Override
 	public void initHttp(ServletConfig config) {
 		if (dataSource instanceof BaseDataSource) {
 			((BaseDataSource)dataSource).setRealPath(config.getServletContext().getRealPath("/"));
-		}
-	}
-
-	@Override
-	public void registerController(BaseController controller) {
-		if (!controllers.contains(controller)) {
-			controllers.add(controller);
 		}
 	}
 
@@ -101,7 +96,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				} else {
 					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
 				}
-				fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), bean, DAOEventType.INSERT));
+				daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), bean, DAOEventType.INSERT));
 			}
 		} finally {
 			if (statement!=null) statement.getPreparedStatement().close();
@@ -155,7 +150,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		statement.setInt(1, id);
 		statement.executeUpdate();
 		statement.close();
-		fireDAOUpdate(new DAOActionEvent<T>(id, null, DAOEventType.DELETE));
+		daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(id, null, DAOEventType.DELETE));
 	}
 
 	@Override
@@ -481,20 +476,6 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			preparedStatement.setInt(++index, bean.getId());
 		}
 		return preparedStatementWrapper;
-	}
-
-	public void fireDAOUpdate(DAOActionEvent event) {
-		for (BaseController controller : controllers) {
-			switch (event.getEventType()) {
-				case INSERT:
-					controller.addToLookupMap(clazz, event.getBean());
-					break;
-				case DELETE:
-					controller.deleteFromLookupMap(clazz, event.getId());
-					break;
-			}
-
-		}
 	}
 
 	/**

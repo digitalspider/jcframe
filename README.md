@@ -80,9 +80,10 @@ password=test
 
 package.name=com.mysite
 
-#auth.class=au.com.javacloud.auth.BaseAuthServiceImpl
-#viewgen.class=au.com.javacloud.view.ViewGeneratorImpl
-#ds.class=au.com.javacloud.dao.BaseDataSource
+#auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
+#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupServiceImpl
+#viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
+#ds.class=au.com.javacloud.jcframe.dao.BaseDataSource
 #ds.config.file=db.properties
 ```
 * Build your application

@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import au.com.javacloud.jcframe.auth.AuthService;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.util.PathParts;
 
 /**
@@ -50,7 +51,7 @@ public interface BaseController<T extends BaseBean, U> {
 	
 	public void init(Class<T> clazz);
 	
-	public void init(Class<T> clazz, AuthService<U> authService);
+	public void init(Class<T> clazz, AuthService<U> authService, DAOLookupService daoLookupService);
 	
 	public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	
@@ -72,9 +73,8 @@ public interface BaseController<T extends BaseBean, U> {
 
     public void upload() throws Exception;
 
-    public void reloadLookupMap() throws ServletException;
-    public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean);
-    public void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, int id);
+    public void initLookupMap();
+    public void reloadLookupMap();
 
     public Class<T> getBeanClass();
 
@@ -94,6 +94,6 @@ public interface BaseController<T extends BaseBean, U> {
     public void setConfigProperty(String key, String value);
 
     public Map<String, List<BaseBean>> getLookupMap();
-    public Map<Class<? extends BaseBean>, List<String>> getLookupDaoFieldMap();
+    public Map<String, Class<? extends BaseBean>> getLookupFields();
 
 }

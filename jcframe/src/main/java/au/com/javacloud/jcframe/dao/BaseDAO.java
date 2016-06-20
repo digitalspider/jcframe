@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.service.DAOLookupService;
 
 public interface BaseDAO<T extends BaseBean> {
 
@@ -37,9 +38,8 @@ public interface BaseDAO<T extends BaseBean> {
     public void delete(int beanId) throws Exception;
     public List<T> find(String field, String value, int pageNo) throws Exception;
 
-    public void init(Class<T> clazz, DataSource dataSource);
+    public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService);
     public void initHttp(ServletConfig config);
-    public void registerController(BaseController controller);
     public Connection getConnection() throws SQLException;
 
     public void toggleOrderBy(String orderBy);
