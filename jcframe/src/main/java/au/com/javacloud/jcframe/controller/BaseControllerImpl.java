@@ -344,6 +344,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			String fieldName = ReflectUtil.getFieldName(method);
 			try {
 				String value = request.getParameter(fieldName);
+				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
 
 				if (ReflectUtil.isBean(classType)) {
 					// Handle BaseBeans

@@ -43,12 +43,8 @@ public class User extends BaseBean {
     private String token;
     private String image;
     @LinkTable("userroles")
-    @ExcludeDBWrite
-    @ExcludeDBRead
     private List<Role> roles;
     @LinkField("author")
-    @ExcludeDBWrite
-    @ExcludeDBRead
     private List<Page> pages;
 
     @Override

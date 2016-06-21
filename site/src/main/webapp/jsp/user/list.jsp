@@ -62,8 +62,8 @@
               <td><c:out value="${bean.description}" /></td>
               <td><c:out value="${bean.image}" /></td>
               <td><c:out value="${bean.mobile}" /></td>
-              <td><c:out value="${bean.pages}" /></td>
-              <td><c:out value="${bean.roles}" /></td>
+              <td><a href="${baseUrl}/page/find/author/=<c:out value='${bean.id}'/>">Pages <c:out value="${bean.pages}" /></a></td>
+              <td><a href="${baseUrl}/role/show/<c:out value='${bean.roles.id}'/>"><c:out value="${bean.roles}" /></a></td>
               <td><c:out value="${bean.status}" /></td>
               <td><c:out value="${bean.tags}" /></td>
               <td><c:out value="${bean.token}" /></td>

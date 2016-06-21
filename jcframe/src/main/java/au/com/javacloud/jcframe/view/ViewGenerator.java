@@ -27,9 +27,9 @@ public interface ViewGenerator {
 
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception;
 
-	public String getTemplatedContent(ViewType viewType, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean);
+	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, Class fieldClass) throws Exception;
 
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean);
+	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isHtml, boolean isBean) throws Exception;
 
 	public String getTemplate(ViewType viewType, boolean isBean);
 }

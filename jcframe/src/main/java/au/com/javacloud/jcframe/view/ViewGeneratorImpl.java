@@ -2,8 +2,11 @@ package au.com.javacloud.jcframe.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +20,7 @@ import au.com.javacloud.jcframe.annotation.DisplayHtml;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
+import au.com.javacloud.jcframe.annotation.LinkField;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.util.MethodComparator;
 import au.com.javacloud.jcframe.util.ReflectUtil;
@@ -45,7 +49,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					File destDir = new File(directory);
 					LOG.info("destDir=" + destDir.getAbsolutePath());
 					Class<? extends BaseBean> classType = classMap.get(beanName);
-					Map<Method, Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, null);
+					List<Class> excludedAnnotationClasses = new ArrayList<Class>();
+					Map<Method, Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, excludedAnnotationClasses);
 
 					for (ViewType viewType : ViewType.values()) {
 						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
@@ -95,11 +100,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		List<Method> sortedMethodMap = sortMethodMap(methodMap, orderList);
 		
 		String fieldName;
-		String fieldHeader;
-		String type = "text";
-		String other = null;
-		boolean isHtml = false;
-		boolean isBean = false;
 		String content;
 		
 		switch (viewType) {
@@ -110,20 +110,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
 					Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
-					other = null;
-					content = "";
-					if (fieldName.equals(BaseBean.FIELD_ID)) {
-						fieldHeader = classType.getSimpleName()+" ID";
-						if (viewType == ViewType.EDIT) {
-							other = "readonly=\"readonly\"";
-						}
-					} else {
-						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-					}
-					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-					isBean = ReflectUtil.isBean(fieldClass);
-					content = getTemplatedContent(viewType, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
+					content = getTemplatedContent(viewType, fieldName, classType, fieldClass);
 					html.append(content);
 				}
 			}
@@ -132,18 +119,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case INDEX:
 			// Display headers
 			fieldName = "";
-			fieldHeader = "";
-			type = "text";
-			other = null;
 			for (Method method : sortedMethodMap) {
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
+					String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+					String fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
 					if (fieldName.equals(BaseBean.FIELD_ID)) {
-						fieldHeader = classType.getSimpleName()+" ID";
-					} else {
-						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+						fieldHeader = classType.getSimpleName() + " ID";
 					}
-					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 					if (!type.equals("password")) {
 						html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
 					}
@@ -157,15 +140,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
 				fieldName = ReflectUtil.getFieldName(method);
 				if (validForView(viewType, classType, fieldName)) {
-					if (fieldName.equals(BaseBean.FIELD_ID)) {
-						fieldHeader = classType.getSimpleName()+" ID";
-					} else {
-						fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
-					}
-					isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
-					isBean = ReflectUtil.isBean(fieldClass);
-					type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-					content = getTemplatedContent(viewType, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
+					content = getTemplatedContent(viewType, fieldName, classType, fieldClass);
 					html.append(content);
 				}
 			}
@@ -226,23 +201,43 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean) {
+	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, Class fieldClass) throws Exception {
+		boolean isBean = ReflectUtil.isBean(fieldClass);
+		boolean isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 		String template = getTemplate(viewType, isBean);
-		return getTemplatedContent(viewType, template, fieldName, fieldHeader, fieldClass, type, other, isHtml, isBean);
+		String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+		if (type==null) {
+			return "";
+		}
+		String other = "";
+		String fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+		if (fieldName.equals(BaseBean.FIELD_ID)) {
+			fieldHeader = classType.getSimpleName() + " ID";
+			if (viewType == ViewType.EDIT) {
+				other = "readonly=\"readonly\"";
+			}
+		}
+		return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean, isHtml);
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class fieldClass, String type, String other, boolean isHtml, boolean isBean) {
+	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isBean, boolean isHtml) throws Exception {
 		String result = "";
 		if (type==null) {
 			return result;
 		}
+		if (other==null) {
+			other = "";
+		}
+		boolean isCollection = false;
+		if (ReflectUtil.isCollection(fieldClass)) {
+			isCollection = true;
+			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
+			isBean = ReflectUtil.isBean(fieldClass);
+		}
 		result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
 		result = result.replaceAll("\\$\\{type\\}", type);
-		if (other == null) {
-			other = "";
-		}
 		result = result.replaceAll("\\$\\{other\\}", other);
 		switch(viewType) {
 		case SHOW:
@@ -271,7 +266,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 					}
 				} else {
-					result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
+					LinkField linkField = ReflectUtil.getAnnotation(classType, fieldName, LinkField.class);
+					if (linkField!=null) {
+						String linkFieldName = linkField.value();
+						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/find/"+linkFieldName+"/=<c:out value='\\$\\{bean.id\\}'/>\">"+fieldClass.getSimpleName()+"s ");
+					} else {
+						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
+					}
 					result = result.replaceAll("\\$\\{linkSuffix\\}", "</a>");
 				}
 			}

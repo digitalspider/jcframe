@@ -1,6 +1,7 @@
 package au.com.javacloud.jcframe.dao;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -26,6 +27,8 @@ import org.apache.log4j.Logger;
 
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
+import au.com.javacloud.jcframe.annotation.LinkField;
+import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.controller.BaseController;
@@ -335,50 +338,55 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
             LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
 			String fieldName = ReflectUtil.getFieldName(method);
 
-			// populate the display value
-			if (fieldName.equals(columnName)) {
-				bean.setDisplayValue(rs.getString(fieldName));
-			}
+			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
+					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
 
-			if (ReflectUtil.isBean(classType)) {
-				// Handle BaseBeans
-				int id = rs.getInt(fieldName);
-				ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
-			} else if (ReflectUtil.isCollection(classType)) {
-				// Handle Collections
-				String value = rs.getString(fieldName);
-				ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
-			} else {
-				// Handle primitives
-				try {
-					if (classType.equals(String.class)) {
-						method.invoke(bean, rs.getString(fieldName));
-					} else if (classType.equals(int.class) || classType.equals(Integer.class)) {
-						method.invoke(bean, rs.getInt(fieldName));
-					} else if (classType.equals(boolean.class) || classType.equals(Boolean.class)) {
-						method.invoke(bean, rs.getBoolean(fieldName));
-					} else if (classType.equals(Date.class)) {
-						method.invoke(bean, dateFormat.parse(rs.getString(fieldName)));
-					} else if (classType.equals(long.class) || classType.equals(Long.class)) {
-						method.invoke(bean, rs.getLong(fieldName));
-					} else if (classType.equals(short.class) || classType.equals(Short.class)) {
-						method.invoke(bean, rs.getShort(fieldName));
-					} else if (classType.equals(float.class) || classType.equals(Float.class)) {
-						method.invoke(bean, rs.getFloat(fieldName));
-					} else if (classType.equals(double.class) || classType.equals(Double.class)) {
-						method.invoke(bean, rs.getDouble(fieldName));
-					} else if (classType.equals(BigDecimal.class)) {
-						method.invoke(bean, rs.getBigDecimal(fieldName));
-					} else if (classType.equals(Blob.class)) {
-						method.invoke(bean, rs.getBlob(fieldName));
-					} else if (classType.equals(Clob.class)) {
-						method.invoke(bean, rs.getClob(fieldName));
-					}
-				} catch (SQLException e) {
-					if (!fieldName.equals(BaseBean.FIELD_DISPLAYVALUE)) { // ignore "displayvalue", as this is custom to BaseBean
-						throw e;
+				// populate the display value
+				if (fieldName.equals(columnName)) {
+					bean.setDisplayValue(rs.getString(fieldName));
+				}
+
+				if (ReflectUtil.isBean(classType)) {
+					// Handle BaseBeans
+					int id = rs.getInt(fieldName);
+					ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
+				} else if (ReflectUtil.isCollection(classType)) {
+					// Handle Collections
+					String value = rs.getString(fieldName);
+					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
+				} else {
+					// Handle primitives
+					try {
+						if (classType.equals(String.class)) {
+							method.invoke(bean, rs.getString(fieldName));
+						} else if (classType.equals(int.class) || classType.equals(Integer.class)) {
+							method.invoke(bean, rs.getInt(fieldName));
+						} else if (classType.equals(boolean.class) || classType.equals(Boolean.class)) {
+							method.invoke(bean, rs.getBoolean(fieldName));
+						} else if (classType.equals(Date.class)) {
+							method.invoke(bean, dateFormat.parse(rs.getString(fieldName)));
+						} else if (classType.equals(long.class) || classType.equals(Long.class)) {
+							method.invoke(bean, rs.getLong(fieldName));
+						} else if (classType.equals(short.class) || classType.equals(Short.class)) {
+							method.invoke(bean, rs.getShort(fieldName));
+						} else if (classType.equals(float.class) || classType.equals(Float.class)) {
+							method.invoke(bean, rs.getFloat(fieldName));
+						} else if (classType.equals(double.class) || classType.equals(Double.class)) {
+							method.invoke(bean, rs.getDouble(fieldName));
+						} else if (classType.equals(BigDecimal.class)) {
+							method.invoke(bean, rs.getBigDecimal(fieldName));
+						} else if (classType.equals(Blob.class)) {
+							method.invoke(bean, rs.getBlob(fieldName));
+						} else if (classType.equals(Clob.class)) {
+							method.invoke(bean, rs.getClob(fieldName));
+						}
+					} catch (SQLException e) {
+						if (!fieldName.equals(BaseBean.FIELD_DISPLAYVALUE)) { // ignore "displayvalue", as this is custom to BaseBean
+							throw e;
+						}
 					}
 				}
+				// TODO: else
 			}
 		}
 	}
@@ -392,14 +400,17 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		List<String> columns = new ArrayList<String>();
 		for (Method method : methods.keySet()) {
 			String fieldName = ReflectUtil.getFieldName(method);
-			columns.add(fieldName);
+			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
+					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
+				columns.add(fieldName);
+			}
 		}
 		String query = "insert into "+tableName+" "+ getInsertIntoColumnsSQL(columns);
 		if (bean.getId()>0) {
 			updateStmt = true;
 			query = "update "+tableName+" set "+ getUpdateColumnsSQL(columns)+" where id=?";
 		}
-        LOG.debug("query="+query+" columns="+columns);
+        LOG.info("query="+query+" columns="+columns);
 		PreparedStatement preparedStatement;
 		if (updateStmt) {
 			preparedStatement = conn.prepareStatement(query);
@@ -413,72 +424,71 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		int index = 0;
 		for (Method method : methods.keySet()) {
 			String fieldName = ReflectUtil.getFieldName(method);
-			Class classType = methods.get(method);
-			Object result = method.invoke(bean);
-			LOG.debug("m="+method.getName() + " classType="+classType +" result="+result);
-			if (ReflectUtil.isBean(classType)) {
-				// Handle BaseBeans
-				if (result==null) {
-					LOG.debug("result.class=null");
-					preparedStatement.setInt(++index, 0);
-				} else if (result instanceof BaseBean) {
-					LOG.debug("result.class="+result.getClass().getSimpleName());
-					preparedStatement.setInt(++index, ((BaseBean)result).getId());
-				}
-			} else if (ReflectUtil.isCollection(classType)) {
-				// Handle Collections
-				if (result==null) {
-					LOG.debug("result.class=null");
-					preparedStatement.setObject(++index, null);
-				} else {
-					LOG.debug("result.class="+result.getClass().getSimpleName());
-					Collection c = (Collection) result;
-					String resString = "";
-					boolean isBean = false;
-					for (Object o : c) {
-						if (resString.length()>0) {
-							resString+=",";
+			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
+					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
+				Class classType = methods.get(method);
+				Object result = method.invoke(bean);
+				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
+				if (ReflectUtil.isBean(classType)) {
+					LOG.info("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
+					// Handle BaseBeans
+					if (result == null) {
+						preparedStatement.setInt(++index, 0);
+					} else if (result instanceof BaseBean) {
+						preparedStatement.setInt(++index, ((BaseBean) result).getId());
+					}
+				} else if (ReflectUtil.isCollection(classType)) {
+					// Handle Collections
+					if (result == null) {
+						preparedStatement.setObject(++index, null);
+					} else {
+						Collection c = (Collection) result;
+						String resString = "";
+						boolean isBean = false;
+						for (Object o : c) {
+							if (resString.length() > 0) {
+								resString += ",";
+							}
+							if (o instanceof BaseBean) {
+								isBean = true;
+								resString += ((BaseBean) o).getId();
+							} else {
+								resString += o.toString().trim();
+							}
 						}
-						if (o instanceof BaseBean) {
-							isBean = true;
-							resString += ((BaseBean)o).getId();
-						} else {
-							resString += o.toString().trim();
+						preparedStatement.setString(++index, resString);
+					}
+				} else {
+					// Handle primitives
+					if (result == null) {
+						preparedStatement.setObject(++index, null);
+					} else {
+						if (classType.equals(String.class)) {
+							preparedStatement.setString(++index, (String) result);
+						} else if (classType.equals(int.class) || classType.equals(Integer.class)) {
+							preparedStatement.setInt(++index, (Integer) result);
+						} else if (classType.equals(boolean.class) || classType.equals(Boolean.class)) {
+							preparedStatement.setBoolean(++index, (Boolean) result);
+						} else if (classType.equals(Date.class)) {
+							preparedStatement.setString(++index, dateFormat.format(result));
+						} else if (classType.equals(long.class) || classType.equals(Long.class)) {
+							preparedStatement.setLong(++index, (Long) result);
+						} else if (classType.equals(short.class) || classType.equals(Short.class)) {
+							preparedStatement.setShort(++index, (Short) result);
+						} else if (classType.equals(float.class) || classType.equals(Float.class)) {
+							preparedStatement.setFloat(++index, (Float) result);
+						} else if (classType.equals(double.class) || classType.equals(Double.class)) {
+							preparedStatement.setDouble(++index, (Double) result);
+						} else if (classType.equals(BigDecimal.class)) {
+							preparedStatement.setBigDecimal(++index, (BigDecimal) result);
+						} else if (classType.equals(Blob.class)) {
+							preparedStatement.setBlob(++index, (Blob) result);
+						} else if (classType.equals(Clob.class)) {
+							preparedStatement.setClob(++index, (Clob) result);
 						}
 					}
-					preparedStatement.setString(++index, resString);
 				}
-			} else {
-				// Handle primitives
-				if (result==null) {
-					LOG.debug("result.class=null");
-					preparedStatement.setObject(++index, null);
-				} else {
-					LOG.debug("result.class="+result.getClass().getSimpleName());
-					if (classType.equals(String.class)) {
-						preparedStatement.setString(++index, (String) result);
-					} else if (classType.equals(int.class) || classType.equals(Integer.class)) {
-						preparedStatement.setInt(++index, (Integer) result);
-					} else if (classType.equals(boolean.class) || classType.equals(Boolean.class)) {
-						preparedStatement.setBoolean(++index, (Boolean) result);
-					} else if (classType.equals(Date.class)) {
-						preparedStatement.setString(++index, dateFormat.format(result));
-					} else if (classType.equals(long.class) || classType.equals(Long.class)) {
-						preparedStatement.setLong(++index, (Long) result);
-					} else if (classType.equals(short.class) || classType.equals(Short.class)) {
-						preparedStatement.setShort(++index, (Short) result);
-					} else if (classType.equals(float.class) || classType.equals(Float.class)) {
-						preparedStatement.setFloat(++index, (Float) result);
-					} else if (classType.equals(double.class) || classType.equals(Double.class)) {
-						preparedStatement.setDouble(++index, (Double) result);
-					} else if (classType.equals(BigDecimal.class)) {
-						preparedStatement.setBigDecimal(++index, (BigDecimal) result);
-					} else if (classType.equals(Blob.class)) {
-						preparedStatement.setBlob(++index, (Blob) result);
-					} else if (classType.equals(Clob.class)) {
-						preparedStatement.setClob(++index, (Clob) result);
-					}
-				}
+				// TODO: else
 			}
 		}
 		if (updateStmt) {
