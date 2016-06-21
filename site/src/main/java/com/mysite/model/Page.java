@@ -112,7 +112,7 @@ public class Page extends BaseBean {
         return author;
     }
 
-    public void setAuthor(User authorId) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
