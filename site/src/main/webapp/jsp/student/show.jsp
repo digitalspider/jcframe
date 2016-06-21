@@ -20,35 +20,35 @@
     <table border="1">
 <tr>
 <td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-    <label for="id">Student ID</label>
+  <label for="id">Student ID</label>
 </td>
 <td>
-  <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
+  <div class="field" id="id" name="id"><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_firstName" name="fieldrow_firstName">
-    <label for="firstName">FirstName</label>
+  <label for="firstName">FirstName</label>
 </td>
 <td>
   <div class="field" id="firstName" name="firstName"><c:out value="${bean.firstName}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_lastName" name="fieldrow_lastName">
-    <label for="lastName">LastName</label>
+  <label for="lastName">LastName</label>
 </td>
 <td>
   <div class="field" id="lastName" name="lastName"><c:out value="${bean.lastName}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_course" name="fieldrow_course">
-    <label for="course">Course</label>
+  <label for="course">Course</label>
 </td>
 <td>
   <div class="field" id="course" name="course"><c:out value="${bean.course}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_year" name="fieldrow_year">
-    <label for="year">Year</label>
+  <label for="year">Year</label>
 </td>
 <td>
   <div class="field" id="year" name="year"><c:out value="${bean.year}" /></div>

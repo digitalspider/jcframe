@@ -20,56 +20,56 @@
     <table border="1">
 <tr>
 <td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-    <label for="id">Page ID</label>
+  <label for="id">Page ID</label>
 </td>
 <td>
-  <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
+  <div class="field" id="id" name="id"><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_title" name="fieldrow_title">
-    <label for="title">Title</label>
+  <label for="title">Title</label>
 </td>
 <td>
-  <div class="field" id="title" name="title"><c:out value="${bean.title}" /></div>
+  <div class="field" id="title" name="title"><c:out value="${bean.title}" escapeXml="false"/></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_url" name="fieldrow_url">
-    <label for="url">Url</label>
+  <label for="url">Url</label>
 </td>
 <td>
   <div class="field" id="url" name="url"><c:out value="${bean.url}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_description" name="fieldrow_description">
-    <label for="description">Description</label>
+  <label for="description">Description</label>
 </td>
 <td>
-  <div class="field" id="description" name="description"><c:out value="${bean.description}" /></div>
+  <div class="field" id="description" name="description"><c:out value="${bean.description}" escapeXml="false"/></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_content" name="fieldrow_content">
-    <label for="content">Content</label>
+  <label for="content">Content</label>
 </td>
 <td>
-  <div class="field" id="content" name="content"><c:out value="${bean.content}" /></div>
+  <div class="field" id="content" name="content"><c:out value="${bean.content}" escapeXml="false"/></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
-    <label for="tags">Tags</label>
+  <label for="tags">Tags</label>
 </td>
 <td>
   <div class="field" id="tags" name="tags"><c:out value="${bean.tags}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_type" name="fieldrow_type">
-    <label for="type">Type</label>
+  <label for="type">Type</label>
 </td>
 <td>
   <div class="field" id="type" name="type"><c:out value="${bean.type}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
-    <label for="status">Status</label>
+  <label for="status">Status</label>
 </td>
 <td>
   <div class="field" id="status" name="status"><c:out value="${bean.status}" /></div>
@@ -79,19 +79,19 @@
   <label for="author">Author</label>
 </td>
 <td
-  <div class="field" id="author" name="author"><c:out value="${bean.author}" /></div>
+  <div class="field" id="author" name="author"><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author}" /></a></div>
 </td>
 </tr>
 <tr>
 <td class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
-    <label for="cdate">Created Date</label>
+  <label for="cdate">Created Date</label>
 </td>
 <td>
   <div class="field" id="cdate" name="cdate"><c:out value="${bean.cdate}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
-    <label for="mdate">Last Modified Date</label>
+  <label for="mdate">Last Modified Date</label>
 </td>
 <td>
   <div class="field" id="mdate" name="mdate"><c:out value="${bean.mdate}" /></div>
@@ -101,7 +101,7 @@
   <label for="parent">Parent Page</label>
 </td>
 <td
-  <div class="field" id="parent" name="parent"><c:out value="${bean.parent}" /></div>
+  <div class="field" id="parent" name="parent"><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent}" /></a></div>
 </td>
 </tr>
 

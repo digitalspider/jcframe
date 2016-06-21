@@ -334,7 +334,7 @@ public class ReflectUtil {
 			BaseDAO fieldDao = Statics.getDaoMap().get(classType);
 			if (fieldDao != null) {
 				BaseBean valueBean = fieldDao.getLookup(id);
-				LOG.info("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " valueBean=" + valueBean);
+				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " valueBean=" + valueBean);
 				if (valueBean != null) {
 					method.invoke(bean, valueBean);
 				}

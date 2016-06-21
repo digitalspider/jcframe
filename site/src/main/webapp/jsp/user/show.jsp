@@ -20,119 +20,119 @@
     <table border="1">
 <tr>
 <td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-    <label for="id">User ID</label>
+  <label for="id">User ID</label>
 </td>
 <td>
-  <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
+  <div class="field" id="id" name="id"><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_username" name="fieldrow_username">
-    <label for="username">Username</label>
+  <label for="username">Username</label>
 </td>
 <td>
   <div class="field" id="username" name="username"><c:out value="${bean.username}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_email" name="fieldrow_email">
-    <label for="email">Email</label>
+  <label for="email">Email</label>
 </td>
 <td>
   <div class="field" id="email" name="email"><c:out value="${bean.email}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_firstname" name="fieldrow_firstname">
-    <label for="firstname">Firstname</label>
+  <label for="firstname">Firstname</label>
 </td>
 <td>
   <div class="field" id="firstname" name="firstname"><c:out value="${bean.firstname}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_lastname" name="fieldrow_lastname">
-    <label for="lastname">Lastname</label>
+  <label for="lastname">Lastname</label>
 </td>
 <td>
   <div class="field" id="lastname" name="lastname"><c:out value="${bean.lastname}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_type" name="fieldrow_type">
-    <label for="type">Type</label>
+  <label for="type">Type</label>
 </td>
 <td>
   <div class="field" id="type" name="type"><c:out value="${bean.type}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_description" name="fieldrow_description">
-    <label for="description">Description</label>
+  <label for="description">Description</label>
 </td>
 <td>
   <div class="field" id="description" name="description"><c:out value="${bean.description}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
-    <label for="cdate">Created Date</label>
+  <label for="cdate">Created Date</label>
 </td>
 <td>
   <div class="field" id="cdate" name="cdate"><c:out value="${bean.cdate}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_image" name="fieldrow_image">
-    <label for="image">Image</label>
+  <label for="image">Image</label>
 </td>
 <td>
   <div class="field" id="image" name="image"><c:out value="${bean.image}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_mdate" name="fieldrow_mdate">
-    <label for="mdate">Last Modified Date</label>
+  <label for="mdate">Last Modified Date</label>
 </td>
 <td>
   <div class="field" id="mdate" name="mdate"><c:out value="${bean.mdate}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_mobile" name="fieldrow_mobile">
-    <label for="mobile">Mobile</label>
+  <label for="mobile">Mobile</label>
 </td>
 <td>
   <div class="field" id="mobile" name="mobile"><c:out value="${bean.mobile}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_pages" name="fieldrow_pages">
-    <label for="pages">Pages</label>
+  <label for="pages">Pages</label>
 </td>
 <td>
-  <div class="field" id="pages" name="pages"><c:out value="${bean.pages}" /></div>
+  <div class="field" id="pages" name="pages"><a href="${baseUrl}/page/find/author/=<c:out value='${bean.id}'/>">Pages <c:out value="${bean.pages}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
-    <label for="roles">Roles</label>
+  <label for="roles">Roles</label>
 </td>
 <td>
-  <div class="field" id="roles" name="roles"><c:out value="${bean.roles}" /></div>
+  <div class="field" id="roles" name="roles"><a href="${baseUrl}/role/show/<c:out value='${bean.roles.id}'/>"><c:out value="${bean.roles}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
-    <label for="status">Status</label>
+  <label for="status">Status</label>
 </td>
 <td>
   <div class="field" id="status" name="status"><c:out value="${bean.status}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_tags" name="fieldrow_tags">
-    <label for="tags">Tags</label>
+  <label for="tags">Tags</label>
 </td>
 <td>
   <div class="field" id="tags" name="tags"><c:out value="${bean.tags}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_token" name="fieldrow_token">
-    <label for="token">Token</label>
+  <label for="token">Token</label>
 </td>
 <td>
   <div class="field" id="token" name="token"><c:out value="${bean.token}" /></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_url" name="fieldrow_url">
-    <label for="url">Url</label>
+  <label for="url">Url</label>
 </td>
 <td>
   <div class="field" id="url" name="url"><c:out value="${bean.url}" /></div>

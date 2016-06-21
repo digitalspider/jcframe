@@ -20,14 +20,14 @@
     <table border="1">
 <tr>
 <td class="fieldrow" id="fieldrow_id" name="fieldrow_id">
-    <label for="id">Role ID</label>
+  <label for="id">Role ID</label>
 </td>
 <td>
-  <div class="field" id="id" name="id"><c:out value="${bean.id}" /></div>
+  <div class="field" id="id" name="id"><a href="${beanUrl}/show/<c:out value='${bean.id}'/>"><c:out value="${bean.id}" /></a></div>
 </td>
 </tr><tr>
 <td class="fieldrow" id="fieldrow_rolename" name="fieldrow_rolename">
-    <label for="rolename">Rolename</label>
+  <label for="rolename">Rolename</label>
 </td>
 <td>
   <div class="field" id="rolename" name="rolename"><c:out value="${bean.rolename}" /></div>

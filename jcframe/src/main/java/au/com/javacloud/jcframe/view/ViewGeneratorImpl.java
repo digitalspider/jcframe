@@ -240,13 +240,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		result = result.replaceAll("\\$\\{type\\}", type);
 		result = result.replaceAll("\\$\\{other\\}", other);
 		switch(viewType) {
-		case SHOW:
-			if (type.equals("password")) {
-				result="";
-			}
-			break;
 		case EDIT:
 			break;
+		case SHOW:
 		case LIST:
 		case INDEX:
 			if (type.equals("password")) {
