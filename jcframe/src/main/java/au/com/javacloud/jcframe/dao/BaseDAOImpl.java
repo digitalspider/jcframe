@@ -410,7 +410,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			updateStmt = true;
 			query = "update "+tableName+" set "+ getUpdateColumnsSQL(columns)+" where id=?";
 		}
-        LOG.info("query="+query+" columns="+columns);
+        LOG.debug("query="+query+" columns="+columns);
 		PreparedStatement preparedStatement;
 		if (updateStmt) {
 			preparedStatement = conn.prepareStatement(query);
@@ -430,7 +430,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				Object result = method.invoke(bean);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
 				if (ReflectUtil.isBean(classType)) {
-					LOG.info("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
+					LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
 					// Handle BaseBeans
 					if (result == null) {
 						preparedStatement.setInt(++index, 0);
