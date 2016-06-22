@@ -194,11 +194,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 			}
 			statement = conn.createStatement();
-			String query = "select id,"+columnName+" from "+tableName;
-			if (!StringUtils.isBlank(orderBy)) {
-				query += " order by "+orderBy;
-			}
-			query += " limit "+limit;
+			String query = "select id,"+columnName+" from "+tableName+" order by "+columnName+" limit "+DEFAULT_DAOLOOKUP_LIMIT;
 			resultSet = statement.executeQuery( query );
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
