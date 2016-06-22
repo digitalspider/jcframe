@@ -15,7 +15,7 @@ function addLookup(selectName) {
     for (var i=selectLookup.options.length; --i>=0; ) {
         var option = selectLookup.options[i];
         if (option.selected) {
-            selectActual.options.appendChild(option);
+            selectActual.appendChild(option);
         }
     }
 }
@@ -25,7 +25,7 @@ function removeLookup(selectName) {
     for (var i=selectActual.options.length; --i>=0; ) {
         var option = selectActual.options[i];
         if (option.selected) {
-            selectLookup.options.appendChild(option);
+            selectLookup.appendChild(option);
         }
     }
 }
