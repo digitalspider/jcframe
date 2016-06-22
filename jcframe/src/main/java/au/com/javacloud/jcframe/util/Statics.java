@@ -40,7 +40,7 @@ public class Statics {
 	private static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupServiceImpl";
 	private static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
     private static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
-    private static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy";
+    private static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy HH:mm";
     private static final String DEFAULT_DATEFORMAT_DB = "yyyy-MM-dd HH:mm:ss";
     
     private static final String PROP_PACKAGE_NAME = "package.name";
@@ -82,7 +82,7 @@ public class Statics {
 			
 			Properties dbProperties = ResourceUtil.loadProperties(dsPropertiesFilename);
 
-			// Get the dateFormat
+			// Get the dateFormats
 			LOG.info("DATEFORMATDISPLAY="+DATEFORMATDISPLAY);
 			LOG.info("DATEFORMATDB="+DATEFORMATDB);
 			try {
@@ -92,10 +92,10 @@ public class Statics {
 				displayDateFormat = new DisplayDateFormat(DEFAULT_DATEFORMAT_DISPLAY);
 			}
 			try {
-				dbDateFormat = new SimpleDateFormat(DATEFORMATDB);
+				dbDateFormat = new DisplayDateFormat(DATEFORMATDB);
 			} catch (Exception e) {
 				LOG.error(e,e);
-				dbDateFormat = new SimpleDateFormat(DEFAULT_DATEFORMAT_DB);
+				dbDateFormat = new DisplayDateFormat(DEFAULT_DATEFORMAT_DB);
 			}
 			LOG.info("displayDateFormat="+displayDateFormat);
 			LOG.info("dbDateFormat="+dbDateFormat);

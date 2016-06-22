@@ -79,7 +79,7 @@
   <label for="author">Author</label>
 </td>
 <td
-  <div class="field" id="author" name="author"><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author}" /></a></div>
+  <div class="field" id="author" name="author"><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author.displayValue}" /></a></div>
 </td>
 </tr>
 <tr>
@@ -101,7 +101,7 @@
   <label for="parent">Parent Page</label>
 </td>
 <td
-  <div class="field" id="parent" name="parent"><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent}" /></a></div>
+  <div class="field" id="parent" name="parent"><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent.displayValue}" /></a></div>
 </td>
 </tr>
 
