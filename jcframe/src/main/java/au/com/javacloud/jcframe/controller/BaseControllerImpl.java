@@ -62,7 +62,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected String beanUrl;
     protected String contextUrl;
     protected PathParts pathParts;
-	protected DateFormat dateFormat;
 	protected AuthService<U> authService;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
@@ -90,7 +89,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.clazz = clazz;
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
-		this.dateFormat = Statics.dbDateFormat;
 		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
@@ -356,7 +354,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
 				} else {
 					// Handle primitives
-					ReflectUtil.invokeSetterMethodForPrimitive(bean, method, classType, value, dateFormat);
+					ReflectUtil.invokeSetterMethodForPrimitive(bean, method, classType, value);
 				}
 			} catch (Exception e) {
 				LOG.error(e,e);
@@ -540,17 +538,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	@Override
 	public Class<T> getBeanClass() {
 		return clazz;
-	}
-
-	@Override
-	public DateFormat getDateFormat() {
-		return dateFormat;
-	}
-
-	@Override
-	public void setDateFormat(DateFormat dateFormat) {
-		this.dateFormat = dateFormat;
-		dao.setDateFormat(dateFormat);
 	}
 
 	@Override

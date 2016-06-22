@@ -368,6 +368,10 @@ public class ReflectUtil {
 		}
 	}
 
+	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value) throws Exception {
+		invokeSetterMethodForPrimitive(bean, method, classType, value, Statics.displayDateFormat);
+	}
+
 	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value, DateFormat dateFormat) throws Exception {
 		if (!StringUtils.isBlank(value)) {
 			if (classType.equals(String.class)) {

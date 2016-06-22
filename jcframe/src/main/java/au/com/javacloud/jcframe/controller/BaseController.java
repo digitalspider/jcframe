@@ -86,9 +86,6 @@ public interface BaseController<T extends BaseBean, U> {
 	public BaseDAO<T> getDao();
 	public void setDao(BaseDAO<T> dao);
 
-    public DateFormat getDateFormat();
-    public void setDateFormat(DateFormat dateFormat);
-    
     public AuthService<U> getAuthService();
     public void setAuthService(AuthService<U> auth);
     

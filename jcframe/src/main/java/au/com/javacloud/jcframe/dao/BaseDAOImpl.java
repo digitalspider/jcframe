@@ -33,6 +33,7 @@ import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.util.ReflectUtil;
+import au.com.javacloud.jcframe.util.Statics;
 
 /**
  * Created by david on 22/05/16.
@@ -47,7 +48,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected String orderBy;
 	protected boolean orderAsc = true;
 	protected int limit = DEFAULT_LIMIT;
-	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	protected DateFormat dateFormat;
 	private Connection conn;
 	private DAOLookupService daoLookupService;
 
@@ -57,6 +58,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		this.dataSource = dataSource;
 		this.tableName = getTableName();
 		this.daoLookupService = daoLookupService;
+		this.dateFormat = Statics.dbDateFormat;
 	}
 
 	@Override
