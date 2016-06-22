@@ -7,6 +7,30 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
 <title>Add New User</title>
+
+<script>
+function addLookup(selectName) {
+    var selectActual = document.getElementById(selectName);
+    var selectLookup = document.getElementById(selectName+"-lookup");
+    for (var i=selectLookup.options.length; --i>=0; ) {
+        var option = selectLookup.options[i];
+        if (option.selected) {
+            selectActual.options.appendChild(option);
+        }
+    }
+}
+function removeLookup(selectName) {
+    var selectActual = document.getElementById(selectName);
+    var selectLookup = document.getElementById(selectName+"-lookup");
+    for (var i=selectActual.options.length; --i>=0; ) {
+        var option = selectActual.options[i];
+        if (option.selected) {
+            selectLookup.options.appendChild(option);
+        }
+    }
+}
+</script>
+
 </head>
 <body>
     <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
@@ -109,30 +133,6 @@
 <td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
   <label for="roles">Roles</label>
 </td>
-<script>
-function add(selectName) {
-    var actualSelect = document.getElementById(selectName);
-    var lookupSelect = document.getElementById(selectName+"-lookup");
-    for (var i=lookupSelect.options.length; --i>0; ) {
-        var option = lookupSelect.options[i];
-        if (option.selected) {
-            lookupActual.options.appendChild(option);
-            lookupSelect.options.removeChild(option);
-        }
-    }
-}
-function remove() {
-    var actualSelect = document.getElementById(selectName);
-    var lookupSelect = document.getElementById(selectName+"-lookup");
-    for (var i=lookupSelect.options.length; --i>0; ) {
-        var option = lookupSelect.options[i];
-        if (option.selected) {
-            lookupActual.options.appendChild(option);
-            lookupSelect.options.removeChild(option);
-        }
-    }
-}
-</script>
 <td>
   <!-- Cloudflare setting -->
   <!--email_off-->
@@ -144,8 +144,8 @@ function remove() {
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">
-    <a href="javascript:add(roles)">&lt;</a>
-    <a href="javascript:remove(roles)">&gt;</a>
+    <a href="javascript:addLookup('roles')">&lt;</a>
+    <a href="javascript:removeLookup('roles')">&gt;</a>
   </div>
   <select id="roles-lookup" name="roles-lookup" style="float: left" size="10" multiple="true">
     <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">

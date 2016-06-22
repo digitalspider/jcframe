@@ -7,6 +7,30 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
 <title>Add New ${beanName}</title>
+
+<script>
+function addLookup(selectName) {
+    var selectActual = document.getElementById(selectName);
+    var selectLookup = document.getElementById(selectName+"-lookup");
+    for (var i=selectLookup.options.length; --i>=0; ) {
+        var option = selectLookup.options[i];
+        if (option.selected) {
+            selectActual.options.appendChild(option);
+        }
+    }
+}
+function removeLookup(selectName) {
+    var selectActual = document.getElementById(selectName);
+    var selectLookup = document.getElementById(selectName+"-lookup");
+    for (var i=selectActual.options.length; --i>=0; ) {
+        var option = selectActual.options[i];
+        if (option.selected) {
+            selectLookup.options.appendChild(option);
+        }
+    }
+}
+</script>
+
 </head>
 <body>
     <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
