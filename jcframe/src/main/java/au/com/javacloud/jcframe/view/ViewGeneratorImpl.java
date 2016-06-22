@@ -232,9 +232,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
 			isBean = ReflectUtil.isBean(fieldClass);
 		}
+		String inputType = type;
+		if (type.equalsIgnoreCase("html")) {
+			inputType = "text";
+		}
 		result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
-		result = result.replaceAll("\\$\\{type\\}", type);
+		result = result.replaceAll("\\$\\{type\\}", inputType);
 		result = result.replaceAll("\\$\\{other\\}", other);
 		switch(viewType) {
 		case EDIT:
