@@ -11,6 +11,11 @@ public interface ViewGenerator {
 
 	public static final String PATH_JSP = "src/main/webapp/jsp/";
 	public static final String PATH_TEMPLATE = PATH_JSP+"jctemplate/";
+	public static final String FIELD_TYPE_TEXT = "text";
+	public static final String FIELD_TYPE_HTML = "html";
+	public static final String FIELD_TYPE_BEAN = "bean";
+	public static final String FIELD_TYPE_BEANLIST = "beanlist";
+	public static final String FIELD_TYPE_PASSWORD = "password";
 	public static final String PLACEHOLDER_FIELDS = "##FIELDS##";
 	public static final String PLACEHOLDER_FIELDHEADERS = "##FIELDHEADERS##";
 

@@ -28,6 +28,7 @@ import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.view.ViewGenerator;
 
 @SuppressWarnings("rawtypes")
 public class ReflectUtil {
@@ -242,7 +243,7 @@ public class ReflectUtil {
 		if (isAnnotationPresent(classType, fieldName, DisplayType.class)) {
 			return getAnnotation(classType, fieldName, DisplayType.class).value();
 		}
-		return "text";
+		return ViewGenerator.FIELD_TYPE_TEXT;
 	}
 
 	public static boolean isAnnotationPresent(Class<? extends BaseBean> classType, String fieldName, Class<? extends Annotation> annotationClass) {

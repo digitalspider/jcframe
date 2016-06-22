@@ -18,6 +18,7 @@ import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
 import au.com.javacloud.jcframe.annotation.LinkField;
+import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.util.MethodComparator;
 import au.com.javacloud.jcframe.util.ReflectUtil;
@@ -26,6 +27,7 @@ import au.com.javacloud.jcframe.util.Statics;
 public class ViewGeneratorImpl implements ViewGenerator {
 
 	private static final Logger LOG = Logger.getLogger(ViewGeneratorImpl.class);
+	private static final String DELIM_HTML_TEMPLATE = "@@@";
 
 	Map<String,Map<ViewType,String>> fieldContentTemplateMap = new HashMap<String,Map<ViewType,String>>();
 
@@ -50,7 +52,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
 							String html = generateView(viewType, beanName, classType, methodMap);
 							String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
-							String[] htmlParts = html.split("@@@"); // split on delimiter
+							String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
 							if (htmlParts.length==2) {
 								pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
 								pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
@@ -147,7 +149,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				}
 			}
 
-			html.append("@@@"); // DELIMITER for HEADERS
+			html.append(DELIM_HTML_TEMPLATE); // DELIMITER for HEADERS
 
 			// Display fields
 			for (Method method : sortedMethodMap) {
@@ -189,7 +191,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		// Insert first id field
 		for (Method method : methods) {
 			String fieldName = ReflectUtil.getFieldName(method);
-			if (fieldName.equals("id")) {
+			if (fieldName.equals(BaseBean.FIELD_ID)) {
 				sortedMethodList.add(method);
 				methods.remove(method);
 				break;
@@ -218,20 +220,25 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
 		String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-		if (StringUtils.isBlank(type) && isBean) {
-			type = "bean";
+		if (StringUtils.isBlank(type)) {
+			return "";
+		}
+		if (isBean && type.equals(FIELD_TYPE_TEXT)) {
+			type = FIELD_TYPE_BEAN;
 		}
 		boolean isCollection = false;
 		if (ReflectUtil.isCollection(fieldClass)) {
 			isCollection = true;
 			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
 			isBean = ReflectUtil.isBean(fieldClass);
-			if (StringUtils.isBlank(type) && isBean) {
-				type = "beanlist";
-			}
 		}
-		if (type==null) {
-			return "";
+		LinkTable linkTable = ReflectUtil.getAnnotation(classType, fieldName, LinkTable.class);
+		if (linkTable!=null) {
+			type = FIELD_TYPE_BEANLIST;
+		}
+		LinkField linkField = ReflectUtil.getAnnotation(classType, fieldName, LinkField.class);
+		if (linkField!=null) {
+			type = FIELD_TYPE_TEXT;
 		}
 		String other = "";
 		String fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
@@ -268,10 +275,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case SHOW:
 		case LIST:
 		case INDEX:
-			if (type.equalsIgnoreCase("password")) {
+			if (type.equalsIgnoreCase(FIELD_TYPE_PASSWORD)) {
 				result="";
 			} else {
-				if (type.equalsIgnoreCase("html")) {
+				if (type.equalsIgnoreCase(FIELD_TYPE_HTML)) {
 					result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
 				} else {
 					result = result.replaceAll("\\$\\{isHtml\\}", "");
@@ -302,10 +309,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTypeToUseForTemplate(String type) {
 		String typeToUse = type;
-		if (type.equalsIgnoreCase("html")) {
-			typeToUse = "text";
-		} else if (type.equalsIgnoreCase("password")) {
-			typeToUse = "text";
+		if (type.equalsIgnoreCase(FIELD_TYPE_HTML)) {
+			typeToUse = FIELD_TYPE_TEXT;
+		} else if (type.equalsIgnoreCase(FIELD_TYPE_PASSWORD)) {
+			typeToUse = FIELD_TYPE_TEXT;
 		}
 		return typeToUse;
 	}
@@ -313,8 +320,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTypeToUseForJSP(String type) {
 		String typeToUse = type;
-		if (type.equalsIgnoreCase("html")) {
-			typeToUse = "text";
+		if (type.equalsIgnoreCase(FIELD_TYPE_HTML)) {
+			typeToUse = FIELD_TYPE_TEXT;
 		}
 		return typeToUse;
 	}

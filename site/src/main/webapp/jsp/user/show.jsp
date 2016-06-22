@@ -106,10 +106,11 @@
 <td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
   <label for="roles">Roles</label>
 </td>
-<td>
+<td
   <div class="field" id="roles" name="roles"><a href="${baseUrl}/role/show/<c:out value='${bean.roles.id}'/>"><c:out value="${bean.roles}" /></a></div>
 </td>
-</tr><tr>
+</tr>
+<tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
   <label for="status">Status</label>
 </td>

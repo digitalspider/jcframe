@@ -110,10 +110,29 @@
   <label for="roles">Roles</label>
 </td>
 <td>
-  <input type="text" id="roles" name="roles" value='<c:out value="${bean.roles}" />' placeholder="Roles"  />
+  <!-- Cloudflare setting -->
+  <!--email_off-->
+  <select name="roles" style="float: left" size="10" multiple="true">
+    <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
+      <c:if test="${bean.roles.contains(lookupBean.id)}">
+      <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
+      </c:if>
+    </c:forEach>
+  </select>
+  <div id="selectors" style="float: left">
+    <a href="#">&lt;</a>
+    <a href="#">&gt;</a>
+  </div>
+  <select name="roles-lookup" style="float: left" size="10" multiple="true">
+    <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
+      <c:if test="!${bean.roles.contains(lookupBean.id)}">
+      <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
+      </c:if>
+    </c:forEach>
+  </select>
+  <!--/email_off-->
 </td>
-</tr>
-<tr>
+</tr><tr>
 <td class="fieldrow" id="fieldrow_status" name="fieldrow_status">
   <label for="status">Status</label>
 </td>
