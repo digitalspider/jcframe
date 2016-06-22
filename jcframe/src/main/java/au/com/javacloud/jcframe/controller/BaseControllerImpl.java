@@ -240,7 +240,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 					throw new ServletException(e);
 				}
 		
-				if (beanUrl.endsWith(JSON_SUFFIX)) {
+				if (beanUrl.endsWith(JSON_SUFFIX) || beanUrl.endsWith(JSON_SUFFIX_LOOKUP)) {
 					return ;
 				}
 	   			break;
@@ -368,12 +368,12 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		if (beanUrl.endsWith(JSON_SUFFIX_LOOKUP)) {
 			List<BaseBean> beans = daoLookupService.getLookupMap(clazz);
 			String output = gson.toJson(beans);
-			response.setContentType(MediaType.APPLICATION_JSON);
+			response.setContentType(APPLICATION_JSON);
 			response.getWriter().write(output);
 			return true;
 		} else if (beanUrl.endsWith(JSON_SUFFIX)) {
 			String output = gson.toJson(o);
-			response.setContentType(MediaType.APPLICATION_JSON);
+			response.setContentType(APPLICATION_JSON);
 			response.getWriter().write(output);
 			return true;
 		}

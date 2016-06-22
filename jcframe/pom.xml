@@ -41,13 +41,6 @@
         <scope>provided</scope>
     </dependency>
 
-    <!-- Java API for Rest Services JSR-339 https://jax-rs-spec.java.net/ -->
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.0.1</version>
-    </dependency>
-
     <!-- GSon library -->
     <dependency>
         <groupId>com.google.code.gson</groupId>

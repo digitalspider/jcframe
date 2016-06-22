@@ -41,6 +41,9 @@ public interface BaseController<T extends BaseBean, U> {
     public static final String DEFAULT_INDEX_PAGE = "/index.jsp";
     public static final String JSON_SUFFIX_LOOKUP = ".jn";
     public static final String JSON_SUFFIX = ".json";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String APPLICATION_XML = "application/xml";
+    public static final String APPLICATION_FORM = "application/x-www-form-urlencoded";
 
     public static final String PROP_ORDER = "order";
     public static final String PROP_ORDER_ASC = "ASC";
