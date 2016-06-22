@@ -39,6 +39,7 @@ public interface BaseController<T extends BaseBean, U> {
     public static final String DEFAULT_SHOW_PAGE = "/show.jsp";
     public static final String DEFAULT_EDIT_PAGE = "/edit.jsp";
     public static final String DEFAULT_INDEX_PAGE = "/index.jsp";
+    public static final String JSON_SUFFIX_LOOKUP = ".jn";
     public static final String JSON_SUFFIX = ".json";
 
     public static final String PROP_ORDER = "order";

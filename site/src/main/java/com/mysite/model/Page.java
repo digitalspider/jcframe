@@ -25,11 +25,11 @@ public class Page extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")
-    protected Date cdate = new DisplayDate();
+    protected Date cdate;
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Last Modified Date")
-	protected Date mdate = new DisplayDate();
+	protected Date mdate;
     @DisplayType("html")
     protected String description;
     protected String tags;

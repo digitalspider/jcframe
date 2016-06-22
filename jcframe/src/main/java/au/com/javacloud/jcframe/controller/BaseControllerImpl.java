@@ -16,6 +16,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -364,8 +365,15 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	protected boolean handleJson(Object o) throws IOException {
-		if (beanUrl.endsWith(JSON_SUFFIX)) {
+		if (beanUrl.endsWith(JSON_SUFFIX_LOOKUP)) {
+			List<BaseBean> beans = daoLookupService.getLookupMap(clazz);
+			String output = gson.toJson(beans);
+			response.setContentType(MediaType.APPLICATION_JSON);
+			response.getWriter().write(output);
+			return true;
+		} else if (beanUrl.endsWith(JSON_SUFFIX)) {
 			String output = gson.toJson(o);
+			response.setContentType(MediaType.APPLICATION_JSON);
 			response.getWriter().write(output);
 			return true;
 		}

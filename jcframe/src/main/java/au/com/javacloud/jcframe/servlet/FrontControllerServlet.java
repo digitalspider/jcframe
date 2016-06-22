@@ -26,7 +26,6 @@ import au.com.javacloud.jcframe.util.Statics;
 public class FrontControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = -9034690294608764448L;
 	private final static Logger LOG = Logger.getLogger(FrontControllerServlet.class);
-    public static final String JSON_SUFFIX = ".json";
     public static final String URL_INDEX = "/index.jsp";
     public static final String URL_LOGIN = "/login.jsp";
     public static final String URL_ERROR = "/error.jsp";
@@ -85,8 +84,11 @@ public class FrontControllerServlet extends HttpServlet {
             }
 
             String beanName = pathParts.get(0);
-            if (beanName != null && beanName.endsWith(JSON_SUFFIX)) {
-                beanName = beanName.substring(0, beanName.length() - JSON_SUFFIX.length());
+            if (beanName != null && beanName.endsWith(BaseController.JSON_SUFFIX_LOOKUP)) {
+                beanName = beanName.substring(0, beanName.length() - BaseController.JSON_SUFFIX_LOOKUP.length());
+            }
+            if (beanName != null && beanName.endsWith(BaseController.JSON_SUFFIX)) {
+                beanName = beanName.substring(0, beanName.length() - BaseController.JSON_SUFFIX.length());
             }
             LOG.info("beanName=" + beanName);
             BaseController<? extends BaseBean,?> controller = Statics.getControllerForBeanName(beanName,request);

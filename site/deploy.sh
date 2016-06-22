@@ -1,8 +1,6 @@
 #!/bin/bash
 
-cd ..
-mvn clean install
-cd site
+#mvn -f ../pom.xml clean install
 
 TOMCATDIR=/opt/tomcat/tomcat-stage
 

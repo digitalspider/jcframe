@@ -23,11 +23,11 @@ public class User extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")
-    private Date cdate = new Date();
+    private Date cdate;
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Last Modified Date")
-    private Date mdate = new Date();
+    private Date mdate;
     private String description;
     private List<String> tags;
     private String type;
