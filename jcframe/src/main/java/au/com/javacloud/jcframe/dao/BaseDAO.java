@@ -1,22 +1,20 @@
 package au.com.javacloud.jcframe.dao;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
-/**
- * Created by david on 22/05/16.
- */
 import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
 
-import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
 
+/**
+ * Created by david on 22/05/16.
+ */
 public interface BaseDAO<T extends BaseBean> {
 
     public static final int MAX_LIMIT=1000;

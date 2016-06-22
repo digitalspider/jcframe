@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,8 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import au.com.javacloud.jcframe.annotation.IndexPage;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
+import au.com.javacloud.jcframe.annotation.IndexPage;
 import au.com.javacloud.jcframe.annotation.Secure;
 import au.com.javacloud.jcframe.auth.ACLException;
 import au.com.javacloud.jcframe.auth.Action;
@@ -107,7 +106,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	return servletContext!=null;
     }
 
-    @SuppressWarnings("rawtypes")
 	@Override
     public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException {
 		this.servletContext = servletContext;
@@ -120,7 +118,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		initLookupMap();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void initLookupMap() {
 		// Configure lookupMap

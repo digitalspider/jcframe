@@ -2,11 +2,9 @@ package au.com.javacloud.jcframe.view;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +47,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					File destDir = new File(directory);
 					LOG.info("destDir=" + destDir.getAbsolutePath());
 					Class<? extends BaseBean> classType = classMap.get(beanName);
-					List<Class> excludedAnnotationClasses = new ArrayList<Class>();
+					List<Class<? extends Annotation>> excludedAnnotationClasses = new ArrayList<Class<? extends Annotation>>();
 					Map<Method, Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, excludedAnnotationClasses);
 
 					for (ViewType viewType : ViewType.values()) {
@@ -89,6 +87,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		return pageContentTemplates;
     }
     
+	@SuppressWarnings("rawtypes")
 	@Override
 	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
 		StringBuffer html = new StringBuffer();
@@ -169,7 +168,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public List<Method> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList) {
+	public List<Method> sortMethodMap(@SuppressWarnings("rawtypes") final Map<Method, Class> methodMap, final String[] orderList) {
 		List<Method> methods = new ArrayList<Method>(methodMap.keySet());
 		List<Method> sortedMethodList = new ArrayList<Method>();
 		// Insert first id field
@@ -201,7 +200,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, Class fieldClass) throws Exception {
+	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
 		boolean isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 		String template = getTemplate(viewType, isBean);
@@ -221,7 +220,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isBean, boolean isHtml) throws Exception {
+	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass, String type, String other, boolean isBean, boolean isHtml) throws Exception {
 		String result = "";
 		if (type==null) {
 			return result;

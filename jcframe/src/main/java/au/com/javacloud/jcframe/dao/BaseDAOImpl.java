@@ -1,7 +1,6 @@
 package au.com.javacloud.jcframe.dao;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -27,11 +26,10 @@ import org.apache.log4j.Logger;
 
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
+import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.LinkField;
 import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.annotation.TableName;
-import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
-import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.util.ReflectUtil;

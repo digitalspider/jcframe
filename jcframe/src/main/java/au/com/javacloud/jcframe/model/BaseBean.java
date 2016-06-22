@@ -12,7 +12,7 @@ public class BaseBean {
     protected int id;
 	@ExcludeView
     @ExcludeDBWrite
-    protected String displayValue;
+    protected String displayValue = "";
 
     public final static String FIELD_ID = "id";
     public final static String FIELD_DISPLAYVALUE = "displayValue";

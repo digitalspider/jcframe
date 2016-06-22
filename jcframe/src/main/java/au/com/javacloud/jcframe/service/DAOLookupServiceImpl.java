@@ -1,11 +1,11 @@
 package au.com.javacloud.jcframe.service;
 
-import org.apache.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.dao.BaseDAO;
@@ -19,18 +19,19 @@ import au.com.javacloud.jcframe.util.Statics;
 public class DAOLookupServiceImpl implements DAOLookupService {
 
     private final static Logger LOG = Logger.getLogger(DAOLookupServiceImpl.class);
-    private Map<Class,List<BaseController>> controllerMap = new HashMap<Class,List<BaseController>>();
-    protected Map<Class,List<BaseBean>> lookupMap = new HashMap<Class, List<BaseBean>>();
+    private Map<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>> controllerMap = new HashMap<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>>();
+    protected Map<Class<? extends BaseBean>,List<BaseBean>> lookupMap = new HashMap<Class<? extends BaseBean>, List<BaseBean>>();
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public List<BaseBean> getLookupMap(Class<? extends BaseBean> beanClass) {
         List<BaseBean> lookupData = lookupMap.get(beanClass);
         if (lookupData==null) {
             LOG.info("Initialising lookupMap for class="+beanClass.getSimpleName());
-            BaseDAO lookupDao = Statics.getDaoMap().get(beanClass);
+            BaseDAO<? extends BaseBean> lookupDao = Statics.getDaoMap().get(beanClass);
             LOG.info("lookupDao="+lookupDao);
             try {
-                lookupData = lookupDao.getLookup();
+                lookupData = (List<BaseBean>) lookupDao.getLookup();
             } catch (Exception e) {
                 LOG.error(e,e);
                 lookupData = new ArrayList<BaseBean>();
@@ -42,22 +43,22 @@ public class DAOLookupServiceImpl implements DAOLookupService {
     }
 
     @Override
-    public void registerController(Class<? extends BaseBean> beanClass, BaseController controller) {
-        List<BaseController> controllerList = getInitialisedControllerMap(beanClass);
+    public void registerController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller) {
+        List<BaseController<? extends BaseBean, ?>> controllerList = getInitialisedControllerList(beanClass);
         controllerList.add(controller);
     }
 
     @Override
-    public void unregisterController(Class<? extends BaseBean> beanClass, BaseController controller) {
-        List<BaseController> controllerList = getInitialisedControllerMap(beanClass);
+    public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller) {
+        List<BaseController<? extends BaseBean, ?>> controllerList = getInitialisedControllerList(beanClass);
         if (controllerList.contains(controller)) {
             controllerList.remove(controller);
         }
     }
 
     @Override
-    public void fireDAOUpdate(DAOActionEvent event) {
-        Class beanClass = event.getBeanClass();
+    public <T extends BaseBean> void fireDAOUpdate(DAOActionEvent<T> event) {
+        Class<T> beanClass = event.getBeanClass();
         switch (event.getEventType()) {
             case INSERT:
                 addToLookupMap(beanClass, event.getBean());
@@ -66,7 +67,7 @@ public class DAOLookupServiceImpl implements DAOLookupService {
                 deleteFromLookupMap(beanClass, event.getId());
                 break;
         }
-        for (BaseController controller : (List<BaseController>) getInitialisedControllerMap(beanClass)) {
+        for (BaseController<? extends BaseBean, ?> controller : (List<BaseController<? extends BaseBean, ?>>) getInitialisedControllerList(beanClass)) {
             controller.reloadLookupMap();
         }
     }
@@ -100,10 +101,10 @@ public class DAOLookupServiceImpl implements DAOLookupService {
         }
     }
 
-    private List<BaseController>  getInitialisedControllerMap(Class<? extends BaseBean> beanClass) {
-        List<BaseController> controllerList = controllerMap.get(beanClass);
+	private List<BaseController<? extends BaseBean, ?>>  getInitialisedControllerList(Class<? extends BaseBean> beanClass) {
+        List<BaseController<? extends BaseBean, ?>> controllerList = controllerMap.get(beanClass);
         if (controllerList==null) {
-            controllerList = new ArrayList<BaseController>();
+            controllerList = new ArrayList<BaseController<? extends BaseBean, ?>>();
             controllerMap.put(beanClass, controllerList);
         }
         return controllerList;

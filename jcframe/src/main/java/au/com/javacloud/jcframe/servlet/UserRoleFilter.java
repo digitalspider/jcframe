@@ -31,7 +31,8 @@ public class UserRoleFilter implements Filter {
 
         String user = (String)request.getSession().getAttribute(SESSION_ATTRIBUTE_USER);
 
-        List<String> roles = (List<String>)request.getSession().getAttribute(SESSION_ATTRIBUTE_ROLES);
+        @SuppressWarnings("unchecked")
+		List<String> roles = (List<String>)request.getSession().getAttribute(SESSION_ATTRIBUTE_ROLES);
 
         next.doFilter(new UserRoleRequestWrapper(user, roles, request), response);
     }

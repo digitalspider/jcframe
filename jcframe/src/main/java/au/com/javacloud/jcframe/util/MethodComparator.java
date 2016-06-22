@@ -33,8 +33,8 @@ public class MethodComparator implements Comparator<Method> {
         if (val == 0) {
             val = m1.getParameterTypes().length - m2.getParameterTypes().length;
             if (val == 0) {
-                Class[] types1 = m1.getParameterTypes();
-                Class[] types2 = m2.getParameterTypes();
+                Class<?>[] types1 = m1.getParameterTypes();
+                Class<?>[] types2 = m2.getParameterTypes();
                 for (int i = 0; i < types1.length; i++) {
                     val = types1[i].getName().compareTo(types2[i].getName());
 

@@ -89,7 +89,7 @@ public class FrontControllerServlet extends HttpServlet {
                 beanName = beanName.substring(0, beanName.length() - JSON_SUFFIX.length());
             }
             LOG.info("beanName=" + beanName);
-            BaseController controller = Statics.getControllerForBeanName(beanName,request);
+            BaseController<? extends BaseBean,?> controller = Statics.getControllerForBeanName(beanName,request);
             LOG.info("controller=" + controller);
             if (controller != null) {
                 if (!controller.isInitialised()) {
