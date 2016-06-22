@@ -225,6 +225,11 @@ public class ReflectUtil {
 		return getFirstLetterUpperCase(fieldName); // TODO: Put spaces in between each uppercase letter
 	}
 
+	public static Field getField(Class<? extends BaseBean> classType, Method method) {
+		String fieldName = getFieldName(method);
+		return getField(classType, fieldName);
+	}
+
 	public static Field getField(Class<? extends BaseBean> classType, String fieldName) {
 		Map<String,Field> fields = getFields(classType);
 		Field field = fields.get(fieldName);

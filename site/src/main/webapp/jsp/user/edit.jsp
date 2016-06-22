@@ -109,10 +109,34 @@
 <td class="fieldrow" id="fieldrow_roles" name="fieldrow_roles">
   <label for="roles">Roles</label>
 </td>
+<script>
+function add(selectName) {
+    var actualSelect = document.getElementById(selectName);
+    var lookupSelect = document.getElementById(selectName+"-lookup");
+    for (var i=lookupSelect.options.length; --i>0; ) {
+        var option = lookupSelect.options[i];
+        if (option.selected) {
+            lookupActual.options.appendChild(option);
+            lookupSelect.options.removeChild(option);
+        }
+    }
+}
+function remove() {
+    var actualSelect = document.getElementById(selectName);
+    var lookupSelect = document.getElementById(selectName+"-lookup");
+    for (var i=lookupSelect.options.length; --i>0; ) {
+        var option = lookupSelect.options[i];
+        if (option.selected) {
+            lookupActual.options.appendChild(option);
+            lookupSelect.options.removeChild(option);
+        }
+    }
+}
+</script>
 <td>
   <!-- Cloudflare setting -->
   <!--email_off-->
-  <select name="roles" style="float: left" size="10" multiple="true">
+  <select id="roles" name="roles" style="float: left" size="10" multiple="true">
     <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
       <c:if test="${bean.roles.contains(lookupBean.id)}">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
@@ -120,12 +144,12 @@
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">
-    <a href="#">&lt;</a>
-    <a href="#">&gt;</a>
+    <a href="javascript:add(roles)">&lt;</a>
+    <a href="javascript:remove(roles)">&gt;</a>
   </div>
-  <select name="roles-lookup" style="float: left" size="10" multiple="true">
+  <select id="roles-lookup" name="roles-lookup" style="float: left" size="10" multiple="true">
     <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
-      <c:if test="!${bean.roles.contains(lookupBean.id)}">
+      <c:if test="${!bean.roles.contains(lookupBean.id)}">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
       </c:if>
     </c:forEach>

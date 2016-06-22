@@ -1,5 +1,7 @@
 package com.mysite.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
@@ -45,21 +47,44 @@ public class Page extends BaseBean {
     private String content;
     private String url;
 
-    @Override
-    public String toString() {
-        return super.toString()+
-        		", cdate=" + cdate +
-                ", mdate=" + mdate +
-                ", description=" + description +
-                ", tags=" + tags +
-                ", type=" + type +
-                ", status=" + status +
-                ", author=" + author +
-                ", parent=" + parent +
-                ", title=" + title +
-                ", content=" + content +
-                ", url=" + url;
-    }
+//    @Override
+//    public String toString() {
+//        StringBuffer result = new StringBuffer(super.toString());
+//        if (cdate!=null) {
+//            result.append(", cdate=" + cdate);
+//        }
+//        if (mdate!=null) {
+//            result.append(", mdate=" + mdate);
+//        }
+//        if (StringUtils.isNotBlank(description)) {
+//            result.append(", description=" + description);
+//        }
+//        if (StringUtils.isNotBlank(tags)) {
+//            result.append(", tags=" + tags);
+//        }
+//        if (StringUtils.isNotBlank(type)) {
+//            result.append(", type=" + type);
+//        }
+//        if (StringUtils.isNotBlank(status)) {
+//            result.append(", status=" + status);
+//        }
+//        if (author!=null) {
+//            result.append(", author=" + author);
+//        }
+//        if (parent!=null) {
+//            result.append(", parent=" + parent);
+//        }
+//        if (StringUtils.isNotBlank(title)) {
+//            result.append(", title=" + title);
+//        }
+//        if (StringUtils.isNotBlank(content)) {
+//            result.append(", content=" + content);
+//        }
+//        if (StringUtils.isNotBlank(url)) {
+//            result.append(", url=" + url);
+//        }
+//        return result.toString();
+//    }
 
     public Date getCdate() {
         return cdate;

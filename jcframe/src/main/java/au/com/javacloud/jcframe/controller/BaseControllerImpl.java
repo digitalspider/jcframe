@@ -124,6 +124,13 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     	for (Method method : fieldMethods.keySet()) {
     		Class lookupClass = fieldMethods.get(method);
 			LOG.debug("lookupClass="+lookupClass.getName());
+			if (ReflectUtil.isCollection(lookupClass)) {
+				try {
+					lookupClass = ReflectUtil.getCollectionGenericClass(clazz, ReflectUtil.getFieldName(method));
+				} catch (Exception e) {
+					LOG.error(e,e);
+				}
+			}
     		if (ReflectUtil.isBean(lookupClass)) {
     			try {
         			String fieldName = ReflectUtil.getFieldName(method);
@@ -135,6 +142,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     			}
     		}
     	}
+		LOG.info("lookupMap="+lookupMap);
     }
 
 	@Override
