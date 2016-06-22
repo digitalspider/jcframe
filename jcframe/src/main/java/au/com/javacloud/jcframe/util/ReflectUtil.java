@@ -234,7 +234,7 @@ public class ReflectUtil {
 		Field field = getField(classType, fieldName);
 		ParameterizedType collectionClassType = (ParameterizedType) field.getGenericType();
 		Class<?> collectionClass = (Class<?>) collectionClassType.getActualTypeArguments()[0];
-		LOG.info("field="+fieldName+" class="+collectionClass);
+		LOG.debug("field="+fieldName+" class="+collectionClass);
 		return collectionClass;
 	}
 

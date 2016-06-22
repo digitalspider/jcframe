@@ -10,16 +10,15 @@ import au.com.javacloud.jcframe.model.BaseBean;
 public interface ViewGenerator {
 
 	public static final String PATH_JSP = "src/main/webapp/jsp/";
-	public static final String PATH_TEMPLATE_PAGE = PATH_JSP+"jctemplate/";
-	public static final String PATH_TEMPLATE_FIELD = PATH_TEMPLATE_PAGE+"field/";
-	public static final String PATH_TEMPLATE_FIELD_TEXT = PATH_TEMPLATE_FIELD+"text/";
-	public static final String PATH_TEMPLATE_FIELD_BEAN = PATH_TEMPLATE_FIELD+"bean/";
+	public static final String PATH_TEMPLATE = PATH_JSP+"jctemplate/";
 	public static final String PLACEHOLDER_FIELDS = "##FIELDS##";
 	public static final String PLACEHOLDER_FIELDHEADERS = "##FIELDHEADERS##";
 
 	public void generatePages(List<String> beans) throws Exception;
 
-	public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException;
+	public String getTemplate(ViewType viewType, String type) throws IOException;
+
+	public Map<ViewType,String> getTemplates(String templateDirectory, String fieldName) throws IOException;
 
 	public List<Method> sortMethodMap(final Map<Method, Class> methodMap, final String[] orderList);
 
@@ -31,5 +30,7 @@ public interface ViewGenerator {
 
 	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isBean) throws Exception;
 
-	public String getTemplate(ViewType viewType, boolean isBean);
+	public String getTypeToUseForTemplate(String type);
+
+	public String getTypeToUseForJSP(String type);
 }

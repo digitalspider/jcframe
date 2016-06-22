@@ -78,11 +78,10 @@
 <td class="fieldrow" id="fieldrow_author" name="fieldrow_author">
   <label for="author">Author</label>
 </td>
-<td
-  <div class="field" id="author" name="author"><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author.displayValue}" /></a></div>
+<td>
+  <div class="field" id="author" name="author"><a href="${baseUrl}/user/show/<c:out value='${bean.author.id}'/>"><c:out value="${bean.author}" /></a></div>
 </td>
-</tr>
-<tr>
+</tr><tr>
 <td class="fieldrow" id="fieldrow_cdate" name="fieldrow_cdate">
   <label for="cdate">Created Date</label>
 </td>
@@ -100,11 +99,10 @@
 <td class="fieldrow" id="fieldrow_parent" name="fieldrow_parent">
   <label for="parent">Parent Page</label>
 </td>
-<td
-  <div class="field" id="parent" name="parent"><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent.displayValue}" /></a></div>
+<td>
+  <div class="field" id="parent" name="parent"><a href="${baseUrl}/page/show/<c:out value='${bean.parent.id}'/>"><c:out value="${bean.parent}" /></a></div>
 </td>
 </tr>
-
     </table>
     <input class="button" type="button" onclick="window.location='${beanUrl}/edit/<c:out value="${bean.id}" />';return false;" value="Edit" />
 </body>

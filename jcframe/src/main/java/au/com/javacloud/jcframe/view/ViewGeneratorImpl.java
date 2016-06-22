@@ -27,16 +27,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 	private static final Logger LOG = Logger.getLogger(ViewGeneratorImpl.class);
 
-	Map<ViewType,String> textFieldContentTemplates;
-	Map<ViewType,String> beanFieldContentTemplates;
+	Map<String,Map<ViewType,String>> fieldContentTemplateMap = new HashMap<String,Map<ViewType,String>>();
 
 	@Override
 	public void generatePages(List<String> beans) throws Exception {
 		LOG.info("generatePages() STARTED");
-		Map<ViewType,String> pageContentTemplates = getContentTemplates(PATH_TEMPLATE_PAGE);
-		LOG.debug("pageContentTemplates="+pageContentTemplates);
-		textFieldContentTemplates = getContentTemplates(PATH_TEMPLATE_FIELD_TEXT);
-		beanFieldContentTemplates = getContentTemplates(PATH_TEMPLATE_FIELD_BEAN);
+		Map<ViewType,String> pageTemplates = getTemplates(PATH_TEMPLATE, null);
+		LOG.debug("pageTemplates="+pageTemplates);
 
 		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
 		for (String beanName : classMap.keySet()) {
@@ -52,7 +49,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					for (ViewType viewType : ViewType.values()) {
 						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
 							String html = generateView(viewType, beanName, classType, methodMap);
-							String pageContent = pageContentTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+							String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
 							String[] htmlParts = html.split("@@@"); // split on delimiter
 							if (htmlParts.length==2) {
 								pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
@@ -71,19 +68,38 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-    public Map<ViewType,String> getContentTemplates(String templatePageDirectory) throws IOException {
-    	Map<ViewType,String> pageContentTemplates = new HashMap<>();
+	public String getTemplate(ViewType viewType, String type) throws IOException {
+		Map<ViewType,String> contentTemplates = getTemplates(PATH_TEMPLATE, type);
+		if (contentTemplates!=null) {
+			return contentTemplates.get(viewType);
+		}
+		return null;
+	}
+
+	@Override
+    public Map<ViewType,String> getTemplates(String templateDirectory, String fieldName) throws IOException {
+		Map<ViewType,String> templates = new HashMap<ViewType,String>();
+		if (StringUtils.isNotBlank(fieldName)) {
+			templates = fieldContentTemplateMap.get(fieldName);
+			if (templates==null) {
+				templates = new HashMap<ViewType,String>();
+				fieldContentTemplateMap.put(fieldName,templates);
+			} else {
+				return templates;
+			}
+			templateDirectory+=fieldName+"/";
+		}
 		boolean displayLog = true;
         for (ViewType viewType : ViewType.values()) {
-        	File templateFile = new File(templatePageDirectory+viewType.getPageName());
+        	File templateFile = new File(templateDirectory+viewType.getPageName());
 			if (displayLog) {
 				LOG.info("templateFile=" + templateFile.getAbsolutePath());
 				displayLog = false;
 			}
-        	final String pageContentTemplate = FileUtils.readFileToString(templateFile, "UTF-8");
-        	pageContentTemplates.put(viewType, pageContentTemplate);
+        	final String template = FileUtils.readFileToString(templateFile, "UTF-8");
+        	templates.put(viewType, template);
         }
-		return pageContentTemplates;
+		return templates;
     }
     
 	@SuppressWarnings("rawtypes")
@@ -201,8 +217,19 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
-		String template = getTemplate(viewType, isBean);
 		String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+		if (StringUtils.isBlank(type) && isBean) {
+			type = "bean";
+		}
+		boolean isCollection = false;
+		if (ReflectUtil.isCollection(fieldClass)) {
+			isCollection = true;
+			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
+			isBean = ReflectUtil.isBean(fieldClass);
+			if (StringUtils.isBlank(type) && isBean) {
+				type = "beanlist";
+			}
+		}
 		if (type==null) {
 			return "";
 		}
@@ -214,7 +241,11 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				other = "readonly=\"readonly\"";
 			}
 		}
-		return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean);
+		String template = getTemplate(viewType, getTypeToUseForTemplate(type));
+		if (template!=null) {
+			return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean);
+		}
+		return "";
 	}
 
 	@Override
@@ -226,19 +257,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		if (other==null) {
 			other = "";
 		}
-		boolean isCollection = false;
-		if (ReflectUtil.isCollection(fieldClass)) {
-			isCollection = true;
-			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
-			isBean = ReflectUtil.isBean(fieldClass);
-		}
-		String inputType = type;
-		if (type.equalsIgnoreCase("html")) {
-			inputType = "text";
-		}
+
 		result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
-		result = result.replaceAll("\\$\\{type\\}", inputType);
+		result = result.replaceAll("\\$\\{type\\}", getTypeToUseForJSP(type));
 		result = result.replaceAll("\\$\\{other\\}", other);
 		switch(viewType) {
 		case EDIT:
@@ -278,11 +300,22 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplate(ViewType viewType, boolean isBean) {
-		if (isBean) {
-			return beanFieldContentTemplates.get(viewType);
-		} else {
-			return textFieldContentTemplates.get(viewType);
+	public String getTypeToUseForTemplate(String type) {
+		String typeToUse = type;
+		if (type.equalsIgnoreCase("html")) {
+			typeToUse = "text";
+		} else if (type.equalsIgnoreCase("password")) {
+			typeToUse = "text";
 		}
+		return typeToUse;
+	}
+
+	@Override
+	public String getTypeToUseForJSP(String type) {
+		String typeToUse = type;
+		if (type.equalsIgnoreCase("html")) {
+			typeToUse = "text";
+		}
+		return typeToUse;
 	}
 }
