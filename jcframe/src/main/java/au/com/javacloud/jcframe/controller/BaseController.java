@@ -57,6 +57,8 @@ public interface BaseController<T extends BaseBean, U> {
 	
 	public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 	
+	public T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+	
 	public void list() throws Exception;
 	
     public void create() throws Exception;

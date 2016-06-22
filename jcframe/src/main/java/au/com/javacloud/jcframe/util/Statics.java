@@ -1,5 +1,7 @@
 package au.com.javacloud.jcframe.util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,16 +13,16 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.jcframe.auth.AuthService;
-import au.com.javacloud.jcframe.controller.BaseControllerImpl;
-import au.com.javacloud.jcframe.dao.BaseDAO;
-import au.com.javacloud.jcframe.dao.BaseDataSource;
 import au.com.javacloud.jcframe.annotation.BeanClass;
 import au.com.javacloud.jcframe.annotation.HiddenBean;
 import au.com.javacloud.jcframe.annotation.Secure;
+import au.com.javacloud.jcframe.auth.AuthService;
 import au.com.javacloud.jcframe.auth.BaseAuthServiceImpl;
 import au.com.javacloud.jcframe.controller.BaseController;
+import au.com.javacloud.jcframe.controller.BaseControllerImpl;
+import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.dao.BaseDAOImpl;
+import au.com.javacloud.jcframe.dao.BaseDataSource;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
 import au.com.javacloud.jcframe.service.DAOLookupServiceImpl;
@@ -38,6 +40,8 @@ public class Statics {
 	private static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupServiceImpl";
 	private static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
     private static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
+    private static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy";
+    private static final String DEFAULT_DATEFORMAT_DB = "yyyy-MM-dd HH:mm:ss";
     
     private static final String PROP_PACKAGE_NAME = "package.name";
     private static final String PROP_AUTH_CLASS = "auth.class";
@@ -45,6 +49,8 @@ public class Statics {
 	private static final String PROP_VIEWGEN_CLASS = "viewgen.class";
     private static final String PROP_DS_CLASS = "ds.class";
 	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
+	private static final String PROP_DATEFORMAT_DISPLAY = "date.format.display";
+	private static final String PROP_DATEFORMAT_DB = "date.format.db";
 
     private static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>>();
     private static Map<Class<? extends BaseBean>,BaseController<? extends BaseBean, ?>> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController<? extends BaseBean,?>>();
@@ -57,6 +63,10 @@ public class Statics {
 	private static ViewGenerator viewGenerator;
     private static DataSource dataSource;
 	private static DAOLookupService daoLookupService;
+	public static String DATEFORMATDISPLAY;
+	public static String DATEFORMATDB;
+	public static DateFormat displayDateFormat;
+	public static DateFormat dbDateFormat;
 
     static {
 		try {
@@ -67,9 +77,29 @@ public class Statics {
 			String viewGeneratorClassName = properties.getProperty(PROP_VIEWGEN_CLASS,DEFAULT_VIEWGEN_CLASS);
 			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
 			String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE,DEFAULT_DB_CONFIG_FILE);
-
+			DATEFORMATDISPLAY = properties.getProperty(PROP_DATEFORMAT_DISPLAY,DEFAULT_DATEFORMAT_DISPLAY);
+			DATEFORMATDB = properties.getProperty(PROP_DATEFORMAT_DISPLAY,DEFAULT_DATEFORMAT_DB);
+			
 			Properties dbProperties = ResourceUtil.loadProperties(dsPropertiesFilename);
 
+			// Get the dateFormat
+			LOG.info("DATEFORMATDISPLAY="+DATEFORMATDISPLAY);
+			LOG.info("DATEFORMATDB="+DATEFORMATDB);
+			try {
+				displayDateFormat = new DisplayDateFormat(DATEFORMATDISPLAY);
+			} catch (Exception e) {
+				LOG.error(e,e);
+				displayDateFormat = new DisplayDateFormat(DEFAULT_DATEFORMAT_DISPLAY);
+			}
+			try {
+				dbDateFormat = new SimpleDateFormat(DATEFORMATDB);
+			} catch (Exception e) {
+				LOG.error(e,e);
+				dbDateFormat = new SimpleDateFormat(DEFAULT_DATEFORMAT_DB);
+			}
+			LOG.info("displayDateFormat="+displayDateFormat);
+			LOG.info("dbDateFormat="+dbDateFormat);
+			
 			// Register the authService
 			try {
 				LOG.info("authClassName="+authClassName);

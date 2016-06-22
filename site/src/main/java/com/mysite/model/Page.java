@@ -3,14 +3,15 @@ package com.mysite.model;
 import java.util.Date;
 
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
+import au.com.javacloud.jcframe.annotation.DisplayOrder;
+import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.Secure;
 import au.com.javacloud.jcframe.annotation.TableName;
-import au.com.javacloud.jcframe.annotation.DisplayHtml;
-import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.util.DisplayDate;
 
 /**
  * Created by david on 22/05/16.
@@ -24,12 +25,12 @@ public class Page extends BaseBean {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")
-    protected Date cdate = new Date();
+    protected Date cdate = new DisplayDate();
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Last Modified Date")
-	protected Date mdate = new Date();
-    @DisplayHtml
+	protected Date mdate = new DisplayDate();
+    @DisplayType("html")
     protected String description;
     protected String tags;
     protected String type;
@@ -38,9 +39,9 @@ public class Page extends BaseBean {
     protected User author;
     @DisplayHeader("Parent Page")
     protected Page parent;
-    @DisplayHtml
+    @DisplayType("html")
     private String title;
-    @DisplayHtml
+    @DisplayType("html")
     private String content;
     private String url;
 

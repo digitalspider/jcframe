@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected String beanUrl;
     protected String contextUrl;
     protected PathParts pathParts;
-	protected DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	protected DateFormat dateFormat;
 	protected AuthService<U> authService;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
@@ -91,6 +90,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.clazz = clazz;
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
+		this.dateFormat = Statics.dbDateFormat;
 		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
@@ -334,7 +334,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
     @SuppressWarnings("rawtypes")
-	protected T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+	public T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		T bean = ReflectUtil.getNewBean(clazz);
 		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz, ExcludeDBWrite.class);
 		for (Method method : methods.keySet()) {

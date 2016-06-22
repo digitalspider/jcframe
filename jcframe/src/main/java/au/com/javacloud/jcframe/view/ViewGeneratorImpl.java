@@ -14,7 +14,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import au.com.javacloud.jcframe.annotation.DisplayHtml;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
@@ -202,7 +201,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
-		boolean isHtml = ReflectUtil.isAnnotationPresent(classType, fieldName,DisplayHtml.class);
 		String template = getTemplate(viewType, isBean);
 		String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
 		if (type==null) {
@@ -216,11 +214,11 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				other = "readonly=\"readonly\"";
 			}
 		}
-		return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean, isHtml);
+		return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean);
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass, String type, String other, boolean isBean, boolean isHtml) throws Exception {
+	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass, String type, String other, boolean isBean) throws Exception {
 		String result = "";
 		if (type==null) {
 			return result;
@@ -244,10 +242,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case SHOW:
 		case LIST:
 		case INDEX:
-			if (type.equals("password")) {
+			if (type.equalsIgnoreCase("password")) {
 				result="";
 			} else {
-				if (isHtml) {
+				if (type.equalsIgnoreCase("html")) {
 					result = result.replaceAll("\\$\\{isHtml\\}", "escapeXml=\"false\"");
 				} else {
 					result = result.replaceAll("\\$\\{isHtml\\}", "");
