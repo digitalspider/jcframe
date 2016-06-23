@@ -90,3 +90,11 @@ package.name=com.mysite
  * <code>mvn package</code>
 * Deploy your application
  * Place the war file into a tomcat "webapps" directory
+
+# TODO
+* Refactor ReflectUtil to create a centralised FieldMetaData with setMethod, getMethod, Field, ClassType
+* Implement M2MService = Many-to-Many i.e. List<BaseBean>
+* Implement AttachmentService = File Upload / display
+* Implement ServiceLoaderService = abstract away some of statics
+* Implement bean generator from DB metadata
+* Implement namespaces in db.properties files, and in @TableName("schema:Table")
