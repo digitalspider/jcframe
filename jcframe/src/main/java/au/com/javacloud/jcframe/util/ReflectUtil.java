@@ -49,104 +49,95 @@ public class ReflectUtil {
 		return false;
 	}
 
-
-	/**
-	 * Get all setter methods that start with "set" and match {@link @isRelevantMethod}.
-	 */
-	public static Map<Method, Class> getPublicSetterMethods(Class<? extends BaseBean> objectClass, List<Class<? extends Annotation>> excludeAnnotationClasses) {
-		Method[] allMethods = objectClass.getDeclaredMethods();
-		Map<Method, Class> setterMethods = new HashMap<Method, Class>();
-		LOG.debug("set objectClass=" + objectClass + " super=" + objectClass.getSuperclass());
-		if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
-			@SuppressWarnings("unchecked")
-			Class<? extends BaseBean> superClass = (Class<? extends BaseBean>) objectClass.getSuperclass();
-			Map<Method, Class> superClassMethods = getPublicSetterMethods(superClass, excludeAnnotationClasses);
-			setterMethods.putAll(superClassMethods);
-		}
-		for (Method method : allMethods) {
-			if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
-				if (method.getName().startsWith("set")) {
-					if (isRelevantMethod(method, objectClass, excludeAnnotationClasses)) {
-						Class[] params = method.getParameterTypes();
-						if (params.length == 1) {
-							setterMethods.put(method, params[0]);
-						}
-					}
-				}
-			}
-		}
-		LOG.debug("setters=" + setterMethods);
-		return setterMethods;
+	public static List<FieldMetaData> getFieldData(Class<? extends BaseBean> objectClass, Class<? extends Annotation> excludeAnnotationClass) {
+		return getFieldData(objectClass, asList(excludeAnnotationClass));
 	}
 
 	/**
-	 * Get all getter methods that start with "get" or "is" and match {@link @isRelevantMethod}.
+	 * Call {@link #getFieldData(Class)} and match {@link @isRelevantMethod}.
 	 */
-	public static Map<Method, Class> getPublicGetterMethods(Class<? extends BaseBean> objectClass, List<Class<? extends Annotation>> excludeAnnotationClasses) {
-		Method[] allMethods = objectClass.getDeclaredMethods();
-		Map<Method, Class> getterMethods = new HashMap<Method, Class>();
-		LOG.debug("get objectClass=" + objectClass + " super=" + objectClass.getSuperclass());
-		if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
-			@SuppressWarnings("unchecked")
-			Class<? extends BaseBean> superClass = (Class<? extends BaseBean>) objectClass.getSuperclass();
-			Map<Method, Class> superClassMethods = getPublicGetterMethods(superClass, excludeAnnotationClasses);
-			getterMethods.putAll(superClassMethods);
-		}
-		for (Method method : allMethods) {
-			if (Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())) {
-				if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-					if (isRelevantMethod(method, objectClass, excludeAnnotationClasses)) {
-						Class returnClass = method.getReturnType();
-						getterMethods.put(method, returnClass);
-					}
-				}
+	public static List<FieldMetaData> getFieldData(Class<? extends BaseBean> objectClass, List<Class<? extends Annotation>> excludeAnnotationClasses) {
+		List<FieldMetaData> filteredFieldMetaData = new ArrayList<FieldMetaData>();
+		for (FieldMetaData fieldMetaData : getFieldData(objectClass)) {
+			if (isRelevant(fieldMetaData, excludeAnnotationClasses)) {
+				filteredFieldMetaData.add(fieldMetaData);
 			}
 		}
-		LOG.debug("getters=" + getterMethods);
-		return getterMethods;
+		LOG.debug("filteredFieldMetaData=" + filteredFieldMetaData);
+		return filteredFieldMetaData;
 	}
 
-	/**
-	 * Get all getter methods that start with "get" or "is" and match {@link @isRelevantMethod}.
-	 */
-	public static Map<String, Field> getFields(Class<? extends BaseBean> objectClass) {
+	public static List<FieldMetaData> getFieldData(Class<? extends BaseBean> objectClass) {
 		Field[] allFields = objectClass.getDeclaredFields();
-		Map<String, Field> fields = new HashMap<String, Field>();
+		List<FieldMetaData> fieldMetaDataList = new ArrayList<FieldMetaData>();
 		LOG.debug("get objectClass=" + objectClass + " super=" + objectClass.getSuperclass());
 		if (objectClass.getSuperclass() != null && ReflectUtil.isBean(objectClass.getSuperclass())) {
 			@SuppressWarnings("unchecked")
 			Class<? extends BaseBean> superClass = (Class<? extends BaseBean>) objectClass.getSuperclass();
-			Map<String, Field> superFields = getFields(superClass);
-			fields.putAll(superFields);
+			List<FieldMetaData> superFieldData = getFieldData(superClass);
+			fieldMetaDataList.addAll(superFieldData);
 		}
 		for (Field field : allFields) {
 			if (!Modifier.isAbstract(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
-				fields.put(field.getName(), field);
+				FieldMetaData fieldData = new FieldMetaData();
+				fieldData.setField(field);
+				Class classType = field.getType();
+				Class collectionClass = null;
+				if (isCollection(classType)) {
+					collectionClass = classType;
+					classType = getCollectionGenericClass(field);
+				}
+				fieldData.setClassType(classType);
+				fieldData.setCollectionClass(collectionClass);
+				Method setMethod = getSetMethod(objectClass, field);
+				fieldData.setSetMethod(setMethod);
+				Method getMethod = getGetMethod(objectClass, field);
+				fieldData.setGetMethod(getMethod);
+				fieldMetaDataList.add(fieldData);
 			}
 		}
-		LOG.debug("fields=" + fields);
-		return fields;
+		LOG.debug("fieldMetaDataList=" + fieldMetaDataList);
+		return fieldMetaDataList;
+	}
+
+	public static Method getGetMethod(Class<? extends BaseBean> objectClass, Field field) {
+		for (Method method : objectClass.getDeclaredMethods()) {
+			String fieldName = getFirstLetterUpperCase(field.getName());
+			if (method.getName().equals("get"+fieldName) ||
+					method.getName().equals("is"+fieldName)) {
+				if ((Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) && !Modifier.isAbstract(method.getModifiers())) {
+					return method;
+				}
+			}
+		}
+		return null;
+	}
+
+	public static Method getSetMethod(Class<? extends BaseBean> objectClass, Field field) {
+		for (Method method : objectClass.getDeclaredMethods()) {
+			String fieldName = getFirstLetterUpperCase(field.getName());
+			if (method.getName().equals("set"+fieldName)) {
+				if ((Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) && !Modifier.isAbstract(method.getModifiers())) {
+					return method;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
 	 * Return true if the method has an associated field name which does not have the excludeAnnotationClass present.
 	 */
-	public static boolean isRelevantMethod(Method method, Class<? extends BaseBean> beanClass, List<Class<? extends Annotation>> excludeAnnotationClasses) {
+	public static boolean isRelevant(FieldMetaData fieldMetaData, List<Class<? extends Annotation>> excludeAnnotationClasses) {
 		boolean relevant = true;
-		String fieldName = ReflectUtil.getFieldName(method);
-		try {
-			Field fieldForMethod = beanClass.getDeclaredField(fieldName);
-			if (excludeAnnotationClasses != null && !excludeAnnotationClasses.isEmpty()) {
-				for (Class<? extends Annotation> excludeAnnotationClass : excludeAnnotationClasses) {
-					if (fieldForMethod.isAnnotationPresent(excludeAnnotationClass)) {
-						relevant = false;
-						break;
-					}
+		Field field = fieldMetaData.getField();
+		if (excludeAnnotationClasses != null && !excludeAnnotationClasses.isEmpty()) {
+			for (Class<? extends Annotation> excludeAnnotationClass : excludeAnnotationClasses) {
+				if (field.isAnnotationPresent(excludeAnnotationClass)) {
+					relevant = false;
+					break;
 				}
 			}
-		} catch (NoSuchFieldException e) {
-			relevant = false;
-			// getter/setter methods are required to have an associated field value, otherwise not relevant
 		}
 		return relevant;
 	}
@@ -154,10 +145,10 @@ public class ReflectUtil {
 	/**
 	 * Only return methods from the method map where the associated field does not contains the excludeAnnotationClass
 	 */
-	public static Map<Method, Class> getFilteredMethodMap(Class<? extends BaseBean> beanClass, Map<Method, Class> methodMap, List<Class<? extends Annotation>> excludedAnnotationClasses) {
-		Map<Method, Class> filteredMethodMap = new HashMap<Method, Class>();
+	public static Map<Method, FieldMetaData> getFilteredMethodMap(Map<Method, FieldMetaData> methodMap, List<Class<? extends Annotation>> excludedAnnotationClasses) {
+		Map<Method, FieldMetaData> filteredMethodMap = new HashMap<Method, FieldMetaData>();
 		for (Method method : methodMap.keySet()) {
-			if (isRelevantMethod(method, beanClass, excludedAnnotationClasses)) {
+			if (isRelevant(methodMap.get(method), excludedAnnotationClasses)) {
 				filteredMethodMap.put(method, methodMap.get(method));
 			}
 		}
@@ -174,13 +165,20 @@ public class ReflectUtil {
 	}
 
 	public static <U extends BaseBean> List<String> getBeanFieldNames(Class<U> clazz, Class<? extends Annotation> excludeAnnnotationClass) {
-		Set<Method> methods = ReflectUtil.getPublicGetterMethods(clazz, excludeAnnnotationClass).keySet();
+		Collection<FieldMetaData> fieldMetaDatas = getFieldData(clazz, excludeAnnnotationClass);
 		List<String> beanFieldNames = new ArrayList<String>();
-		for (Method method : methods) {
-			String fieldName = ReflectUtil.getFieldName(method);
+		for (FieldMetaData fieldMetaData : fieldMetaDatas) {
+			String fieldName = fieldMetaData.getField().getName();
 			beanFieldNames.add(fieldName);
 		}
 		return beanFieldNames;
+	}
+
+	public static Class getCollectionGenericClass(Field field) {
+		ParameterizedType collectionClassType = (ParameterizedType) field.getGenericType();
+		Class<?> collectionClass = (Class<?>) collectionClassType.getActualTypeArguments()[0];
+		LOG.debug("field="+field.getName()+" class="+collectionClass);
+		return collectionClass;
 	}
 
 	public static <T extends BaseBean> String getDisplayValueFromBean(T bean) {
@@ -205,70 +203,35 @@ public class ReflectUtil {
 		return displayValue;
 	}
 
-	public static String getFieldName(String methodName) {
-		if (methodName.startsWith("is")) {
-			methodName = methodName.substring(2);
-		} else {
-			methodName = methodName.substring(3);
+	public static String getDisplayHeader(Field field) throws NoSuchFieldException {
+		if (field.isAnnotationPresent(DisplayHeader.class)) {
+			return field.getAnnotation(DisplayHeader.class).value();
 		}
-		return getFirstLetterLowerCase(methodName);
+		return getFirstLetterUpperCase(field.getName()); // TODO: Put spaces in between each uppercase letter
 	}
 
-	public static String getFieldName(Method method) {
-		return getFieldName(method.getName());
-	}
-
-	public static String getFieldHeader(Class<? extends BaseBean> classType, String fieldName) throws NoSuchFieldException {
-		if (isAnnotationPresent(classType, fieldName, DisplayHeader.class)) {
-			return getAnnotation(classType, fieldName, DisplayHeader.class).value();
-		}
-		return getFirstLetterUpperCase(fieldName); // TODO: Put spaces in between each uppercase letter
-	}
-
-	public static Field getField(Class<? extends BaseBean> classType, Method method) {
-		String fieldName = getFieldName(method);
-		return getField(classType, fieldName);
-	}
-
-	public static Field getField(Class<? extends BaseBean> classType, String fieldName) {
-		Map<String,Field> fields = getFields(classType);
-		Field field = fields.get(fieldName);
-		return field;
-	}
-
-	public static Class getCollectionGenericClass(Class<? extends BaseBean> classType, String fieldName) {
-		Field field = getField(classType, fieldName);
-		ParameterizedType collectionClassType = (ParameterizedType) field.getGenericType();
-		Class<?> collectionClass = (Class<?>) collectionClassType.getActualTypeArguments()[0];
-		LOG.debug("field="+fieldName+" class="+collectionClass);
-		return collectionClass;
-	}
-
-	public static String getFieldDisplayType(Class<? extends BaseBean> classType, String fieldName) throws NoSuchFieldException {
-		if (isAnnotationPresent(classType, fieldName, DisplayType.class)) {
-			return getAnnotation(classType, fieldName, DisplayType.class).value();
+	public static String getDisplayType(Field field) throws NoSuchFieldException {
+		if (field.isAnnotationPresent(DisplayType.class)) {
+			return field.getAnnotation(DisplayType.class).value();
 		}
 		return ViewGenerator.FIELD_TYPE_TEXT;
 	}
 
-	public static boolean isAnnotationPresent(Class<? extends BaseBean> classType, String fieldName, Class<? extends Annotation> annotationClass) {
-		Field field = getField(classType, fieldName);
-		if (field!=null) {
-			return field.isAnnotationPresent(annotationClass);
+	/** Reflective way to get an annotation value */
+	public static String getAnnotationValue(Field field, Class<? extends Annotation> annotationClass, String defaultValue) throws NoSuchFieldException {
+		if (field.isAnnotationPresent(annotationClass)) {
+			return getAnnotationValue(field, annotationClass, "value");
 		}
-		return false;
+		return defaultValue;
 	}
 
-	public static <T extends Annotation> T getAnnotation(Class<? extends BaseBean> classType, Method method, Class<T> annotationClass) throws NoSuchFieldException {
-		return getAnnotation(classType, getFieldName(method), annotationClass);
-	}
-
-	public static <T extends Annotation> T getAnnotation(Class<? extends BaseBean> classType, String fieldName, Class<T> annotationClass) throws NoSuchFieldException {
-		Field field = getField(classType, fieldName);
-		if (field!=null) {
-			return field.getAnnotation(annotationClass);
-		}
-		throw new NoSuchFieldException(fieldName);
+	@SuppressWarnings("unchecked")
+	public static<T> T getAnnotationValue(Class<?> clazz,Class<? extends Annotation> annotationClass,String element) throws Exception {
+		Annotation annotation = clazz.getAnnotation(annotationClass);
+		Method method = annotationClass.getMethod(element,(Class[])null);
+		if (annotation == null)
+			return((T)method.getDefaultValue());
+		return((T)method.invoke(annotation,(Object[])null));
 	}
 
 	public static String getFirstLetterUpperCase(String name) {
@@ -415,17 +378,5 @@ public class ReflectUtil {
 			classes.add(singleClass);
 		}
 		return classes;
-	}
-
-	public static Map<Method, Class> getPublicSetterMethods(Class<? extends BaseBean> objectClass, Class<? extends Annotation> excludeAnnotationClass) {
-		return getPublicSetterMethods(objectClass, asList(excludeAnnotationClass));
-	}
-
-	public static Map<Method, Class> getPublicGetterMethods(Class<? extends BaseBean> objectClass, Class<? extends Annotation> excludeAnnotationClass) {
-		return getPublicGetterMethods(objectClass, asList(excludeAnnotationClass));
-	}
-
-	public static Map<Method, Class> getFilteredMethodMap(Class<? extends BaseBean> beanClass, Map<Method, Class> methodMap, Class<? extends Annotation> excludeAnnotationClass) {
-		return getFilteredMethodMap(beanClass, methodMap, asList(excludeAnnotationClass));
 	}
 }

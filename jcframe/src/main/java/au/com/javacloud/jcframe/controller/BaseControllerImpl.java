@@ -2,6 +2,7 @@ package au.com.javacloud.jcframe.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.text.DateFormat;
@@ -36,6 +37,7 @@ import au.com.javacloud.jcframe.auth.AuthenticationException;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.GsonExclusionStrategy;
 import au.com.javacloud.jcframe.util.HttpUtil;
 import au.com.javacloud.jcframe.util.PathParts;
@@ -120,20 +122,14 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	@Override
 	public void initLookupMap() {
 		// Configure lookupMap
-    	Map<Method,Class> fieldMethods = ReflectUtil.getPublicSetterMethods(dao.getBeanClass(), ExcludeDBWrite.class);
-    	for (Method method : fieldMethods.keySet()) {
-    		Class lookupClass = fieldMethods.get(method);
+    	List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(dao.getBeanClass(), ExcludeDBWrite.class);
+    	for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Method method = fieldMetaData.getGetMethod();
+    		Class lookupClass = fieldMetaData.getClassType();
 			LOG.debug("lookupClass="+lookupClass.getName());
-			if (ReflectUtil.isCollection(lookupClass)) {
-				try {
-					lookupClass = ReflectUtil.getCollectionGenericClass(clazz, ReflectUtil.getFieldName(method));
-				} catch (Exception e) {
-					LOG.error(e,e);
-				}
-			}
     		if (ReflectUtil.isBean(lookupClass)) {
     			try {
-        			String fieldName = ReflectUtil.getFieldName(method);
+        			String fieldName = fieldMetaData.getField().getName();
 					lookupFields.put(fieldName, lookupClass);
 					lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
 					daoLookupService.registerController(lookupClass, this);
@@ -343,10 +339,13 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     @Override
 	public T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		T bean = ReflectUtil.getNewBean(clazz);
-		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz, ExcludeDBWrite.class);
-		for (Method method : methods.keySet()) {
-			Class classType = methods.get(method);
-			String fieldName = ReflectUtil.getFieldName(method);
+		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
+
+		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Field field = fieldMetaData.getField();
+			Method method = fieldMetaData.getSetMethod();
+			Class classType = fieldMetaData.getClass();
+			String fieldName = field.getName();
 			try {
 				String value = request.getParameter(fieldName);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);

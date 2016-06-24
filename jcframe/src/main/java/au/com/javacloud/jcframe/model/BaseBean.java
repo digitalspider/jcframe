@@ -5,10 +5,12 @@ import org.apache.commons.lang3.exception.ExceptionContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
+import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 
 /**
@@ -28,14 +30,16 @@ public class BaseBean {
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer(getClass().getSimpleName()+"["+id+"] "+displayValue);
-        Map<Method,Class> methodMap = ReflectUtil.getPublicGetterMethods(getClass(),(Class)null);
-        for (Method method : methodMap.keySet()) {
+        List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(getClass());
+        for (FieldMetaData fieldMetaData : fieldMetaDataList) {
             try {
-                Field field = ReflectUtil.getField(getClass(),method);
-                if (field!=null && !field.getName().equals(FIELD_ID) && !field.getName().equals(FIELD_DISPLAYVALUE)) {
+                Field field = fieldMetaData.getField();
+                Method method = fieldMetaData.getGetMethod();
+                if (field!=null && !field.getName().equals(FIELD_ID) && !field.getName().equals(FIELD_DISPLAYVALUE)
+                        && method!=null) {
                     Object value = method.invoke(this);
                     if (value != null && StringUtils.isNotBlank(value.toString())) {
-                        result.append(", " + method.getName() + "=" + value);
+                        result.append(", " + field.getName() + "=" + value);
                     }
                 }
             } catch (Exception e) {

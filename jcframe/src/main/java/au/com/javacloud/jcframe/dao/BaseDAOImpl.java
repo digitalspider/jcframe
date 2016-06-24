@@ -1,6 +1,7 @@
 package au.com.javacloud.jcframe.dao;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -32,6 +33,7 @@ import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
 
@@ -324,19 +326,20 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception {
-		Map<Method,Class> methods = ReflectUtil.getPublicSetterMethods(clazz, ExcludeDBRead.class);
+		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBRead.class);
 		String columnName = BaseBean.FIELD_ID;
 		if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
 			columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 		}
-		for (Method method : methods.keySet()) {
-			Class classType = methods.get(method);
+		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Field field = fieldMetaData.getField();
+			Method method = fieldMetaData.getSetMethod();
+			Class classType = fieldMetaData.getClass();
             LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
-			String fieldName = ReflectUtil.getFieldName(method);
 
-			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
-					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
+			String fieldName = field.getName();
 
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
 				// populate the display value
 				if (fieldName.equals(columnName)) {
 					bean.setDisplayValue(rs.getString(fieldName));
@@ -391,14 +394,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception {
 		boolean updateStmt = false;
-		Map<Method,Class> methods = ReflectUtil.getPublicGetterMethods(clazz, ExcludeDBWrite.class);
+		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
 
 		List<String> columns = new ArrayList<String>();
-		for (Method method : methods.keySet()) {
-			String fieldName = ReflectUtil.getFieldName(method);
-			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
-					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
-				columns.add(fieldName);
+		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Field field = fieldMetaData.getField();
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
+				columns.add(field.getName());
 			}
 		}
 		String query = "insert into "+tableName+" "+ getInsertIntoColumnsSQL(columns);
@@ -418,11 +420,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		preparedStatementWrapper.setSql(query);
 
 		int index = 0;
-		for (Method method : methods.keySet()) {
-			String fieldName = ReflectUtil.getFieldName(method);
-			if (!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkField.class) &&
-					!ReflectUtil.isAnnotationPresent(clazz, fieldName, LinkTable.class)) {
-				Class classType = methods.get(method);
+		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Field field = fieldMetaData.getField();
+			Method method = fieldMetaData.getGetMethod();
+			String fieldName = field.getName();
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
+				Class classType = fieldMetaData.getClass();
 				Object result = method.invoke(bean);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
 				if (ReflectUtil.isBean(classType)) {

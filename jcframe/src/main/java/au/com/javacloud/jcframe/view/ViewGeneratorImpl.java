@@ -3,6 +3,7 @@ package au.com.javacloud.jcframe.view;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,11 +16,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
+import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
 import au.com.javacloud.jcframe.annotation.LinkField;
 import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.javacloud.jcframe.util.FieldMetaData;
+import au.com.javacloud.jcframe.util.FieldMetaDataComparator;
 import au.com.javacloud.jcframe.util.MethodComparator;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
@@ -46,11 +50,11 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					LOG.info("destDir=" + destDir.getAbsolutePath());
 					Class<? extends BaseBean> classType = classMap.get(beanName);
 					List<Class<? extends Annotation>> excludedAnnotationClasses = new ArrayList<Class<? extends Annotation>>();
-					Map<Method, Class> methodMap = ReflectUtil.getPublicGetterMethods(classType, excludedAnnotationClasses);
+					List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(classType);
 
 					for (ViewType viewType : ViewType.values()) {
 						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
-							String html = generateView(viewType, beanName, classType, methodMap);
+							String html = generateView(viewType, classType, fieldMetaDataList);
 							String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
 							String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
 							if (htmlParts.length==2) {
@@ -106,14 +110,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
     
 	@SuppressWarnings("rawtypes")
 	@Override
-	public String generateView(ViewType viewType, String beanName, Class<? extends BaseBean> classType, Map<Method,Class> methodMap) throws Exception {
+	public String generateView(ViewType viewType, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception {
 		StringBuffer html = new StringBuffer();
 
 		String[] orderList = new String[0];
 		if (classType.isAnnotationPresent(DisplayOrder.class)) {
 			orderList = classType.getAnnotation(DisplayOrder.class).value().split(",");
 		}
-		List<Method> sortedMethodMap = sortMethodMap(methodMap, orderList);
+		List<FieldMetaData> sortedFieldMetaDataList = sortFieldData(fieldMetaDataList, orderList);
 		
 		String fieldName;
 		String content;
@@ -122,11 +126,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case SHOW:
 		case EDIT:
 			// Handle fields
-			for (Method method : sortedMethodMap) {
-				fieldName = ReflectUtil.getFieldName(method);
-				if (validForView(viewType, classType, fieldName)) {
-					Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
-					content = getTemplatedContent(viewType, fieldName, classType, fieldClass);
+			for (FieldMetaData fieldMetaData : sortedFieldMetaDataList) {
+				Field field = fieldMetaData.getField();
+				Method method = fieldMetaData.getSetMethod();
+				fieldName = field.getName();
+				if (validForView(viewType, field)) {
+					Class fieldClass = fieldMetaData.getClass(); // TODO: Implement field specific stuff
+					content = getTemplatedContent(viewType, fieldMetaData, classType, fieldClass);
 					html.append(content);
 				}
 			}
@@ -135,11 +141,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		case INDEX:
 			// Display headers
 			fieldName = "";
-			for (Method method : sortedMethodMap) {
-				fieldName = ReflectUtil.getFieldName(method);
-				if (validForView(viewType, classType, fieldName)) {
-					String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
-					String fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+			for (FieldMetaData fieldMetaData : sortedFieldMetaDataList) {
+				Field field = fieldMetaData.getField();
+				Method method = fieldMetaData.getSetMethod();
+				fieldName = field.getName();
+				if (validForView(viewType, field)) {
+					String type = ReflectUtil.getDisplayType(field);
+					String fieldHeader = ReflectUtil.getDisplayHeader(field);
 					if (fieldName.equals(BaseBean.FIELD_ID)) {
 						fieldHeader = classType.getSimpleName() + " ID";
 					}
@@ -152,11 +160,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append(DELIM_HTML_TEMPLATE); // DELIMITER for HEADERS
 
 			// Display fields
-			for (Method method : sortedMethodMap) {
-				Class fieldClass = methodMap.get(method); // TODO: Implement field specific stuff
-				fieldName = ReflectUtil.getFieldName(method);
-				if (validForView(viewType, classType, fieldName)) {
-					content = getTemplatedContent(viewType, fieldName, classType, fieldClass);
+			for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+				Field field = fieldMetaData.getField();
+				Method method = fieldMetaData.getSetMethod();
+				fieldName = field.getName();
+				if (validForView(viewType, field)) {
+					Class fieldClass = fieldMetaData.getClass(); // TODO: Implement field specific stuff
+					content = getTemplatedContent(viewType, fieldMetaData, classType, fieldClass);
 					html.append(content);
 				}
 			}
@@ -166,82 +176,74 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public boolean validForView(ViewType viewType, Class<? extends BaseBean> classType, String fieldName) {
+	public boolean validForView(ViewType viewType, Field field) {
 		boolean displayForView = true;
-		if (ReflectUtil.isAnnotationPresent(classType, fieldName, ExcludeView.class)) {
-			try {
-				String value = ReflectUtil.getAnnotation(classType, fieldName, ExcludeView.class).pages();
-				if (value.equals("all")) {
-					displayForView = false;
-				} else if (value.contains(viewType.name().toLowerCase())) {
-					displayForView = false;
-				}
-			} catch (NoSuchFieldException e) {
-				LOG.error(e,e);
-				return false;
+		if (field.isAnnotationPresent(ExcludeView.class)) {
+			String value = field.getAnnotation(ExcludeView.class).pages();
+			if (value.equals("all")) {
+				displayForView = false;
+			} else if (value.contains(viewType.name().toLowerCase())) {
+				displayForView = false;
 			}
 		}
 		return displayForView;
 	}
 
 	@Override
-	public List<Method> sortMethodMap(@SuppressWarnings("rawtypes") final Map<Method, Class> methodMap, final String[] orderList) {
-		List<Method> methods = new ArrayList<Method>(methodMap.keySet());
-		List<Method> sortedMethodList = new ArrayList<Method>();
+	public List<FieldMetaData> sortFieldData(@SuppressWarnings("rawtypes") final List<FieldMetaData> fieldMetaDataList, final String[] orderList) {
+		List<FieldMetaData> fieldMetaDataListCopy = new ArrayList<FieldMetaData>(fieldMetaDataList);
+		List<FieldMetaData> sortedMethodList = new ArrayList<FieldMetaData>();
 		// Insert first id field
-		for (Method method : methods) {
-			String fieldName = ReflectUtil.getFieldName(method);
+		for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
+			String fieldName = fieldMetaData.getField().getName();
 			if (fieldName.equals(BaseBean.FIELD_ID)) {
-				sortedMethodList.add(method);
-				methods.remove(method);
+				sortedMethodList.add(fieldMetaData);
+				fieldMetaDataListCopy.remove(fieldMetaData);
 				break;
 			}
 		}
 		// Insert methods in the orderList
 		for (String orderedField : orderList) {
-			for (Method method : methods) {
-				String fieldName = ReflectUtil.getFieldName(method);
+			for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
+				String fieldName = fieldMetaData.getField().getName();
 				if (fieldName.equals(orderedField)) {
-					sortedMethodList.add(method);
-					methods.remove(method);
+					sortedMethodList.add(fieldMetaData);
+					fieldMetaDataListCopy.remove(fieldMetaData);
 					break;
 				}
 			}
 		}
 		// Add remaining values
-		Collections.sort(methods,new MethodComparator());
-		for (Method method : methods) {
-			sortedMethodList.add(method);
+		Collections.sort(fieldMetaDataListCopy,new FieldMetaDataComparator());
+		for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
+			sortedMethodList.add(fieldMetaData);
 		}
 		return sortedMethodList;
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String fieldName, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
+	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
-		String type = ReflectUtil.getFieldDisplayType(classType, fieldName);
+		Field field = fieldMetaData.getField();
+		String fieldName = field.getName();
+		String type = ReflectUtil.getDisplayType(field);
 		if (StringUtils.isBlank(type)) {
 			return "";
 		}
 		if (isBean && type.equals(FIELD_TYPE_TEXT)) {
 			type = FIELD_TYPE_BEAN;
 		}
-		boolean isCollection = false;
-		if (ReflectUtil.isCollection(fieldClass)) {
-			isCollection = true;
-			fieldClass = ReflectUtil.getCollectionGenericClass(classType, fieldName);
-			isBean = ReflectUtil.isBean(fieldClass);
-		}
-		LinkTable linkTable = ReflectUtil.getAnnotation(classType, fieldName, LinkTable.class);
+		boolean isCollection = fieldMetaData.getCollectionClass()!=null;
+		LinkTable linkTable = field.getAnnotation(LinkTable.class);
 		if (linkTable!=null) {
 			type = FIELD_TYPE_BEANLIST;
 		}
-		LinkField linkField = ReflectUtil.getAnnotation(classType, fieldName, LinkField.class);
+		LinkField linkField = field.getAnnotation(LinkField.class);
 		if (linkField!=null) {
 			type = FIELD_TYPE_TEXT;
 		}
 		String other = "";
-		String fieldHeader = ReflectUtil.getFieldHeader(classType, fieldName);
+		String fieldHeader = ReflectUtil.getDisplayHeader(field);
 		if (fieldName.equals(BaseBean.FIELD_ID)) {
 			fieldHeader = classType.getSimpleName() + " ID";
 			if (viewType == ViewType.EDIT) {
@@ -250,13 +252,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		}
 		String template = getTemplate(viewType, getTypeToUseForTemplate(type));
 		if (template!=null) {
-			return getTemplatedContent(viewType, template, fieldName, fieldHeader, classType, fieldClass, type, other, isBean);
+			return getTemplatedContent(viewType, template, fieldMetaData, fieldHeader, classType, fieldClass, type, other, isBean);
 		}
 		return "";
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, String template, String fieldName, String fieldHeader, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass, String type, String other, boolean isBean) throws Exception {
+	public String getTemplatedContent(ViewType viewType, String template, FieldMetaData fieldMetaData, String fieldHeader, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass, String type, String other, boolean isBean) throws Exception {
 		String result = "";
 		if (type==null) {
 			return result;
@@ -264,6 +266,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		if (other==null) {
 			other = "";
 		}
+		Field field = fieldMetaData.getField();
+		String fieldName = field.getName();
 
 		result = template.replaceAll("\\$\\{fieldName\\}", fieldName);
 		result = result.replaceAll("\\$\\{fieldHeader\\}", fieldHeader);
@@ -292,7 +296,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						result = result.replaceAll("\\$\\{linkSuffix\\}", "");
 					}
 				} else {
-					LinkField linkField = ReflectUtil.getAnnotation(classType, fieldName, LinkField.class);
+					LinkField linkField = field.getAnnotation(LinkField.class);
 					if (linkField!=null) {
 						String linkFieldName = linkField.value();
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/find/"+linkFieldName+"/=<c:out value='\\$\\{bean.id\\}'/>\">"+fieldClass.getSimpleName()+"s ");
