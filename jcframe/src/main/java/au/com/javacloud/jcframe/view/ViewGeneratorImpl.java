@@ -224,7 +224,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception {
 		Class fieldClass = fieldMetaData.getClassType(); // TODO: Implement field specific stuff
-		boolean isBean = ReflectUtil.isBean(fieldClass);
+		boolean isBean = fieldMetaData.isBean();
+		boolean isCollection = fieldMetaData.isCollection();
 		Field field = fieldMetaData.getField();
 		String fieldName = field.getName();
 		String type = getDisplayType(field);
@@ -234,7 +235,6 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		if (isBean && type.equals(FIELD_TYPE_TEXT)) {
 			type = FIELD_TYPE_BEAN;
 		}
-		boolean isCollection = fieldMetaData.getCollectionClass()!=null;
 		LinkTable linkTable = field.getAnnotation(LinkTable.class);
 		if (linkTable!=null) {
 			type = FIELD_TYPE_BEANLIST;

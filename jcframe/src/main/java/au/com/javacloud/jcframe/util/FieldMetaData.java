@@ -2,6 +2,9 @@ package au.com.javacloud.jcframe.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
+
+import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 24/06/16.
@@ -58,5 +61,19 @@ public class FieldMetaData {
 
     public void setClassType(Class classType) {
         this.classType = classType;
+    }
+
+    public boolean isBean() {
+        if (classType!=null && BaseBean.class.isAssignableFrom(classType)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isCollection() {
+        if (collectionClass!=null && Collection.class.isAssignableFrom(collectionClass)) {
+            return true;
+        }
+        return false;
     }
 }
