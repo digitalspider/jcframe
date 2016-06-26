@@ -133,8 +133,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				Method method = fieldMetaData.getSetMethod();
 				fieldName = field.getName();
 				if (validForView(viewType, field)) {
-					Class fieldClass = fieldMetaData.getClass(); // TODO: Implement field specific stuff
-					content = getTemplatedContent(viewType, fieldMetaData, classType, fieldClass);
+					content = getTemplatedContent(viewType, fieldMetaData, classType);
 					html.append(content);
 				}
 			}
@@ -150,6 +149,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				if (validForView(viewType, field)) {
 					String type = getDisplayType(field);
 					String fieldHeader = getDisplayHeader(field);
+					if (fieldName.equals(BaseBean.FIELD_ID)) {
+						fieldHeader = classType.getSimpleName() + " ID";
+					}
 					if (!type.equals("password")) {
 						html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
 					}
@@ -159,13 +161,12 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			html.append(DELIM_HTML_TEMPLATE); // DELIMITER for HEADERS
 
 			// Display fields
-			for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			for (FieldMetaData fieldMetaData : sortedFieldMetaDataList) {
 				Field field = fieldMetaData.getField();
 				Method method = fieldMetaData.getSetMethod();
 				fieldName = field.getName();
 				if (validForView(viewType, field)) {
-					Class fieldClass = fieldMetaData.getClass(); // TODO: Implement field specific stuff
-					content = getTemplatedContent(viewType, fieldMetaData, classType, fieldClass);
+					content = getTemplatedContent(viewType, fieldMetaData, classType);
 					html.append(content);
 				}
 			}
@@ -191,12 +192,12 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public List<FieldMetaData> sortFieldData(@SuppressWarnings("rawtypes") final List<FieldMetaData> fieldMetaDataList, final String[] orderList) {
 		List<FieldMetaData> fieldMetaDataListCopy = new ArrayList<FieldMetaData>(fieldMetaDataList);
-		List<FieldMetaData> sortedMethodList = new ArrayList<FieldMetaData>();
-		// Insert first id field
+		List<FieldMetaData> sortedFieldMetaDataList = new ArrayList<FieldMetaData>();
+		// Insert id field first
 		for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
 			String fieldName = fieldMetaData.getField().getName();
 			if (fieldName.equals(BaseBean.FIELD_ID)) {
-				sortedMethodList.add(fieldMetaData);
+				sortedFieldMetaDataList.add(fieldMetaData);
 				fieldMetaDataListCopy.remove(fieldMetaData);
 				break;
 			}
@@ -206,7 +207,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
 				String fieldName = fieldMetaData.getField().getName();
 				if (fieldName.equals(orderedField)) {
-					sortedMethodList.add(fieldMetaData);
+					sortedFieldMetaDataList.add(fieldMetaData);
 					fieldMetaDataListCopy.remove(fieldMetaData);
 					break;
 				}
@@ -215,13 +216,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		// Add remaining values
 		Collections.sort(fieldMetaDataListCopy,new FieldMetaDataComparator());
 		for (FieldMetaData fieldMetaData : fieldMetaDataListCopy) {
-			sortedMethodList.add(fieldMetaData);
+			sortedFieldMetaDataList.add(fieldMetaData);
 		}
-		return sortedMethodList;
+		return sortedFieldMetaDataList;
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType, @SuppressWarnings("rawtypes") Class fieldClass) throws Exception {
+	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception {
+		Class fieldClass = fieldMetaData.getClassType(); // TODO: Implement field specific stuff
 		boolean isBean = ReflectUtil.isBean(fieldClass);
 		Field field = fieldMetaData.getField();
 		String fieldName = field.getName();
@@ -249,8 +251,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				other = "readonly=\"readonly\"";
 			}
 		}
+
 		String template = getTemplate(viewType, getTypeToUseForTemplate(type));
 		if (template!=null) {
+			LOG.debug("viewType="+viewType+", fieldMetaData="+fieldMetaData+", fieldHeader="+fieldHeader+", classType="+classType+", fieldClass="+fieldClass+", type="+type+", isBean="+isBean);
 			return getTemplatedContent(viewType, template, fieldMetaData, fieldHeader, classType, fieldClass, type, other, isBean);
 		}
 		return "";

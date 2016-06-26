@@ -33,7 +33,7 @@ public interface ViewGenerator {
 
 	public String generateView(ViewType viewType, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception;
 
-	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType, Class fieldClass) throws Exception;
+	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception;
 
 	public String getTemplatedContent(ViewType viewType, String template, FieldMetaData fieldMetaData, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isBean) throws Exception;
 
