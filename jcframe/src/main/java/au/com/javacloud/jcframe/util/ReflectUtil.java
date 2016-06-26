@@ -203,35 +203,25 @@ public class ReflectUtil {
 		return displayValue;
 	}
 
-	public static String getDisplayHeader(Field field) throws NoSuchFieldException {
-		if (field.isAnnotationPresent(DisplayHeader.class)) {
-			return field.getAnnotation(DisplayHeader.class).value();
-		}
-		return getFirstLetterUpperCase(field.getName()); // TODO: Put spaces in between each uppercase letter
-	}
-
-	public static String getDisplayType(Field field) throws NoSuchFieldException {
-		if (field.isAnnotationPresent(DisplayType.class)) {
-			return field.getAnnotation(DisplayType.class).value();
-		}
-		return ViewGenerator.FIELD_TYPE_TEXT;
-	}
-
 	/** Reflective way to get an annotation value */
-	public static String getAnnotationValue(Field field, Class<? extends Annotation> annotationClass, String defaultValue) throws NoSuchFieldException {
+	public static String getAnnotationValue(Field field, Class<? extends Annotation> annotationClass, String defaultValue) {
 		if (field.isAnnotationPresent(annotationClass)) {
 			return getAnnotationValue(field, annotationClass, "value");
 		}
 		return defaultValue;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static<T> T getAnnotationValue(Class<?> clazz,Class<? extends Annotation> annotationClass,String element) throws Exception {
-		Annotation annotation = clazz.getAnnotation(annotationClass);
-		Method method = annotationClass.getMethod(element,(Class[])null);
-		if (annotation == null)
-			return((T)method.getDefaultValue());
-		return((T)method.invoke(annotation,(Object[])null));
+	public String getAnnotationValue(Class<?> classType, Class<? extends Annotation> annotationType, String attributeName) {
+		String value = null;
+		Annotation annotation = classType.getAnnotation(annotationType);
+		if (annotation != null) {
+			try {
+				value = (String) annotation.annotationType().getMethod(attributeName).invoke(annotation);
+			} catch (Exception e) {
+				LOG.error(e,e);
+			}
+		}
+		return value;
 	}
 
 	public static String getFirstLetterUpperCase(String name) {

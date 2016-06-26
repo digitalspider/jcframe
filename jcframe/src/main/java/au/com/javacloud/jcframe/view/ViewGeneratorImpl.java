@@ -15,7 +15,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
+import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
@@ -146,11 +148,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				Method method = fieldMetaData.getSetMethod();
 				fieldName = field.getName();
 				if (validForView(viewType, field)) {
-					String type = ReflectUtil.getDisplayType(field);
-					String fieldHeader = ReflectUtil.getDisplayHeader(field);
-					if (fieldName.equals(BaseBean.FIELD_ID)) {
-						fieldHeader = classType.getSimpleName() + " ID";
-					}
+					String type = getDisplayType(field);
+					String fieldHeader = getDisplayHeader(field);
 					if (!type.equals("password")) {
 						html.append("    <th><a href=\"${beanUrl}/config/order/" + fieldName + "\">" + fieldHeader + "</a></th>\n");
 					}
@@ -226,7 +225,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		boolean isBean = ReflectUtil.isBean(fieldClass);
 		Field field = fieldMetaData.getField();
 		String fieldName = field.getName();
-		String type = ReflectUtil.getDisplayType(field);
+		String type = getDisplayType(field);
 		if (StringUtils.isBlank(type)) {
 			return "";
 		}
@@ -243,7 +242,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			type = FIELD_TYPE_TEXT;
 		}
 		String other = "";
-		String fieldHeader = ReflectUtil.getDisplayHeader(field);
+		String fieldHeader = getDisplayHeader(field);
 		if (fieldName.equals(BaseBean.FIELD_ID)) {
 			fieldHeader = classType.getSimpleName() + " ID";
 			if (viewType == ViewType.EDIT) {
@@ -308,6 +307,20 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			}
 		}
 		return result; 
+	}
+
+	public String getDisplayHeader(Field field) throws NoSuchFieldException {
+		if (field.isAnnotationPresent(DisplayHeader.class)) {
+			return field.getAnnotation(DisplayHeader.class).value();
+		}
+		return ReflectUtil.getFirstLetterUpperCase(field.getName()); // TODO: Put spaces in between each uppercase letter
+	}
+
+	public String getDisplayType(Field field) throws NoSuchFieldException {
+		if (field.isAnnotationPresent(DisplayType.class)) {
+			return field.getAnnotation(DisplayType.class).value();
+		}
+		return ViewGenerator.FIELD_TYPE_TEXT;
 	}
 
 	@Override
