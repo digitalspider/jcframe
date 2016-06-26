@@ -92,7 +92,7 @@ package.name=com.mysite
  * Place the war file into a tomcat "webapps" directory
 
 # TODO
-* Refactor ReflectUtil to create a centralised FieldMetaData with setMethod, getMethod, Field, ClassType
+* Refactor ReflectUtil to create a centralised FieldMetaData with setMethod, getMethod, Field, ClassType :white_check_mark: 26/06/2016
 * Implement M2MService = Many-to-Many i.e. List<BaseBean>
 * Implement AttachmentService = File Upload / display
 * Implement ServiceLoaderService = abstract away some of statics
