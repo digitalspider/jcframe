@@ -516,28 +516,30 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					Class fieldClass = fieldMetaData.getClassType();
 					Method method = fieldMetaData.getGetMethod();
 					Object result = method.invoke(bean);
-					Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
-					Collection<?> resultList = collectionClass.cast(result);
+					if (result!=null) {
+						Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
+						Collection<?> resultList = collectionClass.cast(result);
 
-					String m2mTable = field.getAnnotation(LinkTable.class).table();
-					String column = field.getAnnotation(LinkTable.class).column();
-					String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
-					String query = "delete from " + m2mTable + " where " + column + "=?";
-					PreparedStatement preparedStatement = conn.prepareStatement(query);
-					preparedStatement.setInt(1, bean.getId());
-					preparedStatement.addBatch();
-					query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
-					preparedStatement = conn.prepareStatement(query);
-					for (Object resultObject : resultList) {
-						if (!(resultObject instanceof BaseBean)) {
-							throw new Exception("@LinkTable annotation requires the Collection to be BaseBean objects");
-						}
-						BaseBean resultBean = (BaseBean) resultObject;
+						String m2mTable = field.getAnnotation(LinkTable.class).table();
+						String column = field.getAnnotation(LinkTable.class).column();
+						String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
+						String query = "delete from " + m2mTable + " where " + column + "=?";
+						PreparedStatement preparedStatement = conn.prepareStatement(query);
 						preparedStatement.setInt(1, bean.getId());
-						preparedStatement.setInt(2, resultBean.getId());
 						preparedStatement.addBatch();
+						query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
+						preparedStatement = conn.prepareStatement(query);
+						for (Object resultObject : resultList) {
+							if (!(resultObject instanceof BaseBean)) {
+								throw new Exception("@LinkTable annotation requires the Collection to be BaseBean objects");
+							}
+							BaseBean resultBean = (BaseBean) resultObject;
+							preparedStatement.setInt(1, bean.getId());
+							preparedStatement.setInt(2, resultBean.getId());
+							preparedStatement.addBatch();
+						}
+						preparedStatement.executeBatch();
 					}
-					preparedStatement.executeBatch();
 				} else {
 					throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
 				}
