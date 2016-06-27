@@ -60,7 +60,7 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
 ```
 * Create a new file for the database configuration in
  * src/main/resources/**db.properties**
- * Note: Different databases can be accessed through the annotation <code>@TableName("myschema:Table")<code>
+ * Note: Different databases can be accessed through the annotation <code>@TableName("myschema:Table")</code>
 ```properties
 # MySQL
 myschema.driver=com.mysql.jdbc.Driver
