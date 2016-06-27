@@ -22,6 +22,7 @@ public interface ServiceLoaderService {
     public static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
     public static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy HH:mm";
     public static final String DEFAULT_DATEFORMAT_DB = "yyyy-MM-dd HH:mm:ss";
+    public static final String DEFAULT_DB_SCHEMA = "default";
 
     public static final String PROP_AUTH_CLASS = "auth.class";
     public static final String PROP_DAOLOOKUP_CLASS = "daolookup.class";
@@ -42,6 +43,8 @@ public interface ServiceLoaderService {
     public ViewGenerator getViewGeneratorService();
 
     public DataSource getDataSource();
+
+    public DataSource getDataSource(String schema);
 
     public DateFormat getDatabaseDateFormat();
 

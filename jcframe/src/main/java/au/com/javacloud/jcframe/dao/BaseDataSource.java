@@ -16,10 +16,10 @@ public class BaseDataSource implements DataSource {
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(BaseDataSource.class);
     
-    private static final String PROP_DRIVER = "driver";
-    private static final String PROP_URL = "url";
-    private static final String PROP_USER = "user";
-    private static final String PROP_PASSWORD = "password";
+    public static final String PROP_DRIVER = "driver";
+    public static final String PROP_URL = "url";
+    public static final String PROP_USER = "user";
+    public static final String PROP_PASSWORD = "password";
 
 	private String realPath;
 	private String url;

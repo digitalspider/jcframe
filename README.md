@@ -60,18 +60,19 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
 ```
 * Create a new file for the database configuration in
  * src/main/resources/**db.properties**
+ * Note: Different databases can be accessed through the annotation <code>@TableName("myschema:Table")<code>
 ```properties
 # MySQL
-driver=com.mysql.jdbc.Driver
-url=jdbc:mysql://localhost:3306/TestDB
-username=test
-password=test
+myschema.driver=com.mysql.jdbc.Driver
+myschema.url=jdbc:mysql://localhost:3306/TestDB
+myschema.username=test
+myschema.password=test
 
 # SQLite
-#driver=org.sqlite.JDBC
-#url=jdbc:sqlite:${REALPATH}database.db
-#username=test
-#password=test
+default.driver=org.sqlite.JDBC
+default.url=jdbc:sqlite:${REALPATH}database.db
+default.username=test
+default.password=test
 ```
 * Create a new file for the javacloud configuration in
  * src/main/resources/**jc.properties**
@@ -80,6 +81,7 @@ password=test
 
 package.name=com.mysite
 
+#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderServiceImpl
 #auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
 #daolookup.class=au.com.javacloud.jcframe.service.DAOLookupServiceImpl
 #viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
@@ -97,4 +99,5 @@ package.name=com.mysite
 * Implement AttachmentService = File Upload / display
 * Implement ServiceLoaderService = abstract away some of statics :white_check_mark: 27/06/2016
 * Implement bean generator from DB metadata
-* Implement namespaces in db.properties files, and in @TableName("schema:Table")
+* Implement namespaces in db.properties files, and in @TableName("schema:Table") :white_check_mark: 27/06/2016
+* Add Test Cases

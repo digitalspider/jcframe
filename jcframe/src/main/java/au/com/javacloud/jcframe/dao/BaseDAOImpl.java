@@ -62,8 +62,15 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) {
 		this.clazz = clazz;
-		this.dataSource = dataSource;
 		this.tableName = getTableName();
+		if (tableName.contains(":") && tableName.split(":").length==2) {
+			String schema = tableName.split(":")[0];
+			tableName = tableName.split(":")[1];
+			this.dataSource = Statics.getServiceLoaderService().getDataSource(schema);
+		} else {
+			this.dataSource = dataSource;
+		}
+
 		this.daoLookupService = daoLookupService;
 		this.dateFormat = Statics.getServiceLoaderService().getDatabaseDateFormat();
 	}

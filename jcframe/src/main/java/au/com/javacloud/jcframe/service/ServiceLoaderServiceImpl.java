@@ -32,7 +32,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
     protected static Map<String, Object> serviceMap = new HashMap<String, Object>();
     protected static AuthService authService;
     protected static ViewGenerator viewGenerator;
-    protected static DataSource dataSource;
+    protected static Map<String,DataSource> dataSourceMap;
     protected static DAOLookupService daoLookupService;
 
     protected Properties properties;
@@ -62,6 +62,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return null;
     }
 
+    @Override
     public DateFormat getDatabaseDateFormat() {
         if (dbDateFormat!=null) {
             return dbDateFormat;
@@ -79,6 +80,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return dbDateFormat;
     }
 
+    @Override
     public DateFormat getDisplayDateFormat() {
         if (displayDateFormat!=null) {
             return displayDateFormat;
@@ -95,6 +97,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return displayDateFormat;
     }
 
+    @Override
     public AuthService getAuthService() {
         if (authService!=null) {
             return authService;
@@ -104,6 +107,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return authService;
     }
 
+    @Override
     public DAOLookupService getDAOLookupService() {
         if (daoLookupService!=null) {
             return daoLookupService;
@@ -113,6 +117,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return daoLookupService;
     }
 
+    @Override
     public ViewGenerator getViewGeneratorService() {
         if (viewGenerator!=null) {
             return viewGenerator;
@@ -122,18 +127,30 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         return viewGenerator;
     }
 
+    @Override
     public DataSource getDataSource() {
-        if (dataSource!=null) {
-            return dataSource;
+        return getDataSource(DEFAULT_DB_SCHEMA);
+    }
+
+    @Override
+    public DataSource getDataSource(String schema) {
+        if (dataSourceMap.containsKey(schema)) {
+            return dataSourceMap.get(schema);
         }
         String className = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
-        dataSource = getService(className, new BaseDataSource());
+        DataSource dataSource = getService(className, new BaseDataSource());
         if (dataSource instanceof BaseDataSource) {
             BaseDataSource baseDataSource = (BaseDataSource)dataSource;
             if (baseDataSource.getDriver()==null) {
                 String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE, DEFAULT_DB_CONFIG_FILE);
                 Properties dbProperties = ResourceUtil.loadProperties(dsPropertiesFilename);
-                baseDataSource.setProperties(dbProperties);
+                Properties schemaProperties = new Properties();
+                schemaProperties.put(BaseDataSource.PROP_DRIVER,dbProperties.getProperty(schema+"."+BaseDataSource.PROP_DRIVER));
+                schemaProperties.put(BaseDataSource.PROP_URL,dbProperties.getProperty(schema+"."+BaseDataSource.PROP_URL));
+                schemaProperties.put(BaseDataSource.PROP_USER,dbProperties.getProperty(schema+"."+BaseDataSource.PROP_USER));
+                schemaProperties.put(BaseDataSource.PROP_PASSWORD,dbProperties.getProperty(schema+"."+BaseDataSource.PROP_PASSWORD));
+                baseDataSource.setProperties(schemaProperties);
+                dataSourceMap.put(schema,baseDataSource);
             }
         }
         return dataSource;
