@@ -35,6 +35,8 @@ public class ReflectUtil {
 
 	private static final Logger LOG = Logger.getLogger(ReflectUtil.class);
 
+	public static Map<Class<? extends BaseBean>,List<FieldMetaData>> fieldMetaDataCache = new HashMap<Class<? extends BaseBean>,List<FieldMetaData>>();
+
 	public static boolean isBean(Class clazz) {
 		if (BaseBean.class.isAssignableFrom(clazz)) {
 			return true;
@@ -68,6 +70,10 @@ public class ReflectUtil {
 	}
 
 	public static List<FieldMetaData> getFieldData(Class<? extends BaseBean> objectClass) {
+		List<FieldMetaData> result = fieldMetaDataCache.get(objectClass);
+		if (result!=null && !result.isEmpty()) {
+			return result;
+		}
 		Field[] allFields = objectClass.getDeclaredFields();
 		List<FieldMetaData> fieldMetaDataList = new ArrayList<FieldMetaData>();
 		LOG.debug("get objectClass=" + objectClass + " super=" + objectClass.getSuperclass());
@@ -96,6 +102,7 @@ public class ReflectUtil {
 				fieldMetaDataList.add(fieldData);
 			}
 		}
+		fieldMetaDataCache.put(objectClass,fieldMetaDataList);
 		LOG.debug("fieldMetaDataList=" + fieldMetaDataList);
 		return fieldMetaDataList;
 	}

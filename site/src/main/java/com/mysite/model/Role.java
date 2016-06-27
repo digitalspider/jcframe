@@ -21,15 +21,6 @@ import au.com.javacloud.jcframe.model.BaseBean;
 public class Role extends BaseBean {
     private String rolename;
 
-//    @Override
-//    public String toString() {
-//        StringBuffer result = new StringBuffer(super.toString());
-//        if (StringUtils.isNotBlank(rolename)) {
-//            result.append(", rolename=" + rolename);
-//        }
-//        return result.toString();
-//    }
-
     public String getRolename() {
         return rolename;
     }

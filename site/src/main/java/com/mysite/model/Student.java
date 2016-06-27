@@ -15,15 +15,6 @@ public class Student extends BaseBean {
     private String course;
     private int year;
 
-//    @Override
-//    public String toString() {
-//        return super.toString()+
-//                ", firstName=" + firstName +
-//                ", lastName=" + lastName +
-//                ", course=" + course +
-//                ", year=" + year;
-//    }
-
     public String getFirstName() {
         return firstName;
     }

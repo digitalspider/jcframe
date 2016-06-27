@@ -344,7 +344,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
 			Method method = fieldMetaData.getSetMethod();
-			Class classType = fieldMetaData.getClass();
+			Class classType = fieldMetaData.getClassType();
 			String fieldName = field.getName();
 			try {
 				String value = request.getParameter(fieldName);

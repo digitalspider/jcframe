@@ -46,22 +46,6 @@ public class User extends BaseBean {
     private List<Role> roles;
     @LinkField("author")
     private List<Page> pages;
-
-//    @Override
-//    public String toString() {
-//        return super.toString()+
-//        		", cdate=" + cdate +
-//                ", mdate=" + mdate +
-//                ", description=" + description +
-//                ", tags=" + tags +
-//                ", type=" + type +
-//                ", status=" + status +
-//                ", firstname=" + firstname +
-//                ", lastname=" + lastname +
-//                ", email=" + email +
-//                ", username=" + username +
-//                ", url=" + url;
-//    }
     
     public Date getCdate() {
         return cdate;

@@ -5,9 +5,11 @@ import org.apache.commons.lang3.exception.ExceptionContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.util.FieldMetaData;
@@ -37,9 +39,18 @@ public class BaseBean {
                 Method method = fieldMetaData.getGetMethod();
                 if (field!=null && !field.getName().equals(FIELD_ID) && !field.getName().equals(FIELD_DISPLAYVALUE)
                         && method!=null) {
-                    Object value = method.invoke(this);
-                    if (value != null && StringUtils.isNotBlank(value.toString())) {
-                        result.append(", " + field.getName() + "=" + value);
+                    boolean display = true;
+                    if (field.isAnnotationPresent(DisplayType.class)) {
+                        String displayType = field.getAnnotation(DisplayType.class).value();
+                        if (displayType.equals("password")) {
+                            display = false;
+                        }
+                    }
+                    if (display) {
+                        Object value = method.invoke(this);
+                        if (value != null && StringUtils.isNotBlank(value.toString())) {
+                            result.append(", " + field.getName() + "=" + value);
+                        }
                     }
                 }
             } catch (Exception e) {

@@ -333,11 +333,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		}
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
-			Method method = fieldMetaData.getSetMethod();
-			Class classType = fieldMetaData.getClass();
-            LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
-
 			String fieldName = field.getName();
+			Method method = fieldMetaData.getSetMethod();
+			Class classType = fieldMetaData.getClassType();
+            LOG.info("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
 
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
 				// populate the display value
@@ -345,11 +344,11 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					bean.setDisplayValue(rs.getString(fieldName));
 				}
 
-				if (ReflectUtil.isBean(classType)) {
+				if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
 					int id = rs.getInt(fieldName);
 					ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
-				} else if (ReflectUtil.isCollection(classType)) {
+				} else if (fieldMetaData.isCollection()) {
 					// Handle Collections
 					String value = rs.getString(fieldName);
 					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
@@ -425,10 +424,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			Method method = fieldMetaData.getGetMethod();
 			String fieldName = field.getName();
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
-				Class classType = fieldMetaData.getClass();
+				Class classType = fieldMetaData.getClassType();
 				Object result = method.invoke(bean);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
-				if (ReflectUtil.isBean(classType)) {
+				if (fieldMetaData.isBean()) {
 					LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
 					// Handle BaseBeans
 					if (result == null) {
@@ -436,7 +435,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					} else if (result instanceof BaseBean) {
 						preparedStatement.setInt(++index, ((BaseBean) result).getId());
 					}
-				} else if (ReflectUtil.isCollection(classType)) {
+				} else if (fieldMetaData.isCollection()) {
 					// Handle Collections
 					if (result == null) {
 						preparedStatement.setObject(++index, null);
