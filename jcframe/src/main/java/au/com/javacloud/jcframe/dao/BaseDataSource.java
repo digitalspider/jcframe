@@ -18,7 +18,7 @@ public class BaseDataSource implements DataSource {
     
     public static final String PROP_DRIVER = "driver";
     public static final String PROP_URL = "url";
-    public static final String PROP_USER = "user";
+    public static final String PROP_USER = "username";
     public static final String PROP_PASSWORD = "password";
 
 	private String realPath;

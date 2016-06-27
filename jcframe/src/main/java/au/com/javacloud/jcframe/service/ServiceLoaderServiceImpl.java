@@ -32,7 +32,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
     protected static Map<String, Object> serviceMap = new HashMap<String, Object>();
     protected static AuthService authService;
     protected static ViewGenerator viewGenerator;
-    protected static Map<String,DataSource> dataSourceMap;
+    protected static Map<String,DataSource> dataSourceMap = new HashMap<String, DataSource>();
     protected static DAOLookupService daoLookupService;
 
     protected Properties properties;
@@ -58,6 +58,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
             }
             serviceMap.put(className,service);
             LOG.info("service=" + service);
+            return service;
         }
         return null;
     }
