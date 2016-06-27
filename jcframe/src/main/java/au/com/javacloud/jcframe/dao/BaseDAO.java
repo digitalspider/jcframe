@@ -37,6 +37,7 @@ public interface BaseDAO<T extends BaseBean> {
     public void delete(int beanId) throws Exception;
     public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception;
 
+    public void init(Class<T> clazz);
     public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService);
     public void initHttp(ServletConfig config);
     public Connection getConnection() throws SQLException;

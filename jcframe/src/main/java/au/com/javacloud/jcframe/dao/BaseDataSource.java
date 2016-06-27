@@ -115,6 +115,14 @@ public class BaseDataSource implements DataSource {
         return conn;
 	}
 
+	public String getDriver() {
+		return driver;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
 	public String getRealPath() {
 		return realPath;
 	}

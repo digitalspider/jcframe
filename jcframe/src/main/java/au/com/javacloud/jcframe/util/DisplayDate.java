@@ -6,7 +6,7 @@ public class DisplayDate extends Date {
 	private static final long serialVersionUID = -3149246853663416526L;
 
 	public String toString() {
-		return Statics.displayDateFormat.format(this);
+		return Statics.getServiceLoaderService().getDisplayDateFormat().format(this);
 	}
 
 }

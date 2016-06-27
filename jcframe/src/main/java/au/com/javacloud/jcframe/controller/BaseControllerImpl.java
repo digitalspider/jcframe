@@ -82,8 +82,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	@SuppressWarnings("unchecked")
-    public void init(Class<T> clazz) {	
-		init(clazz, Statics.getAuthService(), Statics.getDaoLookupService());
+    public void init(Class<T> clazz) {
+		init(clazz, Statics.getServiceLoaderService().getAuthService(), Statics.getServiceLoaderService().getDAOLookupService());
 	}
 
 	@SuppressWarnings("unchecked")

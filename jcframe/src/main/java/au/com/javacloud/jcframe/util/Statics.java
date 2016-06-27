@@ -17,17 +17,13 @@ import au.com.javacloud.jcframe.annotation.BeanClass;
 import au.com.javacloud.jcframe.annotation.HiddenBean;
 import au.com.javacloud.jcframe.annotation.Secure;
 import au.com.javacloud.jcframe.auth.AuthService;
-import au.com.javacloud.jcframe.auth.BaseAuthServiceImpl;
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.controller.BaseControllerImpl;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.dao.BaseDAOImpl;
-import au.com.javacloud.jcframe.dao.BaseDataSource;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
-import au.com.javacloud.jcframe.service.DAOLookupServiceImpl;
-import au.com.javacloud.jcframe.view.ViewGenerator;
-import au.com.javacloud.jcframe.view.ViewGeneratorImpl;
+import au.com.javacloud.jcframe.service.ServiceLoaderService;
+import au.com.javacloud.jcframe.service.ServiceLoaderServiceImpl;
 
 public class Statics {
 
@@ -35,22 +31,10 @@ public class Statics {
 
     private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
-    private static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
-    private static final String DEFAULT_AUTH_CLASS = DEFAULT_PACKAGE_NAME+".auth.BaseAuthServiceImpl";
-	private static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupServiceImpl";
-	private static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
-    private static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
-    private static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy HH:mm";
-    private static final String DEFAULT_DATEFORMAT_DB = "yyyy-MM-dd HH:mm:ss";
-    
+	private static final String DEFAULT_SERVICELOADER_CLASS = DEFAULT_PACKAGE_NAME+".service.ServiceLoaderServiceImpl";
+
     private static final String PROP_PACKAGE_NAME = "package.name";
-    private static final String PROP_AUTH_CLASS = "auth.class";
-	private static final String PROP_DAOLOOKUP_CLASS = "daolookup.class";
-	private static final String PROP_VIEWGEN_CLASS = "viewgen.class";
-    private static final String PROP_DS_CLASS = "ds.class";
-	private static final String PROP_DS_CONFIG_FILE = "ds.config.file";
-	private static final String PROP_DATEFORMAT_DISPLAY = "date.format.display";
-	private static final String PROP_DATEFORMAT_DB = "date.format.db";
+	private static final String PROP_SERVICELOADER_CLASS = "serviceloader.class";
 
     private static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>>();
     private static Map<Class<? extends BaseBean>,BaseController<? extends BaseBean, ?>> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController<? extends BaseBean,?>>();
@@ -59,90 +43,24 @@ public class Statics {
 	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenSecureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 
-	private static AuthService authService;
-	private static ViewGenerator viewGenerator;
-    private static DataSource dataSource;
-	private static DAOLookupService daoLookupService;
-	public static String DATEFORMATDISPLAY;
-	public static String DATEFORMATDB;
-	public static DateFormat displayDateFormat;
-	public static DateFormat dbDateFormat;
+	private static ServiceLoaderService serviceLoaderService;
 
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
 			String packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
-			String authClassName = properties.getProperty(PROP_AUTH_CLASS,DEFAULT_AUTH_CLASS);
-			String daoLookupServiceClassName = properties.getProperty(PROP_DAOLOOKUP_CLASS,DEFAULT_DAOLOOKUP_CLASS);
-			String viewGeneratorClassName = properties.getProperty(PROP_VIEWGEN_CLASS,DEFAULT_VIEWGEN_CLASS);
-			String dsClassName = properties.getProperty(PROP_DS_CLASS,DEFAULT_DS_CLASS);
-			String dsPropertiesFilename = properties.getProperty(PROP_DS_CONFIG_FILE,DEFAULT_DB_CONFIG_FILE);
-			DATEFORMATDISPLAY = properties.getProperty(PROP_DATEFORMAT_DISPLAY,DEFAULT_DATEFORMAT_DISPLAY);
-			DATEFORMATDB = properties.getProperty(PROP_DATEFORMAT_DISPLAY,DEFAULT_DATEFORMAT_DB);
-			
-			Properties dbProperties = ResourceUtil.loadProperties(dsPropertiesFilename);
+			String serviceLoaderServiceClassName = properties.getProperty(PROP_SERVICELOADER_CLASS,DEFAULT_SERVICELOADER_CLASS);
 
-			// Get the dateFormats
-			LOG.info("DATEFORMATDISPLAY="+DATEFORMATDISPLAY);
-			LOG.info("DATEFORMATDB="+DATEFORMATDB);
 			try {
-				displayDateFormat = new DisplayDateFormat(DATEFORMATDISPLAY);
+				LOG.info("serviceLoaderServiceClassName=" + serviceLoaderServiceClassName);
+				serviceLoaderService = (ServiceLoaderService) Class.forName(serviceLoaderServiceClassName).newInstance();
+				serviceLoaderService.init(properties);
 			} catch (Exception e) {
-				LOG.error(e,e);
-				displayDateFormat = new DisplayDateFormat(DEFAULT_DATEFORMAT_DISPLAY);
+				LOG.error(e, e);
+				serviceLoaderService = new ServiceLoaderServiceImpl();
+				serviceLoaderService.init(properties);
 			}
-			try {
-				dbDateFormat = new DisplayDateFormat(DATEFORMATDB);
-			} catch (Exception e) {
-				LOG.error(e,e);
-				dbDateFormat = new DisplayDateFormat(DEFAULT_DATEFORMAT_DB);
-			}
-			LOG.info("displayDateFormat="+displayDateFormat);
-			LOG.info("dbDateFormat="+dbDateFormat);
-			
-			// Register the authService
-			try {
-				LOG.info("authClassName="+authClassName);
-				authService = (AuthService)Class.forName(authClassName).newInstance();
-			} catch (Exception e) {
-				LOG.error(e,e);
-				authService = new BaseAuthServiceImpl();
-			}
-			LOG.info("authService="+authService);
-
-			// Register the daoLookupService
-			try {
-				LOG.info("daoLookupServiceClassName="+daoLookupServiceClassName);
-				daoLookupService = (DAOLookupService)Class.forName(daoLookupServiceClassName).newInstance();
-			} catch (Exception e) {
-				LOG.error(e,e);
-				daoLookupService = new DAOLookupServiceImpl();
-			}
-			LOG.info("daoLookupService="+daoLookupService);
-
-			// Register the dataSource
-			try {
-				LOG.info("dsClassName="+dsClassName);
-				dataSource = (DataSource)Class.forName(dsClassName).newInstance();
-				if (dataSource instanceof BaseDataSource) {
-					((BaseDataSource)dataSource).setProperties(dbProperties);
-				}
-			} catch (Exception e) {
-				LOG.error(e,e);
-				dataSource = new BaseDataSource();
-				((BaseDataSource)dataSource).setProperties(dbProperties);
-			}
-			LOG.info("dataSource="+dataSource);
-
-			// Register the viewGenerator
-			try {
-				LOG.info("viewGeneratorClassName="+viewGeneratorClassName);
-				viewGenerator = (ViewGenerator) Class.forName(viewGeneratorClassName).newInstance();
-			} catch (Exception e) {
-				LOG.error(e,e);
-				viewGenerator = new ViewGeneratorImpl();
-			}
-			LOG.info("viewGenerator="+viewGenerator);
+			LOG.info("serviceLoaderService=" + serviceLoaderService);
 
 			// Find all the beanClassTypes
 			try {
@@ -165,10 +83,10 @@ public class Statics {
 						hiddenSecureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					}
 					BaseDAO<? extends BaseBean> dao = new BaseDAOImpl<>();
-					dao.init(classType, dataSource, daoLookupService);
+					dao.init(classType);
 					daoMap.put(classType, dao);
 					BaseController controller = new BaseControllerImpl();
-					controller.init(classType, authService, daoLookupService);
+					controller.init(classType);
 					controllerMap.put(classType, controller);
 				}
 				LOG.info("classTypeMap="+classTypeMap);
@@ -183,7 +101,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
 						BaseDAO overrideDao = (BaseDAO) classType.newInstance();
-						overrideDao.init(beanClassType, dataSource, daoLookupService);
+						overrideDao.init(beanClassType);
 						for (Class key : daoMap.keySet()) {
 							daoMap.put(key, overrideDao);
 						}
@@ -195,7 +113,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
 						BaseDAO dao = (BaseDAO) classType.newInstance();
-						dao.init(beanClassType, dataSource, daoLookupService);
+						dao.init(beanClassType);
 						daoMap.put(beanClassType, dao);
 					}
 				}
@@ -211,7 +129,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null && beanClassType.equals(BaseBean.class)) {
 						BaseController overrideController = (BaseController) classType.newInstance();
-						overrideController.init(beanClassType, authService, daoLookupService);
+						overrideController.init(beanClassType);
 						for (Class key : controllerMap.keySet()) {
 							controllerMap.put(key, overrideController);
 						}
@@ -223,7 +141,7 @@ public class Statics {
 					Class beanClassType = getClassTypeFromBeanClassAnnotation(classType);
 					if (beanClassType!=null) {
 						BaseController controller = (BaseController) classType.newInstance();
-						controller.init(beanClassType, authService, daoLookupService);
+						controller.init(beanClassType);
 						controllerMap.put(beanClassType, controller);
 					}
 				}
@@ -262,22 +180,6 @@ public class Statics {
 	    return null;
     }
 
-	public static AuthService getAuthService() {
-		return authService;
-	}
-
-	public static ViewGenerator getViewGenerator() {
-		return viewGenerator;
-	}
-
-	public static DataSource getDataSource() {
-		return dataSource;
-	}
-
-	public static DAOLookupService getDaoLookupService() {
-		return daoLookupService;
-	}
-
     public static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> getDaoMap() {
     	return daoMap;
     }
@@ -287,6 +189,7 @@ public class Statics {
     }
 
 	public static Map<String, Class<? extends BaseBean>> getClassTypeMap(HttpServletRequest request) {
+		AuthService authService = Statics.getServiceLoaderService().getAuthService();
 		if (authService.isAuthenticated(request)) {
 			return secureClassTypeMap;
 		}
@@ -298,10 +201,19 @@ public class Statics {
 	}
 
 	private static Map<String, Class<? extends BaseBean>> getHiddenClassTypeMap(HttpServletRequest request) {
+		AuthService authService = Statics.getServiceLoaderService().getAuthService();
 		if (authService.isAuthenticated(request)) {
 			return hiddenSecureClassTypeMap;
 		}
 		return hiddenClassTypeMap;
+	}
+
+	public static ServiceLoaderService getServiceLoaderService() {
+		return serviceLoaderService;
+	}
+
+	public static void setServiceLoaderService(ServiceLoaderService serviceLoaderService) {
+		Statics.serviceLoaderService = serviceLoaderService;
 	}
 
 }

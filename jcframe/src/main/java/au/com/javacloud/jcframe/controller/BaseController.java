@@ -56,7 +56,7 @@ public interface BaseController<T extends BaseBean, U> {
 	public void init(Class<T> clazz);
 	
 	public void init(Class<T> clazz, AuthService<U> authService, DAOLookupService daoLookupService);
-	
+
 	public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	
 	public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;

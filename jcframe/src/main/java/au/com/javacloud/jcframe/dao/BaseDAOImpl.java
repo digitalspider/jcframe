@@ -55,12 +55,17 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	private DAOLookupService daoLookupService;
 
 	@Override
+	public void init(Class<T> clazz) {
+		init(clazz, Statics.getServiceLoaderService().getDataSource(), Statics.getServiceLoaderService().getDAOLookupService());
+	}
+
+	@Override
 	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) {
 		this.clazz = clazz;
 		this.dataSource = dataSource;
 		this.tableName = getTableName();
 		this.daoLookupService = daoLookupService;
-		this.dateFormat = Statics.dbDateFormat;
+		this.dateFormat = Statics.getServiceLoaderService().getDatabaseDateFormat();
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class Generator {
             beans = Arrays.asList(args[0].split(","));
         }
         System.out.println("beans="+beans);
-        ViewGenerator viewGenerator = Statics.getViewGenerator();
+        ViewGenerator viewGenerator = Statics.getServiceLoaderService().getViewGeneratorService();
         viewGenerator.generatePages(beans);
         System.out.println("DONE");
     }
