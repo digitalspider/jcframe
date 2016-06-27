@@ -42,7 +42,7 @@ public class User extends BaseBean {
     private String mobile;
     private String token;
     private String image;
-    @LinkTable("userroles")
+    @LinkTable(table="userroles", column="userid", rcolumn="roleid")
     private List<Role> roles;
     @LinkField("author")
     private List<Page> pages;
