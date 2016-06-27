@@ -350,15 +350,15 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 				String value = request.getParameter(fieldName);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
 
-				if (ReflectUtil.isBean(classType)) {
+				if (fieldMetaData.isCollection()) {
+					// Handle Collections
+					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
+				} else if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
 					if (StringUtils.isNumeric(value)) {
 						int id = Integer.parseInt(value);
 						ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
 					}
-				} else if (ReflectUtil.isCollection(classType)) {
-					// Handle Collections
-					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
 				} else {
 					// Handle primitives
 					ReflectUtil.invokeSetterMethodForPrimitive(bean, method, classType, value);

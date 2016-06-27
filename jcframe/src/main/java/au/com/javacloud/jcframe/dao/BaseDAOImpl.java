@@ -347,7 +347,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			String fieldName = field.getName();
 			Method method = fieldMetaData.getSetMethod();
 			Class classType = fieldMetaData.getClassType();
-            LOG.info("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
+            LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
 
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
 				// populate the display value
