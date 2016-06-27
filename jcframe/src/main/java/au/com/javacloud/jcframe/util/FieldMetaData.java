@@ -14,7 +14,7 @@ public class FieldMetaData {
     private Method setMethod;
     private Method getMethod;
     private Class classType;
-    private Class collectionClass;
+    private Class<? extends Collection<?>> collectionClass;
 
     public String toString() {
         if (field!=null) {
@@ -23,11 +23,11 @@ public class FieldMetaData {
         return null;
     }
 
-    public Class getCollectionClass() {
+    public Class<? extends Collection<?>> getCollectionClass() {
         return collectionClass;
     }
 
-    public void setCollectionClass(Class collectionClass) {
+    public void setCollectionClass(Class<? extends Collection<?>> collectionClass) {
         this.collectionClass = collectionClass;
     }
 

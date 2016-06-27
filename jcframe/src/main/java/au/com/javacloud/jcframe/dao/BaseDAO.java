@@ -25,6 +25,7 @@ public interface BaseDAO<T extends BaseBean> {
     public Class<T> getBeanClass();
     public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception;
     public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception;
+    public void executeM2MUpdate(Connection conn, T bean) throws Exception;
     public List<String> getBeanFieldNames();
     
     public void saveOrUpdate(T bean) throws Exception;

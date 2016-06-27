@@ -12,12 +12,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
@@ -115,6 +113,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				}
 				daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
 			}
+			executeM2MUpdate(conn, bean);
 		} finally {
 			if (statement!=null) statement.getPreparedStatement().close();
 		}
@@ -454,13 +453,11 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					} else {
 						Collection c = (Collection) result;
 						String resString = "";
-						boolean isBean = false;
 						for (Object o : c) {
 							if (resString.length() > 0) {
 								resString += ",";
 							}
 							if (o instanceof BaseBean) {
-								isBean = true;
 								resString += ((BaseBean) o).getId();
 							} else {
 								resString += o.toString().trim();
@@ -505,6 +502,47 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			preparedStatement.setInt(++index, bean.getId());
 		}
 		return preparedStatementWrapper;
+	}
+
+	@Override
+	public void executeM2MUpdate(Connection conn, T bean) throws Exception {
+		boolean updateStmt = false;
+		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
+
+		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
+			Field field = fieldMetaData.getField();
+			if (field.isAnnotationPresent(LinkTable.class)) {
+				if (fieldMetaData.isCollection()) {
+					Class fieldClass = fieldMetaData.getClassType();
+					Method method = fieldMetaData.getGetMethod();
+					Object result = method.invoke(bean);
+					Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
+					Collection<?> resultList = collectionClass.cast(result);
+
+					String m2mTable = field.getAnnotation(LinkTable.class).table();
+					String column = field.getAnnotation(LinkTable.class).column();
+					String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
+					String query = "delete from " + m2mTable + " where " + column + "=?";
+					PreparedStatement preparedStatement = conn.prepareStatement(query);
+					preparedStatement.setInt(1, bean.getId());
+					preparedStatement.addBatch();
+					query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
+					preparedStatement = conn.prepareStatement(query);
+					for (Object resultObject : resultList) {
+						if (!(resultObject instanceof BaseBean)) {
+							throw new Exception("@LinkTable annotation requires the Collection to be BaseBean objects");
+						}
+						BaseBean resultBean = (BaseBean) resultObject;
+						preparedStatement.setInt(1, bean.getId());
+						preparedStatement.setInt(2, resultBean.getId());
+						preparedStatement.addBatch();
+					}
+					preparedStatement.executeBatch();
+				} else {
+					throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
+				}
+			}
+		}
 	}
 
 	/**
