@@ -53,7 +53,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected BaseDAO<T> dao;
 	protected Class<T> clazz;
     protected String beanName = "bean";
-    protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
+    protected Map<String,Map<Integer,BaseBean>> lookupMap = new HashMap<String, Map<Integer,BaseBean>>();
 	protected Map<String,Class<? extends BaseBean>> lookupFields = new HashMap<String, Class<? extends BaseBean>>();
     protected String indexUrl = "/";
     protected String listUrl = "/";
@@ -370,8 +370,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	protected boolean handleJson(Object o) throws IOException {
 		if (beanUrl.endsWith(JSON_SUFFIX_LOOKUP)) {
-			List<BaseBean> beans = daoLookupService.getLookupMap(clazz);
-			String output = gson.toJson(beans);
+			Map<Integer,BaseBean> beans = daoLookupService.getLookupMap(clazz);
+			String output = gson.toJson(beans.values());
 			response.setContentType(APPLICATION_JSON);
 			response.getWriter().write(output);
 			return true;
@@ -571,7 +571,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	@Override
-	public Map<String, List<BaseBean>> getLookupMap() {
+	public Map<String, Map<Integer,BaseBean>> getLookupMap() {
 		return lookupMap;
 	}
 
