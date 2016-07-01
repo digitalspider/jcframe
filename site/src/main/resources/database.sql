@@ -63,3 +63,7 @@ CREATE TABLE userroles (
 	PRIMARY KEY (userid, roleid)
 );
 
+INSERT INTO userroles VALUES (1,1);
+INSERT INTO userroles VALUES (1,2);
+INSERT INTO userroles VALUES (2,3);
+
