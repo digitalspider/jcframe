@@ -43,30 +43,32 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		Map<ViewType,String> pageTemplates = getTemplates(PATH_TEMPLATE, null);
 		LOG.debug("pageTemplates="+pageTemplates);
 
-		Map<String,Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
-		for (String beanName : classMap.keySet()) {
-			if (StringUtils.isNotEmpty(beanName)) {
-				if (beans.isEmpty() || beans.contains(beanName)) {
-					String directory = PATH_JSP + beanName + "/";
-					File destDir = new File(directory);
-					LOG.info("destDir=" + destDir.getAbsolutePath());
-					Class<? extends BaseBean> classType = classMap.get(beanName);
-					List<Class<? extends Annotation>> excludedAnnotationClasses = new ArrayList<Class<? extends Annotation>>();
-					List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(classType);
+		if (!pageTemplates.isEmpty()) {
+			Map<String, Class<? extends BaseBean>> classMap = Statics.getSecureClassTypeMap();
+			for (String beanName : classMap.keySet()) {
+				if (StringUtils.isNotEmpty(beanName)) {
+					if (beans.isEmpty() || beans.contains(beanName)) {
+						String directory = PATH_JSP + beanName + "/";
+						File destDir = new File(directory);
+						LOG.info("destDir=" + destDir.getAbsolutePath());
+						Class<? extends BaseBean> classType = classMap.get(beanName);
+						List<Class<? extends Annotation>> excludedAnnotationClasses = new ArrayList<Class<? extends Annotation>>();
+						List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(classType);
 
-					for (ViewType viewType : ViewType.values()) {
-						if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
-							String html = generateView(viewType, classType, fieldMetaDataList);
-							String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
-							String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
-							if (htmlParts.length==2) {
-								pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
-								pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
-							} else {
-								pageContent = pageContent.replace(PLACEHOLDER_FIELDS, html);
+						for (ViewType viewType : ViewType.values()) {
+							if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
+								String html = generateView(viewType, classType, fieldMetaDataList);
+								String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+								String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
+								if (htmlParts.length == 2) {
+									pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
+									pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
+								} else {
+									pageContent = pageContent.replace(PLACEHOLDER_FIELDS, html);
+								}
+								File outputFile = new File(destDir, viewType.getPageName());
+								FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
 							}
-							File outputFile = new File(destDir, viewType.getPageName());
-							FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
 						}
 					}
 				}
@@ -98,15 +100,17 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			templateDirectory+=fieldName+"/";
 		}
 		boolean displayLog = true;
-        for (ViewType viewType : ViewType.values()) {
-        	File templateFile = new File(templateDirectory+viewType.getPageName());
-			if (displayLog) {
-				LOG.info("templateFile=" + templateFile.getAbsolutePath());
-				displayLog = false;
+		for (ViewType viewType : ViewType.values()) {
+			File templateFile = new File(templateDirectory + viewType.getPageName());
+			if (templateFile.exists()) {
+				if (displayLog) {
+					LOG.info("templateFile=" + templateFile.getAbsolutePath());
+					displayLog = false;
+				}
+				final String template = FileUtils.readFileToString(templateFile, "UTF-8");
+				templates.put(viewType, template);
 			}
-        	final String template = FileUtils.readFileToString(templateFile, "UTF-8");
-        	templates.put(viewType, template);
-        }
+		}
 		return templates;
     }
     

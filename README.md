@@ -81,9 +81,9 @@ default.password=test
 
 package.name=com.mysite
 
-#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderServiceImpl
+#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderImpl
 #auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
-#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupServiceImpl
+#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupImpl
 #viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
 #ds.class=au.com.javacloud.jcframe.dao.BaseDataSource
 #ds.config.file=db.properties

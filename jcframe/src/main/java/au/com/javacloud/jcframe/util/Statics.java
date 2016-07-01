@@ -28,7 +28,7 @@ public class Statics {
 
     private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
-	private static final String DEFAULT_SERVICELOADER_CLASS = DEFAULT_PACKAGE_NAME+".service.ServiceLoaderServiceImpl";
+	private static final String DEFAULT_SERVICELOADER_CLASS = DEFAULT_PACKAGE_NAME+".service.ServiceLoaderImpl";
 
     private static final String PROP_PACKAGE_NAME = "package.name";
 	private static final String PROP_SERVICELOADER_CLASS = "serviceloader.class";

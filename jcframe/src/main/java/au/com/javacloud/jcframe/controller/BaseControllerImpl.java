@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,7 @@ import au.com.javacloud.jcframe.util.HttpUtil;
 import au.com.javacloud.jcframe.util.PathParts;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
+import jdk.nashorn.internal.ir.BaseNode;
 
 /**
  * Created by david on 22/05/16.
@@ -53,7 +57,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	protected BaseDAO<T> dao;
 	protected Class<T> clazz;
     protected String beanName = "bean";
-    protected Map<String,Map<Integer,BaseBean>> lookupMap = new HashMap<String, Map<Integer,BaseBean>>();
+    protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
 	protected Map<String,Class<? extends BaseBean>> lookupFields = new HashMap<String, Class<? extends BaseBean>>();
     protected String indexUrl = "/";
     protected String listUrl = "/";
@@ -129,7 +133,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     			try {
         			String fieldName = fieldMetaData.getField().getName();
 					lookupFields.put(fieldName, lookupClass);
-					lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
+					Collection<BaseBean> values = daoLookupService.getLookupMap(lookupClass).values();
+					lookupMap.put(fieldName, new ArrayList<BaseBean>(values));
 					daoLookupService.registerController(lookupClass, this);
     			} catch (Exception e) {
 					LOG.error(e,e);
@@ -143,7 +148,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public void reloadLookupMap() {
 		for (String fieldName : lookupFields.keySet()) {
 			Class<? extends BaseBean> lookupClass = lookupFields.get(fieldName);
-			lookupMap.put(fieldName,daoLookupService.getLookupMap(lookupClass));
+			Collection<BaseBean> values = daoLookupService.getLookupMap(lookupClass).values();
+			lookupMap.put(fieldName, new ArrayList<BaseBean>(values));
 		}
 	}
 
@@ -571,7 +577,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	}
 
 	@Override
-	public Map<String, Map<Integer,BaseBean>> getLookupMap() {
+	public Map<String, List<BaseBean>> getLookupMap() {
 		return lookupMap;
 	}
 

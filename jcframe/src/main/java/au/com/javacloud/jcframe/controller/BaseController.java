@@ -95,7 +95,7 @@ public interface BaseController<T extends BaseBean, U> {
     public String getConfigProperty(String key);
     public void setConfigProperty(String key, String value);
 
-    public Map<String, Map<Integer,BaseBean>> getLookupMap();
+    public Map<String, List<BaseBean>> getLookupMap();
     public Map<String, Class<? extends BaseBean>> getLookupFields();
 
 }

@@ -17,7 +17,7 @@ public interface ServiceLoader {
     public static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     public static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
     public static final String DEFAULT_AUTH_CLASS = DEFAULT_PACKAGE_NAME+".auth.BaseAuthServiceImpl";
-    public static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupServiceImpl";
+    public static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupImpl";
     public static final String DEFAULT_VIEWGEN_CLASS = DEFAULT_PACKAGE_NAME+".view.ViewGeneratorImpl";
     public static final String DEFAULT_DS_CLASS = DEFAULT_PACKAGE_NAME+".dao.BaseDataSource";
     public static final String DEFAULT_DATEFORMAT_DISPLAY = "dd/MM/yyyy HH:mm";
