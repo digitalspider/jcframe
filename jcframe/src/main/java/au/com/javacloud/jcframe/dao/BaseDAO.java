@@ -6,12 +6,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
 
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookup;
+import au.com.javacloud.jcframe.util.FieldMetaData;
 
 /**
  * Created by david on 22/05/16.
@@ -28,13 +30,14 @@ public interface BaseDAO<T extends BaseBean> {
     public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception;
     public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception;
     public void executeM2MUpdate(Connection conn, T bean) throws Exception;
+    public void executeM2MPopulate(T bean, FieldMetaData fieldMetaData) throws Exception;
     public List<String> getBeanFieldNames();
     
     public void saveOrUpdate(T bean) throws Exception;
     public int count() throws Exception;
     public int count(String field, String value) throws Exception;
     public List<T> getAll(int pageNo) throws Exception;
-    public List<T> getLookup() throws Exception;
+    public Map<Integer,T> getLookupMap() throws Exception;
     public T getLookup(int id) throws Exception;
     public T get(int id) throws Exception;
     public void delete(int beanId) throws Exception;

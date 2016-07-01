@@ -15,7 +15,9 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
@@ -34,6 +36,7 @@ import au.com.javacloud.jcframe.service.DAOLookup;
 import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
+import jdk.nashorn.internal.ir.BaseNode;
 
 /**
  * Created by david on 22/05/16.
@@ -197,8 +200,8 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		return beans;
 	}
 
-	public List<T> getLookup() throws SQLException, IOException {
-		List<T> beans = new ArrayList<T>();
+	public Map<Integer,T> getLookupMap() throws SQLException, IOException {
+		Map<Integer,T> beans = new HashMap<Integer,T>();
 		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
@@ -215,7 +218,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				bean = ReflectUtil.getNewBean(clazz);
 				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
-				beans.add(bean);
+				beans.put(bean.getId(),bean);
 			}
 		} finally {
 			if (resultSet!=null) resultSet.close();
@@ -357,7 +360,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					bean.setDisplayValue(rs.getString(fieldName));
 				}
 
-				if (fieldMetaData.isBean()) {
+				if (fieldMetaData.isBean() && fieldMetaData.isCollection()) {
+					executeM2MPopulate(bean, fieldMetaData);
+				}  else if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
 					int id = rs.getInt(fieldName);
 					ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
@@ -545,6 +550,38 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			}
 		}
 	}
+
+	@Override
+	public void executeM2MPopulate(T bean, FieldMetaData fieldMetaData) throws Exception {
+
+		Field field = fieldMetaData.getField();
+		if (field.isAnnotationPresent(LinkTable.class)) {
+			if (fieldMetaData.isCollection()) {
+				Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
+
+				String m2mTable = field.getAnnotation(LinkTable.class).table();
+				String column = field.getAnnotation(LinkTable.class).column();
+				String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
+				String query = "select " + column + "," + rcolumn + " from " + m2mTable + " where " + column + "=?";
+				PreparedStatement preparedStatement = conn.prepareStatement(query);
+				preparedStatement.setInt(1, bean.getId());
+				ResultSet rs = preparedStatement.executeQuery();
+				List<BaseBean> m2mList = new ArrayList<BaseBean>();
+				BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
+				while (rs.next()) {
+					int linkId = rs.getInt(2);
+					if (fieldDao.get(linkId)!=null) {
+						m2mList.add(fieldDao.get(linkId));
+					}
+				}
+				Method method = fieldMetaData.getSetMethod();
+				method.invoke(bean,m2mList);
+			} else {
+				throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
+			}
+		}
+	}
+
 
 	/**
 	 * Creates the insert part of the SQL. e.g. (name,email,date) values (?,?,?)
