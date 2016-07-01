@@ -16,8 +16,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -308,25 +310,38 @@ public class ReflectUtil {
 	}
 
 
-	public static <T extends BaseBean> void invokeSetterMethodForCollection(T bean, Method method, Class classType, String value) throws Exception {
-		if (ReflectUtil.isCollection(classType) && value!=null) {
-			String[] valueArray = value.split(",");
-			BaseDAO fieldDao = Statics.getDaoMap().get(classType);
+	public static <T extends BaseBean> void invokeSetterMethodForCollection(T bean, Method method, Class fieldClass, Class collectionClass, String[] valueArray) throws Exception {
+		if (ReflectUtil.isCollection(collectionClass) && valueArray!=null) {
+			BaseDAO fieldDao = Statics.getDaoMap().get(fieldClass);
+			LOG.info("fieldDao="+fieldDao);
+			LOG.info("valueArray="+valueArray);
+			Collection values = null;
+			if (List.class.isAssignableFrom(collectionClass)) {
+				values = new ArrayList();
+			} else if (Set.class.isAssignableFrom(collectionClass)) {
+				values = new HashSet();
+			} else {
+				try {
+					values = (Collection)collectionClass.newInstance();
+				} catch (Exception e) {
+					LOG.error(e,e);
+				}
+				throw new Exception("Unknown collection class: "+collectionClass);
+			}
 			if (fieldDao!=null && valueArray.length>0 && StringUtils.isNumeric(valueArray[0])) {
-				List<BaseBean> beans = new ArrayList<BaseBean>();
 				for (String valueString : valueArray) {
 					if (!StringUtils.isBlank(valueString)) {
 						BaseBean valueBean = fieldDao.getLookup(Integer.parseInt(valueString));
+						LOG.info("valueBean="+valueBean);
 						if (valueBean != null) {
-							beans.add(valueBean);
+							values.add(valueBean);
 						}
 					}
 				}
-				method.invoke(bean, beans);
 			} else {
-				List<String> strings = new ArrayList<String>(Arrays.asList(valueArray));
-				method.invoke(bean, strings);
+				values.addAll(Arrays.asList(valueArray));
 			}
+			method.invoke(bean, values);
 		}
 	}
 

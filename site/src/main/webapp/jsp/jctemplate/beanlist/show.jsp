@@ -3,6 +3,10 @@
   <label for="${fieldName}">${fieldHeader}</label>
 </td>
 <td
-  <div class="field" id="${fieldName}" name="${fieldName}">${linkPrefix}<c:out value="${bean.${fieldName}}" ${isHtml}/>${linkSuffix}</div>
+  <div class="field" id="${fieldName}" name="${fieldName}">
+    <c:forEach items='${bean.${fieldName}}' var="fieldBean">
+        ${linkPrefix}<c:out value="${fieldBean.displayValue}"/>${linkSuffix}
+    </c:forEach>
+  </div>
 </td>
 </tr>

@@ -107,7 +107,11 @@
   <label for="roles">Roles</label>
 </td>
 <td
-  <div class="field" id="roles" name="roles"><a href="${baseUrl}/role/show/<c:out value='${bean.roles.id}'/>"><c:out value="${bean.roles}" /></a></div>
+  <div class="field" id="roles" name="roles">
+    <c:forEach items='${bean.roles}' var="fieldBean">
+        <a href="${baseUrl}/role/show/<c:out value='${fieldBean.id}'/>"><c:out value="${fieldBean.displayValue}"/></a>
+    </c:forEach>
+  </div>
 </td>
 </tr>
 <tr>

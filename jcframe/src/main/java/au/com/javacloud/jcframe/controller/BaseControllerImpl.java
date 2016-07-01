@@ -352,11 +352,13 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			String fieldName = field.getName();
 			try {
 				String value = request.getParameter(fieldName);
-				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
+				LOG.info("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
 
 				if (fieldMetaData.isCollection()) {
 					// Handle Collections
-					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
+					String[] values = request.getParameterValues(fieldName);
+					LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + Arrays.asList(values));
+					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, fieldMetaData.getCollectionClass(), values);
 				} else if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
 					if (StringUtils.isNumeric(value)) {

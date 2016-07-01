@@ -354,22 +354,27 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			Class classType = fieldMetaData.getClassType();
             LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
 
+			if (field.isAnnotationPresent(LinkTable.class) && fieldMetaData.isBean() && fieldMetaData.isCollection()) {
+				executeM2MPopulate(bean, fieldMetaData);
+			}
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
 				// populate the display value
 				if (fieldName.equals(columnName)) {
 					bean.setDisplayValue(rs.getString(fieldName));
 				}
 
-				if (fieldMetaData.isBean() && fieldMetaData.isCollection()) {
-					executeM2MPopulate(bean, fieldMetaData);
-				}  else if (fieldMetaData.isBean()) {
+				if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
 					int id = rs.getInt(fieldName);
 					ReflectUtil.invokeSetterMethodForBeanType(bean, method, classType, id);
 				} else if (fieldMetaData.isCollection()) {
 					// Handle Collections
 					String value = rs.getString(fieldName);
-					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, value);
+					String[] values = new String[0];
+					if (StringUtils.isNotBlank(value)) {
+						values = value.split(",");
+					}
+					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, fieldMetaData.getCollectionClass(), values);
 				} else {
 					// Handle primitives
 					try {
@@ -580,6 +585,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
 			}
 		}
+		LOG.debug("bean after executeM2MPopulate="+bean);
 	}
 
 

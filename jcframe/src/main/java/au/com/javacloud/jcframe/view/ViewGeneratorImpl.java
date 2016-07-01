@@ -304,9 +304,12 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					}
 				} else {
 					LinkField linkField = field.getAnnotation(LinkField.class);
+					LinkTable linkTable = field.getAnnotation(LinkTable.class);
 					if (linkField!=null) {
 						String linkFieldName = linkField.value();
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/find/"+linkFieldName+"/=<c:out value='\\$\\{bean.id\\}'/>\">"+fieldClass.getSimpleName()+"s ");
+					} else if (linkTable!=null) {
+						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{fieldBean.id\\}'/>\">");
 					} else {
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");
 					}
