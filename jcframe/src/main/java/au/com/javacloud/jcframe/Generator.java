@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import au.com.javacloud.jcframe.service.ServiceLoaderService;
+import au.com.javacloud.jcframe.service.ServiceLoader;
 import au.com.javacloud.jcframe.util.Statics;
 import au.com.javacloud.jcframe.view.ViewGenerator;
 
@@ -21,7 +21,7 @@ public class Generator {
             beans = Arrays.asList(args[0].split(","));
         }
         System.out.println("beans="+beans);
-        ServiceLoaderService serviceLoader = Statics.getServiceLoaderService();
+        ServiceLoader serviceLoader = Statics.getServiceLoader();
         if (serviceLoader!=null) {
 	        ViewGenerator viewGenerator = serviceLoader.getViewGeneratorService();
 	        if (viewGenerator!=null) {

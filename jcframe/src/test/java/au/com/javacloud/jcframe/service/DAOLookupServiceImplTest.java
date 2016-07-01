@@ -7,11 +7,11 @@ import org.junit.Test;
 
 public class DAOLookupServiceImplTest {
 
-	private DAOLookupService testClass;
+	private DAOLookup testClass;
 	
 	@Before
 	public void setup() {
-		testClass = new DAOLookupServiceImpl();
+		testClass = new DAOLookupImpl();
 	}
 	
 	@Test

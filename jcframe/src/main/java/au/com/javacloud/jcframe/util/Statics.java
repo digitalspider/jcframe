@@ -1,14 +1,11 @@
 package au.com.javacloud.jcframe.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -22,8 +19,8 @@ import au.com.javacloud.jcframe.controller.BaseControllerImpl;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.dao.BaseDAOImpl;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.ServiceLoaderService;
-import au.com.javacloud.jcframe.service.ServiceLoaderServiceImpl;
+import au.com.javacloud.jcframe.service.ServiceLoader;
+import au.com.javacloud.jcframe.service.ServiceLoaderImpl;
 
 public class Statics {
 
@@ -43,24 +40,24 @@ public class Statics {
 	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenSecureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 
-	private static ServiceLoaderService serviceLoaderService;
+	private static ServiceLoader serviceLoader;
 
     static {
 		try {
 			Properties properties = ResourceUtil.loadProperties(DEFAULT_JC_CONFIG_FILE);
 			String packageName = properties.getProperty(PROP_PACKAGE_NAME,DEFAULT_PACKAGE_NAME);
-			String serviceLoaderServiceClassName = properties.getProperty(PROP_SERVICELOADER_CLASS,DEFAULT_SERVICELOADER_CLASS);
+			String serviceLoaderClassName = properties.getProperty(PROP_SERVICELOADER_CLASS,DEFAULT_SERVICELOADER_CLASS);
 
 			try {
-				LOG.info("serviceLoaderServiceClassName=" + serviceLoaderServiceClassName);
-				serviceLoaderService = (ServiceLoaderService) Class.forName(serviceLoaderServiceClassName).newInstance();
-				serviceLoaderService.init(properties);
+				LOG.info("serviceLoaderClassName=" + serviceLoaderClassName);
+				serviceLoader = (ServiceLoader) Class.forName(serviceLoaderClassName).newInstance();
+				serviceLoader.init(properties);
 			} catch (Exception e) {
 				LOG.error(e, e);
-				serviceLoaderService = new ServiceLoaderServiceImpl();
-				serviceLoaderService.init(properties);
+				serviceLoader = new ServiceLoaderImpl();
+				serviceLoader.init(properties);
 			}
-			LOG.info("serviceLoaderService=" + serviceLoaderService);
+			LOG.info("serviceLoader=" + serviceLoader);
 
 			// Find all the beanClassTypes
 			try {
@@ -189,7 +186,7 @@ public class Statics {
     }
 
 	public static Map<String, Class<? extends BaseBean>> getClassTypeMap(HttpServletRequest request) {
-		AuthService authService = Statics.getServiceLoaderService().getAuthService();
+		AuthService authService = Statics.getServiceLoader().getAuthService();
 		if (authService.isAuthenticated(request)) {
 			return secureClassTypeMap;
 		}
@@ -201,19 +198,19 @@ public class Statics {
 	}
 
 	private static Map<String, Class<? extends BaseBean>> getHiddenClassTypeMap(HttpServletRequest request) {
-		AuthService authService = Statics.getServiceLoaderService().getAuthService();
+		AuthService authService = Statics.getServiceLoader().getAuthService();
 		if (authService.isAuthenticated(request)) {
 			return hiddenSecureClassTypeMap;
 		}
 		return hiddenClassTypeMap;
 	}
 
-	public static ServiceLoaderService getServiceLoaderService() {
-		return serviceLoaderService;
+	public static ServiceLoader getServiceLoader() {
+		return serviceLoader;
 	}
 
-	public static void setServiceLoaderService(ServiceLoaderService serviceLoaderService) {
-		Statics.serviceLoaderService = serviceLoaderService;
+	public static void setServiceLoader(ServiceLoader serviceLoader) {
+		Statics.serviceLoader = serviceLoader;
 	}
 
 }

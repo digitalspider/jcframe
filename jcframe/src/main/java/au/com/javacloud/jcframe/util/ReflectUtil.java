@@ -18,17 +18,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.dao.BaseDAO;
-import au.com.javacloud.jcframe.annotation.DisplayHeader;
-import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.view.ViewGenerator;
 
 @SuppressWarnings("rawtypes")
 public class ReflectUtil {
@@ -88,7 +84,7 @@ public class ReflectUtil {
 				FieldMetaData fieldData = new FieldMetaData();
 				fieldData.setField(field);
 				Class classType = field.getType();
-				Class collectionClass = null;
+				Class<? extends Collection<?>> collectionClass = null;
 				if (isCollection(classType)) {
 					collectionClass = classType;
 					classType = getCollectionGenericClass(field);
@@ -335,7 +331,7 @@ public class ReflectUtil {
 	}
 
 	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value) throws Exception {
-		DateFormat dateFormat = Statics.getServiceLoaderService().getDisplayDateFormat();
+		DateFormat dateFormat = Statics.getServiceLoader().getDisplayDateFormat();
 		invokeSetterMethodForPrimitive(bean, method, classType, value, dateFormat);
 	}
 

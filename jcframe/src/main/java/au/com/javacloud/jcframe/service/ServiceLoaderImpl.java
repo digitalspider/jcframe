@@ -21,9 +21,9 @@ import au.com.javacloud.jcframe.view.ViewGeneratorImpl;
 /**
  * Created by david on 27/06/16.
  */
-public class ServiceLoaderServiceImpl implements ServiceLoaderService {
+public class ServiceLoaderImpl implements ServiceLoader {
 
-    private static final Logger LOG = Logger.getLogger(ServiceLoaderServiceImpl.class);
+    private static final Logger LOG = Logger.getLogger(ServiceLoaderImpl.class);
 
     public static String DATEFORMATDISPLAY;
     public static String DATEFORMATDB;
@@ -34,7 +34,7 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
     protected static AuthService authService;
     protected static ViewGenerator viewGenerator;
     protected static Map<String,DataSource> dataSourceMap = new HashMap<String, DataSource>();
-    protected static DAOLookupService daoLookupService;
+    protected static DAOLookup daoLookupService;
 
     protected Properties properties;
 
@@ -43,7 +43,8 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
         this.properties = properties;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public <T> T getService(String className, T defaultServiceImpl) {
         if (className!=null && properties!=null) {
             T service = (T) serviceMap.get(className);
@@ -110,12 +111,12 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
     }
 
     @Override
-    public DAOLookupService getDAOLookupService() {
+    public DAOLookup getDAOLookupService() {
         if (daoLookupService!=null) {
             return daoLookupService;
         }
         String className = properties.getProperty(PROP_DAOLOOKUP_CLASS,DEFAULT_DAOLOOKUP_CLASS);
-        daoLookupService = getService(className, new DAOLookupServiceImpl());
+        daoLookupService = getService(className, new DAOLookupImpl());
         return daoLookupService;
     }
 

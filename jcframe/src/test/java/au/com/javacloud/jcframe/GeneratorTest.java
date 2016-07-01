@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 
-import au.com.javacloud.jcframe.service.ServiceLoaderService;
+import au.com.javacloud.jcframe.service.ServiceLoader;
 import au.com.javacloud.jcframe.util.Statics;
 import au.com.javacloud.jcframe.view.ViewGenerator;
 
@@ -38,8 +38,8 @@ public class GeneratorTest {
 
 	@Test
 	public void testMainWithServiceLoader() throws Exception {
-		ServiceLoaderService serviceLoaderService = BDDMockito.mock(ServiceLoaderService.class);
-		Statics.setServiceLoaderService(serviceLoaderService);
+		ServiceLoader serviceLoaderService = BDDMockito.mock(ServiceLoader.class);
+		Statics.setServiceLoader(serviceLoaderService);
 		// Test
 		String[] args = new String[0];
 		Generator.main(args);

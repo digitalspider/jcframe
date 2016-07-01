@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 
-import au.com.javacloud.jcframe.service.ServiceLoaderService;
+import au.com.javacloud.jcframe.service.ServiceLoader;
 
 public class DisplayDateTest {
 
@@ -28,8 +28,8 @@ public class DisplayDateTest {
 		String result = testClass.toString();
 		assertEquals(actualDate.toString(),result);
 		
-		ServiceLoaderService serviceLoaderService = BDDMockito.mock(ServiceLoaderService.class);
-		Statics.setServiceLoaderService(serviceLoaderService);
+		ServiceLoader serviceLoaderService = BDDMockito.mock(ServiceLoader.class);
+		Statics.setServiceLoader(serviceLoaderService);
 		
 		result = testClass.toString();
 		assertEquals(actualDate.toString(),result);

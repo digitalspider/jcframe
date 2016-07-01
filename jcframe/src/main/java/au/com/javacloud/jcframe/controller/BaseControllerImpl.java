@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.Principal;
-import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ import au.com.javacloud.jcframe.auth.AuthService;
 import au.com.javacloud.jcframe.auth.AuthenticationException;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.service.DAOLookup;
 import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.GsonExclusionStrategy;
 import au.com.javacloud.jcframe.util.HttpUtil;
@@ -75,7 +74,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	private int maxMemSize = 4 * 1024;
 	private ServletConfig servletConfig;
 	private ServletContext servletContext;
-	private DAOLookupService daoLookupService;
+	private DAOLookup daoLookupService;
 
 	public String toString() {
 		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"]";
@@ -83,11 +82,11 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	@SuppressWarnings("unchecked")
     public void init(Class<T> clazz) {
-		init(clazz, Statics.getServiceLoaderService().getAuthService(), Statics.getServiceLoaderService().getDAOLookupService());
+		init(clazz, Statics.getServiceLoader().getAuthService(), Statics.getServiceLoader().getDAOLookupService());
 	}
 
 	@SuppressWarnings("unchecked")
-    public void init(Class<T> clazz, AuthService<U> authService, DAOLookupService daoLookupService) {
+    public void init(Class<T> clazz, AuthService<U> authService, DAOLookup daoLookupService) {
 		this.clazz = clazz;
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
@@ -124,7 +123,6 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		// Configure lookupMap
     	List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(dao.getBeanClass(), ExcludeDBWrite.class);
     	for (FieldMetaData fieldMetaData : fieldMetaDataList) {
-			Method method = fieldMetaData.getGetMethod();
     		Class lookupClass = fieldMetaData.getClassType();
 			LOG.debug("lookupClass="+lookupClass.getName());
     		if (ReflectUtil.isBean(lookupClass)) {

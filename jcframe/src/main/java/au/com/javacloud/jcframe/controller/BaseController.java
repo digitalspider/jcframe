@@ -1,7 +1,6 @@
 package au.com.javacloud.jcframe.controller;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import au.com.javacloud.jcframe.auth.AuthService;
 import au.com.javacloud.jcframe.dao.BaseDAO;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.service.DAOLookup;
 import au.com.javacloud.jcframe.util.PathParts;
 
 /**
@@ -55,7 +54,7 @@ public interface BaseController<T extends BaseBean, U> {
 	
 	public void init(Class<T> clazz);
 	
-	public void init(Class<T> clazz, AuthService<U> authService, DAOLookupService daoLookupService);
+	public void init(Class<T> clazz, AuthService<U> authService, DAOLookup daoLookupService);
 
 	public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	

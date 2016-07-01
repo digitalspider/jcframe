@@ -15,16 +15,16 @@ import org.mockito.BDDMockito;
 
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
-import au.com.javacloud.jcframe.service.ServiceLoaderService;
+import au.com.javacloud.jcframe.service.DAOLookup;
+import au.com.javacloud.jcframe.service.ServiceLoader;
 import au.com.javacloud.jcframe.util.Statics;
 
 public class BaseDAOImplTest {
 
 	private BaseDAO<BaseBean> testClass;
-	private ServiceLoaderService serviceLoaderService;
+	private ServiceLoader serviceLoaderService;
 	private DataSource dataSource;
-	private DAOLookupService daoLookupService;
+	private DAOLookup daoLookupService;
 	
 	@TableName("try:this")
 	private class TestSchemaBean extends BaseBean {
@@ -32,10 +32,10 @@ public class BaseDAOImplTest {
 	
 	@Before
 	public void setup() {
-		serviceLoaderService = BDDMockito.mock(ServiceLoaderService.class);
-		Statics.setServiceLoaderService(serviceLoaderService);
+		serviceLoaderService = BDDMockito.mock(ServiceLoader.class);
+		Statics.setServiceLoader(serviceLoaderService);
 		dataSource = BDDMockito.mock(DataSource.class);
-		daoLookupService = BDDMockito.mock(DAOLookupService.class);
+		daoLookupService = BDDMockito.mock(DAOLookup.class);
 		testClass = new BaseDAOImpl<BaseBean>();
 	}
 	
@@ -91,7 +91,7 @@ public class BaseDAOImplTest {
 	@Test
 	public void testGetBeanClass() throws IOException {
 		// Test null
-		Class classType = testClass.getBeanClass();
+		Class<BaseBean> classType = testClass.getBeanClass();
 		assertEquals(null,classType);
 
 		// Test BaseBean
@@ -102,7 +102,7 @@ public class BaseDAOImplTest {
 		// Test CustomBean
 		BaseDAO<TestSchemaBean> dao = new BaseDAOImpl<>();
 		dao.init(TestSchemaBean.class);
-		classType = dao.getBeanClass();
-		assertEquals(TestSchemaBean.class,classType);
+		Class<TestSchemaBean> classType2 = dao.getBeanClass();
+		assertEquals(TestSchemaBean.class,classType2);
 	}
 }

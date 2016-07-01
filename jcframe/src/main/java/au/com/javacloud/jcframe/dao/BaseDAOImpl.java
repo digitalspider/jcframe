@@ -30,7 +30,7 @@ import au.com.javacloud.jcframe.annotation.LinkField;
 import au.com.javacloud.jcframe.annotation.LinkTable;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.service.DAOLookup;
 import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
@@ -50,27 +50,27 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	protected int limit = DEFAULT_LIMIT;
 	protected DateFormat dateFormat;
 	private Connection conn;
-	private DAOLookupService daoLookupService;
+	private DAOLookup daoLookup;
 
 	@Override
 	public void init(Class<T> clazz) throws IOException {
-		init(clazz, Statics.getServiceLoaderService().getDataSource(), Statics.getServiceLoaderService().getDAOLookupService());
+		init(clazz, Statics.getServiceLoader().getDataSource(), Statics.getServiceLoader().getDAOLookupService());
 	}
 
 	@Override
-	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) throws IOException {
+	public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookup) throws IOException {
 		this.clazz = clazz;
 		this.tableName = getTableName();
 		if (tableName.contains(":") && tableName.split(":").length==2) {
 			String schema = tableName.split(":")[0];
 			tableName = tableName.split(":")[1];
-			this.dataSource = Statics.getServiceLoaderService().getDataSource(schema);
+			this.dataSource = Statics.getServiceLoader().getDataSource(schema);
 		} else {
 			this.dataSource = dataSource;
 		}
 
-		this.daoLookupService = daoLookupService;
-		this.dateFormat = Statics.getServiceLoaderService().getDatabaseDateFormat();
+		this.daoLookup = daoLookup;
+		this.dateFormat = Statics.getServiceLoader().getDatabaseDateFormat();
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				} else {
 					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
 				}
-				daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
+				daoLookup.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
 			}
 			executeM2MUpdate(conn, bean);
 		} finally {
@@ -166,7 +166,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		statement.setInt(1, id);
 		statement.executeUpdate();
 		statement.close();
-		daoLookupService.fireDAOUpdate(new DAOActionEvent<T>(id, clazz, null, DAOEventType.DELETE));
+		daoLookup.fireDAOUpdate(new DAOActionEvent<T>(id, clazz, null, DAOEventType.DELETE));
 	}
 
 	@Override
@@ -435,7 +435,6 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
 			Method method = fieldMetaData.getGetMethod();
-			String fieldName = field.getName();
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
 				Class classType = fieldMetaData.getClassType();
 				Object result = method.invoke(bean);
@@ -508,14 +507,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public void executeM2MUpdate(Connection conn, T bean) throws Exception {
-		boolean updateStmt = false;
 		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
 
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
 			if (field.isAnnotationPresent(LinkTable.class)) {
 				if (fieldMetaData.isCollection()) {
-					Class fieldClass = fieldMetaData.getClassType();
 					Method method = fieldMetaData.getGetMethod();
 					Object result = method.invoke(bean);
 					if (result!=null) {

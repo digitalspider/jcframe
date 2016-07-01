@@ -11,7 +11,7 @@ import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
 
 import au.com.javacloud.jcframe.model.BaseBean;
-import au.com.javacloud.jcframe.service.DAOLookupService;
+import au.com.javacloud.jcframe.service.DAOLookup;
 
 /**
  * Created by david on 22/05/16.
@@ -41,7 +41,7 @@ public interface BaseDAO<T extends BaseBean> {
     public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception;
 
     public void init(Class<T> clazz) throws IOException;
-    public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) throws IOException;
+    public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookupService) throws IOException;
     public void initHttp(ServletConfig config);
     public Connection getConnection() throws SQLException;
 

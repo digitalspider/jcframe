@@ -9,7 +9,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
 /**
  * Created by david on 20/06/16.
  */
-public interface DAOLookupService {
+public interface DAOLookup {
     public List<BaseBean> getLookupMap(Class<? extends BaseBean> beanClass);
     public void registerController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
     public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
