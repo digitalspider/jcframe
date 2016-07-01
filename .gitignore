@@ -10,7 +10,6 @@ RemoteSystemsTempFiles
 *.ipr
 *.iws
 *.log
-*.db
 
 # Package Files #
 *.jar
