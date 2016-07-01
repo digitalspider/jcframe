@@ -1,5 +1,7 @@
 package au.com.javacloud.jcframe.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -10,15 +12,23 @@ public class ResourceUtil {
 
 	private static final Logger LOG = Logger.getLogger(ResourceUtil.class);
 
-	public static Properties loadProperties(String fileName) {
+	public static Properties loadProperties(String fileName) throws IOException {
+		Properties properties = new Properties();
+		InputStream inputStream = null;
 		try {
-		    InputStream inputStream = ResourceUtil.class.getClassLoader().getResourceAsStream( fileName );
-		    Properties properties = new Properties();
-	        properties.load( inputStream );
-	        return properties;
+			File file = new File(fileName);
+			if (file.exists()) {
+				inputStream = new FileInputStream(file);
+				properties.load( inputStream );
+			} else {
+				inputStream = ResourceUtil.class.getClassLoader().getResourceAsStream( fileName );
+		        properties.load( inputStream );
+			}
 		} catch (IOException e) {
 			LOG.error(e,e);
-			return new Properties();
+		} finally {
+			if (inputStream!=null) { inputStream.close(); }
 		}
+		return properties;
     } 
 }

@@ -1,8 +1,8 @@
 package au.com.javacloud.jcframe.service;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Properties;
-import java.util.zip.DataFormatException;
 
 import javax.sql.DataSource;
 
@@ -12,7 +12,7 @@ import au.com.javacloud.jcframe.view.ViewGenerator;
 /**
  * Created by david on 27/06/16.
  */
-public interface ServiceLoaderService {
+public interface ServiceLoader {
 
     public static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
     public static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
@@ -38,13 +38,13 @@ public interface ServiceLoaderService {
 
     public AuthService getAuthService();
 
-    public DAOLookupService getDAOLookupService();
+    public DAOLookup getDAOLookupService();
 
     public ViewGenerator getViewGeneratorService();
 
-    public DataSource getDataSource();
+    public DataSource getDataSource() throws IOException;
 
-    public DataSource getDataSource(String schema);
+    public DataSource getDataSource(String schema) throws IOException;
 
     public DateFormat getDatabaseDateFormat();
 

@@ -1,26 +1,24 @@
 package au.com.javacloud.jcframe.auth;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.BDDMockito;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
 
-import au.com.javacloud.jcframe.auth.AuthService;
-import au.com.javacloud.jcframe.auth.BaseAuthServiceImpl;
-import au.com.javacloud.jcframe.model.BaseBeanTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.BDDMockito;
+
+import test.model.TestBean;
 
 public class BaseAuthServiceImplTest {
 
-	private AuthService testClass;
+	private AuthService<Principal> testClass;
 	private HttpServletRequest request;
 	
 	@Before
@@ -52,7 +50,7 @@ public class BaseAuthServiceImplTest {
 	public void testCheckACL() {
 		Principal principal = BDDMockito.mock(Principal.class);
 		BDDMockito.when(principal.getName()).thenReturn("testuser");
-		Class classType = BaseBeanTest.class;
+		Class<TestBean> classType = TestBean.class;
 		assertTrue(testClass.checkACL(principal, classType, Action.INSERT));
 	}
 }

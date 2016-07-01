@@ -16,9 +16,9 @@ import au.com.javacloud.jcframe.util.Statics;
 /**
  * Created by david on 20/06/16.
  */
-public class DAOLookupServiceImpl implements DAOLookupService {
+public class DAOLookupImpl implements DAOLookup {
 
-    private final static Logger LOG = Logger.getLogger(DAOLookupServiceImpl.class);
+    private final static Logger LOG = Logger.getLogger(DAOLookupImpl.class);
     private Map<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>> controllerMap = new HashMap<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>>();
     protected Map<Class<? extends BaseBean>,List<BaseBean>> lookupMap = new HashMap<Class<? extends BaseBean>, List<BaseBean>>();
 

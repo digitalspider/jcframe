@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import au.com.javacloud.jcframe.service.ServiceLoader;
 import au.com.javacloud.jcframe.util.Statics;
 import au.com.javacloud.jcframe.view.ViewGenerator;
 
@@ -20,8 +21,13 @@ public class Generator {
             beans = Arrays.asList(args[0].split(","));
         }
         System.out.println("beans="+beans);
-        ViewGenerator viewGenerator = Statics.getServiceLoaderService().getViewGeneratorService();
-        viewGenerator.generatePages(beans);
+        ServiceLoader serviceLoader = Statics.getServiceLoader();
+        if (serviceLoader!=null) {
+	        ViewGenerator viewGenerator = serviceLoader.getViewGeneratorService();
+	        if (viewGenerator!=null) {
+	        	viewGenerator.generatePages(beans);
+	        }
+        }
         System.out.println("DONE");
     }
 }
