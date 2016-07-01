@@ -137,10 +137,8 @@ function removeLookup(selectName) {
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select id="roles" name="roles" style="float: left" size="10" multiple="true">
-    <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
-      <c:if test="${bean.roles.contains(lookupBean.id)}">
+    <c:forEach items='${bean.roles}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
-      </c:if>
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">
@@ -149,7 +147,7 @@ function removeLookup(selectName) {
   </div>
   <select id="roles-lookup" name="roles-lookup" style="float: left" size="10" multiple="true">
     <c:forEach items='${lookupMap.get("roles")}' var="lookupBean">
-      <c:if test="${!bean.roles.contains(lookupBean.id)}">
+      <c:if test="${!bean.roles.contains(lookupBean)}">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
       </c:if>
     </c:forEach>

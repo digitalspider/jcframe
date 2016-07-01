@@ -6,10 +6,8 @@
   <!-- Cloudflare setting -->
   <!--email_off-->
   <select id="${fieldName}" name="${fieldName}" style="float: left" size="10" multiple="true">
-    <c:forEach items='${lookupMap.get("${fieldName}")}' var="lookupBean">
-      <c:if test="${bean.${fieldName}.contains(lookupBean.id)}">
+    <c:forEach items='${bean.${fieldName}}' var="lookupBean">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
-      </c:if>
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">
@@ -18,7 +16,7 @@
   </div>
   <select id="${fieldName}-lookup" name="${fieldName}-lookup" style="float: left" size="10" multiple="true">
     <c:forEach items='${lookupMap.get("${fieldName}")}' var="lookupBean">
-      <c:if test="${!bean.${fieldName}.contains(lookupBean.id)}">
+      <c:if test="${!bean.${fieldName}.contains(lookupBean)}">
       <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
       </c:if>
     </c:forEach>

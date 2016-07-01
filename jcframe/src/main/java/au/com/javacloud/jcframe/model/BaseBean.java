@@ -20,7 +20,8 @@ import au.com.javacloud.jcframe.util.ReflectUtil;
  */
 
 public class BaseBean {
-	@ExcludeDBWrite
+
+    @ExcludeDBWrite
     protected int id;
 	@ExcludeView
     @ExcludeDBWrite
@@ -58,6 +59,22 @@ public class BaseBean {
             }
         }
         return result.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BaseBean baseBean = (BaseBean) o;
+
+        return getId() == baseBean.getId();
+
+    }
+
+    @Override
+    public int hashCode() {
+        return getId();
     }
 
     public int getId() {
