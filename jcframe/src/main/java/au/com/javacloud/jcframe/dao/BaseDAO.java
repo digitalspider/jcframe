@@ -1,5 +1,6 @@
 package au.com.javacloud.jcframe.dao;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ public interface BaseDAO<T extends BaseBean> {
     public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_DAOLOOKUP_LIMIT = 200;
 	
+    public DataSource getDataSource();
     public String getTableName();
     public Class<T> getBeanClass();
     public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception;
@@ -38,8 +40,8 @@ public interface BaseDAO<T extends BaseBean> {
     public void delete(int beanId) throws Exception;
     public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception;
 
-    public void init(Class<T> clazz);
-    public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService);
+    public void init(Class<T> clazz) throws IOException;
+    public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) throws IOException;
     public void initHttp(ServletConfig config);
     public Connection getConnection() throws SQLException;
 

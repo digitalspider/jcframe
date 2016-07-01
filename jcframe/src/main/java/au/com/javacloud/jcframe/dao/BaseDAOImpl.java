@@ -53,12 +53,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	private DAOLookupService daoLookupService;
 
 	@Override
-	public void init(Class<T> clazz) {
+	public void init(Class<T> clazz) throws IOException {
 		init(clazz, Statics.getServiceLoaderService().getDataSource(), Statics.getServiceLoaderService().getDAOLookupService());
 	}
 
 	@Override
-	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) {
+	public void init(Class<T> clazz, DataSource dataSource, DAOLookupService daoLookupService) throws IOException {
 		this.clazz = clazz;
 		this.tableName = getTableName();
 		if (tableName.contains(":") && tableName.split(":").length==2) {
@@ -314,7 +314,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public String getTableName() {
-		String tableName = null;
+		if (tableName!=null) {
+			return tableName;
+		}
 		if (clazz.isAnnotationPresent(TableName.class)) {
 			tableName = clazz.getAnnotation(TableName.class).value();
 		}
@@ -323,7 +325,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		}
 		return tableName;
 	}
-
+	
 	@Override
 	public Class<T> getBeanClass() {
 		return clazz;
@@ -630,5 +632,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	public String toString() {
 		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"] tableName="+tableName;
+	}
+
+	@Override
+	public DataSource getDataSource() {
+		return dataSource;
 	}
 }

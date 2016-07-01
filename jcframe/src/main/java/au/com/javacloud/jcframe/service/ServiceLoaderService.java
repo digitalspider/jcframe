@@ -1,5 +1,6 @@
 package au.com.javacloud.jcframe.service;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Properties;
 import java.util.zip.DataFormatException;
@@ -42,9 +43,9 @@ public interface ServiceLoaderService {
 
     public ViewGenerator getViewGeneratorService();
 
-    public DataSource getDataSource();
+    public DataSource getDataSource() throws IOException;
 
-    public DataSource getDataSource(String schema);
+    public DataSource getDataSource(String schema) throws IOException;
 
     public DateFormat getDatabaseDateFormat();
 

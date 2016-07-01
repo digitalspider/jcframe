@@ -2,6 +2,7 @@ package au.com.javacloud.jcframe.service;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,12 +130,12 @@ public class ServiceLoaderServiceImpl implements ServiceLoaderService {
     }
 
     @Override
-    public DataSource getDataSource() {
+    public DataSource getDataSource() throws IOException {
         return getDataSource(DEFAULT_DB_SCHEMA);
     }
 
     @Override
-    public DataSource getDataSource(String schema) {
+    public DataSource getDataSource(String schema) throws IOException {
         if (dataSourceMap.containsKey(schema)) {
             return dataSourceMap.get(schema);
         }
