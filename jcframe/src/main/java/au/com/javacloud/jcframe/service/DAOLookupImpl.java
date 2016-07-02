@@ -20,21 +20,21 @@ public class DAOLookupImpl implements DAOLookup {
 
     private final static Logger LOG = Logger.getLogger(DAOLookupImpl.class);
     private Map<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>> controllerMap = new HashMap<Class<? extends BaseBean>,List<BaseController<? extends BaseBean, ?>>>();
-    protected Map<Class<? extends BaseBean>,Map<Integer,BaseBean>> lookupMap = new HashMap<Class<? extends BaseBean>, Map<Integer,BaseBean>>();
+    protected Map<Class<? extends BaseBean>,List<BaseBean>> lookupMap = new HashMap<Class<? extends BaseBean>, List<BaseBean>>();
 
     @SuppressWarnings("unchecked")
 	@Override
-    public Map<Integer,BaseBean> getLookupMap(Class<? extends BaseBean> beanClass) {
-        Map<Integer,BaseBean> lookupData = lookupMap.get(beanClass);
+    public List<BaseBean> getLookupList(Class<? extends BaseBean> beanClass) {
+        List<BaseBean> lookupData = lookupMap.get(beanClass);
         if (lookupData==null) {
             LOG.info("Initialising lookupMap for class="+beanClass.getSimpleName());
             BaseDAO<? extends BaseBean> lookupDao = Statics.getDaoMap().get(beanClass);
             LOG.info("lookupDao="+lookupDao);
             try {
-                lookupData = (Map<Integer,BaseBean>) lookupDao.getLookupMap();
+                lookupData = (List<BaseBean>) lookupDao.getLookupList();
             } catch (Exception e) {
                 LOG.error(e,e);
-                lookupData = new HashMap<Integer,BaseBean>();
+                lookupData = new ArrayList<BaseBean>();
             }
             LOG.info("lookupData.size()="+lookupData.size());
             lookupMap.put(beanClass, lookupData);
@@ -76,9 +76,9 @@ public class DAOLookupImpl implements DAOLookup {
     public void addToLookupMap(Class<? extends BaseBean> beanClass, BaseBean bean) {
         LOG.debug("beanClass="+beanClass.getName());
         try {
-            Map<Integer,BaseBean> beans = getLookupMap(beanClass);
+            List<BaseBean> beans = getLookupList(beanClass);
             LOG.info("Adding bean "+bean);
-            beans.put(bean.getId(),bean);
+            beans.add(bean);
         } catch (Exception e) {
             LOG.error(e,e);
         }
@@ -88,10 +88,12 @@ public class DAOLookupImpl implements DAOLookup {
     public void deleteFromLookupMap(Class<? extends BaseBean> beanClass, int id) {
         LOG.debug("beanClass="+beanClass.getName());
         try {
-            Map<Integer,BaseBean> beans = getLookupMap(beanClass);
+            List<BaseBean> beans = getLookupList(beanClass);
             LOG.info("Deleting bean "+beanClass.getSimpleName()+" [id="+id+"]");
-            if (beans.containsKey(id)) {
-                beans.remove(id);
+            BaseBean beanWithId = new BaseBean();
+            beanWithId.setId(id);
+            if (beans.contains(beanWithId)) {
+                beans.remove(beanWithId);
             }
         } catch (Exception e) {
             LOG.error(e,e);

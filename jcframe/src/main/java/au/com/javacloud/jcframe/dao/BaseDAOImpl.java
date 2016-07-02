@@ -29,14 +29,13 @@ import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.LinkField;
-import au.com.javacloud.jcframe.annotation.LinkTable;
+import au.com.javacloud.jcframe.annotation.M2MTable;
 import au.com.javacloud.jcframe.annotation.TableName;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.service.DAOLookup;
 import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
-import jdk.nashorn.internal.ir.BaseNode;
 
 /**
  * Created by david on 22/05/16.
@@ -173,12 +172,17 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public List<T> getAll(int pageNo) throws Exception {
+	public List<T> getAll(int pageNo, boolean populateBean) throws Exception {
 		List<T> beans = new ArrayList<T>();
 		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
+			T bean = ReflectUtil.getNewBean(clazz);
+			String columnName = BaseBean.FIELD_ID;
+			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
+			}
 			if (pageNo<1) { pageNo=1; }
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			statement = conn.createStatement();
@@ -189,8 +193,11 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			query += " limit "+limit+" offset "+((pageNo-1)*limit);
 			resultSet = statement.executeQuery( query );
 			while( resultSet.next() ) {
-				T bean = ReflectUtil.getNewBean(clazz);
-				populateBeanFromResultSet(bean, resultSet);
+				bean = ReflectUtil.getNewBean(clazz);
+				bean.setDisplayValue( resultSet.getString( columnName ) );
+				if (populateBean) {
+					populateBeanFromResultSet(bean, resultSet);
+				}
 				beans.add(bean);
 			}
 		} finally {
@@ -200,8 +207,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		return beans;
 	}
 
-	public Map<Integer,T> getLookupMap() throws SQLException, IOException {
-		Map<Integer,T> beans = new HashMap<Integer,T>();
+	@Override
+	public List<T> getLookupList() throws SQLException, IOException {
+		List<T> beans = new ArrayList<T>();
 		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
@@ -218,7 +226,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				bean = ReflectUtil.getNewBean(clazz);
 				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
-				beans.put(bean.getId(),bean);
+				beans.add(bean);
 			}
 		} finally {
 			if (resultSet!=null) resultSet.close();
@@ -229,6 +237,11 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 	@Override
 	public T getLookup(int id) throws Exception {
+		return get(id, false);
+	}
+
+	@Override
+	public T get(int id, boolean populateBean) throws Exception {
 		T bean = ReflectUtil.getNewBean(clazz);
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
@@ -238,13 +251,16 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
 				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 			}
-			String query = "select id,"+columnName+" from "+tableName+" where id=?";
+			String query = "select * from "+tableName+" where id=?";
 			statement = conn.prepareStatement( query );
 			statement.setInt(1, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
 				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
+				if (populateBean) {
+					populateBeanFromResultSet(bean, resultSet);
+				}
 			}
 		} finally {
 			if (resultSet!=null) resultSet.close();
@@ -254,37 +270,17 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public T get(int id) throws Exception {
-		T bean = ReflectUtil.getNewBean(clazz);
-		Connection conn = getConnection();
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			String query = "select * from "+tableName+" where id=?";
-			if (!StringUtils.isBlank(orderBy)) {
-				query += " order by "+orderBy;
-			}
-			statement = conn.prepareStatement( query );
-			statement.setInt(1, id);
-			resultSet = statement.executeQuery();
-			if( resultSet.next() ) {
-				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
-				populateBeanFromResultSet(bean, resultSet);
-			}
-		} finally {
-			if (resultSet!=null) resultSet.close();
-			if (statement!=null) statement.close();
-		}
-		return bean;
-	}
-
-	@Override
-	public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception {
+	public List<T> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception {
 		List<T> results = new ArrayList<T>();
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
+			T bean = ReflectUtil.getNewBean(clazz);
+			String columnName = BaseBean.FIELD_ID;
+			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
+				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
+			}
 			if (pageNo<1) { pageNo=1; }
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			String query = "select * from "+tableName+" where "+field+" like ?";
@@ -303,9 +299,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			}
 			resultSet = statement.executeQuery();
 			while( resultSet.next() ) {
-				T bean = ReflectUtil.getNewBean(clazz);
+				bean = ReflectUtil.getNewBean(clazz);
 				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
-				populateBeanFromResultSet(bean, resultSet);
+				bean.setDisplayValue( resultSet.getString( columnName ) );
+				if (populateBean) {
+					populateBeanFromResultSet(bean, resultSet);
+				}
 				results.add(bean);
 			}
 		} finally {
@@ -354,10 +353,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			Class classType = fieldMetaData.getClassType();
             LOG.debug("method="+method.getName()+" paramClass.getSimpleName()="+classType.getSimpleName());
 
-			if (field.isAnnotationPresent(LinkTable.class) && fieldMetaData.isBean() && fieldMetaData.isCollection()) {
+			if (field.isAnnotationPresent(M2MTable.class) && fieldMetaData.isBean() && fieldMetaData.isCollection()) {
 				executeM2MPopulate(bean, fieldMetaData);
+			} else if (field.isAnnotationPresent(LinkField.class) && fieldMetaData.isBean()) {
+				executeLinkFieldPopulate(bean, fieldMetaData);
 			}
-			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(M2MTable.class)) {
 				// populate the display value
 				if (fieldName.equals(columnName)) {
 					bean.setDisplayValue(rs.getString(fieldName));
@@ -407,7 +408,6 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 						}
 					}
 				}
-				// TODO: else
 			}
 		}
 	}
@@ -421,7 +421,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		List<String> columns = new ArrayList<String>();
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
-			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(M2MTable.class)) {
 				columns.add(field.getName());
 			}
 		}
@@ -445,7 +445,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
 			Method method = fieldMetaData.getGetMethod();
-			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(LinkTable.class)) {
+			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(M2MTable.class)) {
 				Class classType = fieldMetaData.getClassType();
 				Object result = method.invoke(bean);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " result=" + result);
@@ -521,7 +521,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
-			if (field.isAnnotationPresent(LinkTable.class)) {
+			if (field.isAnnotationPresent(M2MTable.class)) {
 				if (fieldMetaData.isCollection()) {
 					Method method = fieldMetaData.getGetMethod();
 					Object result = method.invoke(bean);
@@ -529,9 +529,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 						Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
 						Collection<?> resultList = collectionClass.cast(result);
 
-						String m2mTable = field.getAnnotation(LinkTable.class).table();
-						String column = field.getAnnotation(LinkTable.class).column();
-						String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
+						String m2mTable = field.getAnnotation(M2MTable.class).table();
+						String column = field.getAnnotation(M2MTable.class).column();
+						String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 						String query = "delete from " + m2mTable + " where " + column + "=?";
 						PreparedStatement preparedStatement = conn.prepareStatement(query);
 						preparedStatement.setInt(1, bean.getId());
@@ -540,7 +540,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 						preparedStatement = conn.prepareStatement(query);
 						for (Object resultObject : resultList) {
 							if (!(resultObject instanceof BaseBean)) {
-								throw new Exception("@LinkTable annotation requires the Collection to be BaseBean objects");
+								throw new Exception("@M2MTable annotation requires the Collection to be BaseBean objects");
 							}
 							BaseBean resultBean = (BaseBean) resultObject;
 							preparedStatement.setInt(1, bean.getId());
@@ -550,7 +550,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 						preparedStatement.executeBatch();
 					}
 				} else {
-					throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
+					throw new Exception("@M2MTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
 				}
 			}
 		}
@@ -560,13 +560,13 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	public void executeM2MPopulate(T bean, FieldMetaData fieldMetaData) throws Exception {
 
 		Field field = fieldMetaData.getField();
-		if (field.isAnnotationPresent(LinkTable.class)) {
+		if (field.isAnnotationPresent(M2MTable.class)) {
 			if (fieldMetaData.isCollection()) {
 				Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
 
-				String m2mTable = field.getAnnotation(LinkTable.class).table();
-				String column = field.getAnnotation(LinkTable.class).column();
-				String rcolumn = field.getAnnotation(LinkTable.class).rcolumn();
+				String m2mTable = field.getAnnotation(M2MTable.class).table();
+				String column = field.getAnnotation(M2MTable.class).column();
+				String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 				String query = "select " + column + "," + rcolumn + " from " + m2mTable + " where " + column + "=?";
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
 				preparedStatement.setInt(1, bean.getId());
@@ -575,17 +575,41 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
 				while (rs.next()) {
 					int linkId = rs.getInt(2);
-					if (fieldDao.get(linkId)!=null) {
-						m2mList.add(fieldDao.get(linkId));
+					BaseBean fieldBean = fieldDao.get(linkId,false);
+					if (fieldBean!=null) {
+						m2mList.add(fieldBean);
 					}
 				}
 				Method method = fieldMetaData.getSetMethod();
 				method.invoke(bean,m2mList);
 			} else {
-				throw new Exception("@LinkTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
+				throw new Exception("@M2MTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
 			}
 		}
 		LOG.debug("bean after executeM2MPopulate="+bean);
+	}
+
+	@Override
+	public void executeLinkFieldPopulate(T bean, FieldMetaData fieldMetaData) throws Exception {
+
+		Field field = fieldMetaData.getField();
+		if (field.isAnnotationPresent(LinkField.class)) {
+			String fieldName = field.getAnnotation(LinkField.class).value();
+			BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
+			List<BaseBean> resultList = fieldDao.find(fieldName,""+bean.getId(),0,true,false);
+			if (fieldMetaData.isCollection()) {
+				Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
+				Method method = fieldMetaData.getSetMethod();
+				method.invoke(bean,resultList);
+			} else {
+				if (!resultList.isEmpty()) {
+					BaseBean resultBean = resultList.get(0);
+					Method method = fieldMetaData.getSetMethod();
+					method.invoke(bean, resultBean);
+				}
+			}
+		}
+		LOG.debug("bean after executeDaoLookupPopulate="+bean);
 	}
 
 

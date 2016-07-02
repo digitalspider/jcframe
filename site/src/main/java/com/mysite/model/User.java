@@ -7,11 +7,10 @@ import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.DisplayType;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
-import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.LinkField;
-import au.com.javacloud.jcframe.annotation.LinkTable;
+import au.com.javacloud.jcframe.annotation.M2MTable;
 import au.com.javacloud.jcframe.model.BaseBean;
 
 /**
@@ -42,7 +41,7 @@ public class User extends BaseBean {
     private String mobile;
     private String token;
     private String image;
-    @LinkTable(table="userroles", column="userid", rcolumn="roleid")
+    @M2MTable(table="userroles", column="userid", rcolumn="roleid")
     private List<Role> roles;
     @LinkField("author")
     private List<Page> pages;

@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface LinkTable {
+public @interface M2MTable {
     String table();
     String column();
     String rcolumn();

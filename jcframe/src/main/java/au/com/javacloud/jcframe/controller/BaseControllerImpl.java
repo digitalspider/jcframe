@@ -133,8 +133,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     			try {
         			String fieldName = fieldMetaData.getField().getName();
 					lookupFields.put(fieldName, lookupClass);
-					Collection<BaseBean> values = daoLookupService.getLookupMap(lookupClass).values();
-					lookupMap.put(fieldName, new ArrayList<BaseBean>(values));
+					List<BaseBean> values = daoLookupService.getLookupList(lookupClass);
+					lookupMap.put(fieldName, new ArrayList<BaseBean>(values)); // Important: Make a copy of the list.
 					daoLookupService.registerController(lookupClass, this);
     			} catch (Exception e) {
 					LOG.error(e,e);
@@ -148,8 +148,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	public void reloadLookupMap() {
 		for (String fieldName : lookupFields.keySet()) {
 			Class<? extends BaseBean> lookupClass = lookupFields.get(fieldName);
-			Collection<BaseBean> values = daoLookupService.getLookupMap(lookupClass).values();
-			lookupMap.put(fieldName, new ArrayList<BaseBean>(values));
+			Collection<BaseBean> values = daoLookupService.getLookupList(lookupClass);
+			lookupMap.put(fieldName, new ArrayList<BaseBean>(values)); // Important: Make a copy of the list.
 		}
 	}
 
@@ -378,8 +378,8 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 
 	protected boolean handleJson(Object o) throws IOException {
 		if (beanUrl.endsWith(JSON_SUFFIX_LOOKUP)) {
-			Map<Integer,BaseBean> beans = daoLookupService.getLookupMap(clazz);
-			String output = gson.toJson(beans.values());
+			List<BaseBean> beans = daoLookupService.getLookupList(clazz);
+			String output = gson.toJson(beans);
 			response.setContentType(APPLICATION_JSON);
 			response.getWriter().write(output);
 			return true;
@@ -439,7 +439,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		}
 		if (idValue!=null) {
 			int id = Integer.parseInt(idValue);
-			T bean = dao.get(id);
+			T bean = dao.get(id,true);
 			if (handleJson(bean)) {
 				return;
 			}
@@ -450,7 +450,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 	@Override
 	public void list() throws Exception {
 		int pageNo = pathParts.getInt(2);
-		List<T> beans = dao.getAll(pageNo);
+		List<T> beans = dao.getAll(pageNo,true);
 		int count = dao.count();
 		if (handleJson(beans)) {
 			return;
@@ -486,7 +486,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			}
 			int pageNo = pathParts.getInt(4);
 
-			List<T> beans = dao.find(field, value, pageNo, exact);
+			List<T> beans = dao.find(field, value, pageNo, exact,true);
 			int count = dao.count(field, value);
 			if (handleJson(beans)) {
 				return;

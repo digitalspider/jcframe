@@ -11,7 +11,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  * Created by david on 20/06/16.
  */
 public interface DAOLookup {
-    public Map<Integer,BaseBean> getLookupMap(Class<? extends BaseBean> beanClass);
+    public List<BaseBean> getLookupList(Class<? extends BaseBean> beanClass);
     public void registerController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
     public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
     public <T extends BaseBean> void fireDAOUpdate(DAOActionEvent<T> event);

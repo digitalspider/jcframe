@@ -18,15 +18,13 @@ import org.apache.log4j.Logger;
 import au.com.javacloud.jcframe.annotation.DisplayHeader;
 import au.com.javacloud.jcframe.annotation.DisplayOrder;
 import au.com.javacloud.jcframe.annotation.DisplayType;
-import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
 import au.com.javacloud.jcframe.annotation.ExcludeView;
 import au.com.javacloud.jcframe.annotation.IndexPage;
 import au.com.javacloud.jcframe.annotation.LinkField;
-import au.com.javacloud.jcframe.annotation.LinkTable;
+import au.com.javacloud.jcframe.annotation.M2MTable;
 import au.com.javacloud.jcframe.model.BaseBean;
 import au.com.javacloud.jcframe.util.FieldMetaData;
 import au.com.javacloud.jcframe.util.FieldMetaDataComparator;
-import au.com.javacloud.jcframe.util.MethodComparator;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
 
@@ -239,8 +237,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		if (isBean && type.equals(FIELD_TYPE_TEXT)) {
 			type = FIELD_TYPE_BEAN;
 		}
-		LinkTable linkTable = field.getAnnotation(LinkTable.class);
-		if (linkTable!=null) {
+		M2MTable m2MTable = field.getAnnotation(M2MTable.class);
+		if (m2MTable !=null) {
 			type = FIELD_TYPE_BEANLIST;
 		}
 		LinkField linkField = field.getAnnotation(LinkField.class);
@@ -304,11 +302,11 @@ public class ViewGeneratorImpl implements ViewGenerator {
 					}
 				} else {
 					LinkField linkField = field.getAnnotation(LinkField.class);
-					LinkTable linkTable = field.getAnnotation(LinkTable.class);
+					M2MTable m2MTable = field.getAnnotation(M2MTable.class);
 					if (linkField!=null) {
 						String linkFieldName = linkField.value();
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/find/"+linkFieldName+"/=<c:out value='\\$\\{bean.id\\}'/>\">"+fieldClass.getSimpleName()+"s ");
-					} else if (linkTable!=null) {
+					} else if (m2MTable !=null) {
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{fieldBean.id\\}'/>\">");
 					} else {
 						result = result.replaceAll("\\$\\{linkPrefix\\}", "<a href=\"\\$\\{baseUrl\\}/" + fieldClass.getSimpleName().toLowerCase() + "/show/<c:out value='\\$\\{bean." + fieldName + ".id\\}'/>\">");

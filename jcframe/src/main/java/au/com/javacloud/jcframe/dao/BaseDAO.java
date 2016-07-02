@@ -31,17 +31,18 @@ public interface BaseDAO<T extends BaseBean> {
     public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception;
     public void executeM2MUpdate(Connection conn, T bean) throws Exception;
     public void executeM2MPopulate(T bean, FieldMetaData fieldMetaData) throws Exception;
+    public void executeLinkFieldPopulate(T bean, FieldMetaData fieldMetaData) throws Exception;
     public List<String> getBeanFieldNames();
     
     public void saveOrUpdate(T bean) throws Exception;
     public int count() throws Exception;
     public int count(String field, String value) throws Exception;
-    public List<T> getAll(int pageNo) throws Exception;
-    public Map<Integer,T> getLookupMap() throws Exception;
+    public List<T> getAll(int pageNo, boolean populateBean) throws Exception;
+    public List<T> getLookupList() throws Exception;
     public T getLookup(int id) throws Exception;
-    public T get(int id) throws Exception;
+    public T get(int id, boolean populateBean) throws Exception;
     public void delete(int beanId) throws Exception;
-    public List<T> find(String field, String value, int pageNo, boolean exact) throws Exception;
+    public List<T> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception;
 
     public void init(Class<T> clazz) throws IOException;
     public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookupService) throws IOException;
