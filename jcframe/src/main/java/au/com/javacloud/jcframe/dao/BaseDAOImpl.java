@@ -167,8 +167,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	public void delete( ID id ) throws SQLException {
 		String query = "delete from "+tableName+" where id=?";
 		Connection conn = getConnection();
-		PreparedStatement statement = conn.prepareStatement(query);
-		setIdForStatement(statement,1,id);
+		PreparedStatement statement = getStatementWithId(conn, query, id);
 		statement.executeUpdate();
 		statement.close();
 		daoLookup.fireDAOUpdate(new DAOActionEvent<ID,T>(id, clazz, null, DAOEventType.DELETE));
@@ -255,8 +254,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
 			}
 			String query = "select * from "+tableName+" where id=?";
-			statement = conn.prepareStatement( query );
-			setIdForStatement(statement, 1, id);
+			statement = getStatementWithId(conn, query, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
 				bean.setId( getIdFromResultSet(resultSet) );
@@ -536,8 +534,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 						String column = field.getAnnotation(M2MTable.class).column();
 						String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 						String query = "delete from " + m2mTable + " where " + column + "=?";
-						PreparedStatement preparedStatement = conn.prepareStatement(query);
-						setIdForStatement(preparedStatement, 1, bean.getId());
+						PreparedStatement preparedStatement = getStatementWithId(conn, query, bean.getId());
 						preparedStatement.addBatch();
 						query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
 						preparedStatement = conn.prepareStatement(query);
@@ -571,9 +568,8 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 				String column = field.getAnnotation(M2MTable.class).column();
 				String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 				String query = "select " + column + "," + rcolumn + " from " + m2mTable + " where " + column + "=?";
-				PreparedStatement preparedStatement = conn.prepareStatement(query);
-				setIdForStatement(preparedStatement, 1, bean.getId());
-				ResultSet rs = preparedStatement.executeQuery();
+				PreparedStatement statement = getStatementWithId(conn, query, bean.getId());
+				ResultSet rs = statement.executeQuery();
 				List<BaseBean> m2mList = new ArrayList<BaseBean>();
 				BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
 				while (rs.next()) {
@@ -722,6 +718,12 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 			throw new SQLException("Could not get ID from resultSet");
 		}
 		return null;
+	}
+
+	public PreparedStatement getStatementWithId(Connection conn, String query, ID id) throws SQLException {
+		PreparedStatement statement = conn.prepareStatement(query);
+		setIdForStatement(statement,1,id);
+		return statement;
 	}
 
 	@Override
