@@ -402,6 +402,17 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 							method.invoke(bean, rs.getBlob(fieldName));
 						} else if (classType.equals(Clob.class)) {
 							method.invoke(bean, rs.getClob(fieldName));
+						} else if (classType.equals(Object.class)) {
+							Object result = rs.getObject(fieldName);
+							if (result!=null) {
+								if (StringUtils.isNumeric(result.toString())) {
+									method.invoke(bean, Integer.parseInt(result.toString()));
+								} else {
+									method.invoke(bean, result.toString());
+								}
+							} else {
+								method.invoke(bean, null);
+							}
 						}
 					} catch (SQLException e) {
 						if (!fieldName.equals(BaseBean.FIELD_DISPLAYVALUE)) { // ignore "displayvalue", as this is custom to BaseBean
@@ -504,6 +515,12 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 							preparedStatement.setBlob(++index, (Blob) result);
 						} else if (classType.equals(Clob.class)) {
 							preparedStatement.setClob(++index, (Clob) result);
+						} else if (classType.equals(Object.class)) {
+							if (StringUtils.isNumeric(result.toString())) {
+								preparedStatement.setInt(++index, Integer.parseInt(result.toString()));
+							} else {
+								preparedStatement.setString(++index, result.toString());
+							}
 						}
 					}
 				}
@@ -568,7 +585,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 				String column = field.getAnnotation(M2MTable.class).column();
 				String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 				String query = "select " + column + "," + rcolumn + " from " + m2mTable + " where " + column + "=?";
-				PreparedStatement statement = getStatementWithId(conn, query, bean.getId());
+				PreparedStatement statement = getStatementWithId(getConnection(), query, bean.getId());
 				ResultSet rs = statement.executeQuery();
 				List<BaseBean> m2mList = new ArrayList<BaseBean>();
 				BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
@@ -729,14 +746,22 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	@Override
 	public void setIdForStatement(PreparedStatement statement, int index, ID id) throws SQLException {
 		if (String.class.isAssignableFrom(id.getClass())) {
-			statement.setString(index, (String)id);
+			statement.setString(index, (String) id);
 		} else if (id.getClass().equals(int.class) || Integer.class.isAssignableFrom(id.getClass())) {
-			statement.setInt(index, (Integer)id);
+			statement.setInt(index, (Integer) id);
 		} else if (java.sql.Date.class.isAssignableFrom(id.getClass())) {
-			statement.setDate(index, (java.sql.Date)id);
+			statement.setDate(index, (java.sql.Date) id);
 		} else if (id.getClass().equals(long.class) || Long.class.isAssignableFrom(id.getClass())) {
-			statement.setLong(index, (Long)id);
+			statement.setLong(index, (Long) id);
+		} else if (id!=null) {
+			String result = id.toString();
+			if (StringUtils.isNumeric(result)) {
+				statement.setInt(index, Integer.parseInt(result));
+			} else {
+				statement.setString(index, result);
+			}
+		} else {
+			throw new SQLException("Could not set ID to statement. id=" + id);
 		}
-		throw new SQLException("Could not set ID to statement. id="+id);
 	}
 }
