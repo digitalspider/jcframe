@@ -357,7 +357,11 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 				if (fieldMetaData.isCollection()) {
 					// Handle Collections
 					String[] values = request.getParameterValues(fieldName);
-					LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + Arrays.asList(values));
+					if (values!=null) {
+						LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + Arrays.asList(values));
+					} else {
+						LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + values);
+					}
 					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, fieldMetaData.getCollectionClass(), values);
 				} else if (fieldMetaData.isBean()) {
 					// Handle BaseBeans
