@@ -7,14 +7,24 @@ public class BaseBeanTest {
 
 	@Test
 	public void testId() {
-		BaseBean bean = new BaseBean();
-		int result = bean.getId();
-		assertNotNull(result);
-		assertEquals(0,result);
+		BaseBean<Integer> bean = new BaseBean<Integer>();
+		Integer result = bean.getId();
+		assertNull(result);
+		bean.setId(0);
+		assertEquals(0,(int)bean.getId());
 		
 		bean.setId(5);
 		result = bean.getId();
-		assertEquals(5,result);
+		assertEquals(new Integer(5),result);
+
+		BaseBean<String> stringBean = new BaseBean<String>();
+		String id = stringBean.getId();
+		assertNull(id);
+		stringBean.setId("");
+		assertEquals("",stringBean.getId());
+
+		stringBean.setId("test");
+		assertEquals("test",stringBean.getId());
 	}
 	
 	@Test
@@ -34,11 +44,16 @@ public class BaseBeanTest {
 		BaseBean bean = new BaseBean();
 		String result = bean.toString();
 		assertNotNull(result);
-		assertEquals("BaseBean[0] ",result);
+		assertEquals("BaseBean[null] ",result);
 		
 		bean.setId(5);
 		bean.setDisplayValue("value");
 		result = bean.toString();
 		assertEquals("BaseBean[5] value",result);
+
+		BaseBean<String> stringBean = new BaseBean<String>();
+		stringBean.setId("test");
+		stringBean.setDisplayValue("value");
+		assertEquals("BaseBean[test] value",stringBean.toString());
 	}
 }

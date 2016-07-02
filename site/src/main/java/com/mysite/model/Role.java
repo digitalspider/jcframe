@@ -18,7 +18,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 @TableName("roles")
 @DisplayValueColumn("rolename")
-public class Role extends BaseBean {
+public class Role extends BaseBean<Integer> {
     private String rolename;
 
     public String getRolename() {

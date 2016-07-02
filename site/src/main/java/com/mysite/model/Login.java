@@ -10,7 +10,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 @HiddenBean
 @TableName("User")
-public class Login extends BaseBean {
+public class Login extends BaseBean<Integer> {
     private String username;
     @DisplayType("password")
     private String password;

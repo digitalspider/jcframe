@@ -40,7 +40,7 @@ import au.com.javacloud.jcframe.util.Statics;
 /**
  * Created by david on 22/05/16.
  */
-public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
+public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 
 	private static final Logger LOG = Logger.getLogger(BaseDAOImpl.class);
 
@@ -108,12 +108,15 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			if (statement.isInsertStmt()) {
 				ResultSet generatedKeys = statement.getPreparedStatement().getGeneratedKeys();
 				if (generatedKeys.next()) {
-					bean.setId(generatedKeys.getInt(1));
+					int newId = generatedKeys.getInt(1);
+					if (newId>0) {
+						bean.setId((ID)(Integer)newId);
+					}
 					bean.setDisplayValue(ReflectUtil.getDisplayValueFromBean(bean));
 				} else {
 					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
 				}
-				daoLookup.fireDAOUpdate(new DAOActionEvent<T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
+				daoLookup.fireDAOUpdate(new DAOActionEvent<ID,T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
 			}
 			executeM2MUpdate(conn, bean);
 		} finally {
@@ -161,14 +164,14 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public void delete( int id ) throws SQLException {
+	public void delete( ID id ) throws SQLException {
 		String query = "delete from "+tableName+" where id=?";
 		Connection conn = getConnection();
 		PreparedStatement statement = conn.prepareStatement(query);
-		statement.setInt(1, id);
+		setIdForStatement(statement,1,id);
 		statement.executeUpdate();
 		statement.close();
-		daoLookup.fireDAOUpdate(new DAOActionEvent<T>(id, clazz, null, DAOEventType.DELETE));
+		daoLookup.fireDAOUpdate(new DAOActionEvent<ID,T>(id, clazz, null, DAOEventType.DELETE));
 	}
 
 	@Override
@@ -224,7 +227,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			resultSet = statement.executeQuery( query );
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
-				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
+				bean.setId( getIdFromResultSet(resultSet) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
 				beans.add(bean);
 			}
@@ -236,12 +239,12 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	}
 
 	@Override
-	public T getLookup(int id) throws Exception {
+	public T getLookup(ID id) throws Exception {
 		return get(id, false);
 	}
 
 	@Override
-	public T get(int id, boolean populateBean) throws Exception {
+	public T get(ID id, boolean populateBean) throws Exception {
 		T bean = ReflectUtil.getNewBean(clazz);
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
@@ -253,10 +256,10 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			}
 			String query = "select * from "+tableName+" where id=?";
 			statement = conn.prepareStatement( query );
-			statement.setInt(1, id);
+			setIdForStatement(statement, 1, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
-				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
+				bean.setId( getIdFromResultSet(resultSet) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
 				if (populateBean) {
 					populateBeanFromResultSet(bean, resultSet);
@@ -300,7 +303,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			resultSet = statement.executeQuery();
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
-				bean.setId( resultSet.getInt( BaseBean.FIELD_ID ) );
+				bean.setId( getIdFromResultSet(resultSet) );
 				bean.setDisplayValue( resultSet.getString( columnName ) );
 				if (populateBean) {
 					populateBeanFromResultSet(bean, resultSet);
@@ -426,7 +429,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			}
 		}
 		String query = "insert into "+tableName+" "+ getInsertIntoColumnsSQL(columns);
-		if (bean.getId()>0) {
+		if (bean.getId()!=null && StringUtils.isNotBlank(bean.getId().toString())) {
 			updateStmt = true;
 			query = "update "+tableName+" set "+ getUpdateColumnsSQL(columns)+" where id=?";
 		}
@@ -455,7 +458,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 					if (result == null) {
 						preparedStatement.setInt(++index, 0);
 					} else if (result instanceof BaseBean) {
-						preparedStatement.setInt(++index, ((BaseBean) result).getId());
+						setIdForStatement(preparedStatement, ++index, ((BaseBean<ID>) result).getId()); // TODO: Fix this
 					}
 				} else if (fieldMetaData.isCollection()) {
 					// Handle Collections
@@ -510,7 +513,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 			}
 		}
 		if (updateStmt) {
-			preparedStatement.setInt(++index, bean.getId());
+			setIdForStatement(preparedStatement, ++index, bean.getId());
 		}
 		return preparedStatementWrapper;
 	}
@@ -534,7 +537,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 						String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 						String query = "delete from " + m2mTable + " where " + column + "=?";
 						PreparedStatement preparedStatement = conn.prepareStatement(query);
-						preparedStatement.setInt(1, bean.getId());
+						setIdForStatement(preparedStatement, 1, bean.getId());
 						preparedStatement.addBatch();
 						query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
 						preparedStatement = conn.prepareStatement(query);
@@ -542,9 +545,9 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 							if (!(resultObject instanceof BaseBean)) {
 								throw new Exception("@M2MTable annotation requires the Collection to be BaseBean objects");
 							}
-							BaseBean resultBean = (BaseBean) resultObject;
-							preparedStatement.setInt(1, bean.getId());
-							preparedStatement.setInt(2, resultBean.getId());
+							BaseBean<ID> resultBean = (BaseBean<ID>) resultObject; // TODO: Fix this
+							setIdForStatement(preparedStatement, 1, bean.getId());
+							setIdForStatement(preparedStatement, 2, resultBean.getId());
 							preparedStatement.addBatch();
 						}
 						preparedStatement.executeBatch();
@@ -569,7 +572,7 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 				String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
 				String query = "select " + column + "," + rcolumn + " from " + m2mTable + " where " + column + "=?";
 				PreparedStatement preparedStatement = conn.prepareStatement(query);
-				preparedStatement.setInt(1, bean.getId());
+				setIdForStatement(preparedStatement, 1, bean.getId());
 				ResultSet rs = preparedStatement.executeQuery();
 				List<BaseBean> m2mList = new ArrayList<BaseBean>();
 				BaseDAO fieldDao = Statics.getDaoMap().get(fieldMetaData.getClassType());
@@ -701,5 +704,37 @@ public class BaseDAOImpl<T extends BaseBean> implements BaseDAO<T> {
 	@Override
 	public DataSource getDataSource() {
 		return dataSource;
+	}
+
+	@Override
+	public ID getIdFromResultSet(ResultSet resultSet) throws SQLException {
+		Object id = resultSet.getObject( BaseBean.FIELD_ID );
+		if (id!=null) {
+			if (String.class.isAssignableFrom(id.getClass())) {
+				return (ID) (String) id;
+			} else if (id.getClass().equals(int.class) || Integer.class.isAssignableFrom(id.getClass())) {
+				return (ID) (Integer) id;
+			} else if (java.sql.Date.class.isAssignableFrom(id.getClass())) {
+				return (ID) (java.sql.Date) id;
+			} else if (id.getClass().equals(long.class) || Long.class.isAssignableFrom(id.getClass())) {
+				return (ID) (Long) id;
+			}
+			throw new SQLException("Could not get ID from resultSet");
+		}
+		return null;
+	}
+
+	@Override
+	public void setIdForStatement(PreparedStatement statement, int index, ID id) throws SQLException {
+		if (String.class.isAssignableFrom(id.getClass())) {
+			statement.setString(index, (String)id);
+		} else if (id.getClass().equals(int.class) || Integer.class.isAssignableFrom(id.getClass())) {
+			statement.setInt(index, (Integer)id);
+		} else if (java.sql.Date.class.isAssignableFrom(id.getClass())) {
+			statement.setDate(index, (java.sql.Date)id);
+		} else if (id.getClass().equals(long.class) || Long.class.isAssignableFrom(id.getClass())) {
+			statement.setLong(index, (Long)id);
+		}
+		throw new SQLException("Could not set ID to statement. id="+id);
 	}
 }

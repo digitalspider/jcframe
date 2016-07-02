@@ -2,6 +2,7 @@ package au.com.javacloud.jcframe.dao;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -18,7 +19,7 @@ import au.com.javacloud.jcframe.util.FieldMetaData;
 /**
  * Created by david on 22/05/16.
  */
-public interface BaseDAO<T extends BaseBean> {
+public interface BaseDAO<ID,T extends BaseBean<ID>> {
 
     public static final int MAX_LIMIT=1000;
     public static final int DEFAULT_LIMIT = 50;
@@ -39,10 +40,13 @@ public interface BaseDAO<T extends BaseBean> {
     public int count(String field, String value) throws Exception;
     public List<T> getAll(int pageNo, boolean populateBean) throws Exception;
     public List<T> getLookupList() throws Exception;
-    public T getLookup(int id) throws Exception;
-    public T get(int id, boolean populateBean) throws Exception;
-    public void delete(int beanId) throws Exception;
+    public T getLookup(ID id) throws Exception;
+    public T get(ID id, boolean populateBean) throws Exception;
+    public void delete(ID id) throws Exception;
     public List<T> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception;
+
+    public ID getIdFromResultSet(ResultSet resultSet) throws SQLException;
+    public void setIdForStatement(PreparedStatement statement, int index, ID id) throws SQLException;
 
     public void init(Class<T> clazz) throws IOException;
     public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookupService) throws IOException;

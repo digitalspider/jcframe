@@ -12,7 +12,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 @DisplayValueColumn("name")
 @DisplayOrder("name,testBean,oBoolean")
-public class TestBean extends BaseBean {
+public class TestBean extends BaseBean<Integer> {
     private String name;
     private int pInt;
     private Integer oInt;

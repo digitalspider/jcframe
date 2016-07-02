@@ -23,7 +23,7 @@ import au.com.javacloud.jcframe.util.DisplayDate;
 @TableName("Page")
 @DisplayValueColumn("title")
 @DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")
-public class Page extends BaseBean {
+public class Page extends BaseBean<Integer> {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")

@@ -33,8 +33,8 @@ public class Statics {
     private static final String PROP_PACKAGE_NAME = "package.name";
 	private static final String PROP_SERVICELOADER_CLASS = "serviceloader.class";
 
-    private static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>>();
-    private static Map<Class<? extends BaseBean>,BaseController<? extends BaseBean, ?>> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController<? extends BaseBean,?>>();
+    private static Map<Class<? extends BaseBean>,BaseDAO<?,? extends BaseBean>> daoMap = new HashMap<Class<? extends BaseBean>,BaseDAO<?,? extends BaseBean>>();
+    private static Map<Class<? extends BaseBean>,BaseController<?,? extends BaseBean, ?>> controllerMap = new HashMap<Class<? extends BaseBean>,BaseController<?,? extends BaseBean,?>>();
 	private static Map<String,Class<? extends BaseBean>> classTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> secureClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
 	private static Map<String,Class<? extends BaseBean>> hiddenClassTypeMap = new HashMap<String,Class<? extends BaseBean>>();
@@ -79,7 +79,7 @@ public class Statics {
 						}
 						hiddenSecureClassTypeMap.put(classType.getSimpleName().toLowerCase(), classType);
 					}
-					BaseDAO<? extends BaseBean> dao = new BaseDAOImpl<>();
+					BaseDAO<?,? extends BaseBean> dao = new BaseDAOImpl<>();
 					dao.init(classType);
 					daoMap.put(classType, dao);
 					BaseController controller = new BaseControllerImpl();
@@ -163,25 +163,25 @@ public class Statics {
 		return null;
 	}
     
-    public static BaseController<? extends BaseBean,?> getControllerForBeanName(String beanName, HttpServletRequest request) {
+    public static BaseController<?,? extends BaseBean,?> getControllerForBeanName(String beanName, HttpServletRequest request) {
 	    if (!StringUtils.isBlank(beanName)) {
 	        Class<? extends BaseBean> classType = getClassTypeMap(request).get(beanName);
 			if (classType==null) {
 				classType = getHiddenClassTypeMap(request).get(beanName);
 			}
 	        if (classType!=null) {
-		        BaseController<? extends BaseBean,?> baseController = controllerMap.get(classType);
+		        BaseController<?,? extends BaseBean,?> baseController = controllerMap.get(classType);
 		        return baseController;
 			}
 	    }
 	    return null;
     }
 
-    public static Map<Class<? extends BaseBean>,BaseDAO<? extends BaseBean>> getDaoMap() {
+    public static Map<Class<? extends BaseBean>,BaseDAO<?,? extends BaseBean>> getDaoMap() {
     	return daoMap;
     }
     
-    public static Map<Class<? extends BaseBean>,BaseController<? extends BaseBean,?>> getControllerMap() {
+    public static Map<Class<? extends BaseBean>,BaseController<?,? extends BaseBean,?>> getControllerMap() {
     	return controllerMap;
     }
 

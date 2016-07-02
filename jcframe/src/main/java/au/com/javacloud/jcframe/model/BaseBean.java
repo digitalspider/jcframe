@@ -19,10 +19,10 @@ import au.com.javacloud.jcframe.util.ReflectUtil;
  * Created by david on 22/05/16.
  */
 
-public class BaseBean {
+public class BaseBean<ID> {
 
     @ExcludeDBWrite
-    protected int id;
+    protected ID id;
 	@ExcludeView
     @ExcludeDBWrite
     protected String displayValue = "";
@@ -74,14 +74,14 @@ public class BaseBean {
 
     @Override
     public int hashCode() {
-        return getId();
+        return (""+getId()).hashCode();
     }
 
-    public int getId() {
+    public ID getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(ID id) {
         this.id = id;
     }
 

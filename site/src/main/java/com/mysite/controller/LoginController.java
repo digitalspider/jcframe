@@ -25,7 +25,7 @@ import au.com.javacloud.jcframe.util.PathParts;
  * Created by david on 10/06/16.
  */
 @BeanClass(Login.class)
-public class LoginController extends BaseControllerImpl<Login,Principal> {
+public class LoginController extends BaseControllerImpl<Integer,Login,Principal> {
 
     private final static Logger LOG = Logger.getLogger(LoginController.class);
 

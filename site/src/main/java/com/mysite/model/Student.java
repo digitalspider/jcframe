@@ -9,7 +9,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 @DisplayValueColumn("firstName")
 @DisplayOrder("firstName,lastName,course,year")
-public class Student extends BaseBean {
+public class Student extends BaseBean<Integer> {
     private String firstName;
     private String lastName;
     private String course;

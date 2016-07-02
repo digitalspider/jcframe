@@ -19,7 +19,7 @@ import au.com.javacloud.jcframe.util.PathParts;
 /**
  * Created by david on 22/05/16.
  */
-public interface BaseController<T extends BaseBean, U> {
+public interface BaseController<ID,T extends BaseBean<ID>, U> {
 
     public static final String SUFFIX_BEANS = "s";
     public static final String SUFFIX_FIELDS = "fields";
@@ -86,8 +86,8 @@ public interface BaseController<T extends BaseBean, U> {
     public String getBeanName();
     public void setBeanName(String name);
 
-	public BaseDAO<T> getDao();
-	public void setDao(BaseDAO<T> dao);
+	public BaseDAO<ID,T> getDao();
+	public void setDao(BaseDAO<ID,T> dao);
 
     public AuthService<U> getAuthService();
     public void setAuthService(AuthService<U> auth);

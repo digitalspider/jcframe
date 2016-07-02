@@ -12,9 +12,9 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 public interface DAOLookup {
     public List<BaseBean> getLookupList(Class<? extends BaseBean> beanClass);
-    public void registerController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
-    public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<? extends BaseBean, ?> controller);
-    public <T extends BaseBean> void fireDAOUpdate(DAOActionEvent<T> event);
+    public void registerController(Class<? extends BaseBean> beanClass, BaseController<?,? extends BaseBean, ?> controller);
+    public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<?,? extends BaseBean, ?> controller);
+    public <ID,T extends BaseBean<ID>> void fireDAOUpdate(DAOActionEvent<ID,T> event);
     public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean);
-    public void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, int id);
+    public <ID> void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, ID id);
 }

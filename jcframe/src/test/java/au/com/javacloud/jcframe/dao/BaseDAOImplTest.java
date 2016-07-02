@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -21,13 +22,13 @@ import au.com.javacloud.jcframe.util.Statics;
 
 public class BaseDAOImplTest {
 
-	private BaseDAO<BaseBean> testClass;
+	private BaseDAO<Integer,BaseBean<Integer>> testClass;
 	private ServiceLoader serviceLoaderService;
 	private DataSource dataSource;
 	private DAOLookup daoLookupService;
 	
 	@TableName("try:this")
-	private class TestSchemaBean extends BaseBean {
+	private class TestSchemaBean extends BaseBean<Integer> {
 	}
 	
 	@Before
@@ -36,7 +37,7 @@ public class BaseDAOImplTest {
 		Statics.setServiceLoader(serviceLoaderService);
 		dataSource = BDDMockito.mock(DataSource.class);
 		daoLookupService = BDDMockito.mock(DAOLookup.class);
-		testClass = new BaseDAOImpl<BaseBean>();
+		testClass = new BaseDAOImpl<Integer,BaseBean<Integer>>();
 	}
 	
 	@Test
@@ -46,10 +47,11 @@ public class BaseDAOImplTest {
 	
 	@Test
 	public void testInit() throws IOException {
-		testClass.init(BaseBean.class);
-		
+		Class clazz = BaseBean.class;
+		testClass.init(clazz);
+
 		// test with params
-		testClass.init(BaseBean.class, dataSource, daoLookupService);
+		testClass.init(clazz, dataSource, daoLookupService);
 		assertEquals(dataSource,testClass.getDataSource());
 	}
 	
@@ -58,7 +60,7 @@ public class BaseDAOImplTest {
 		DataSource tryDataSource = BDDMockito.mock(DataSource.class);
 		BDDMockito.when(serviceLoaderService.getDataSource("try")).thenReturn(tryDataSource);
 		
-		BaseDAO<TestSchemaBean> dao = new BaseDAOImpl<>();
+		BaseDAO<Integer,TestSchemaBean> dao = new BaseDAOImpl<>();
 		dao.init(TestSchemaBean.class);
 		assertEquals("this",dao.getTableName());
 		assertEquals(tryDataSource,dao.getDataSource());
@@ -66,7 +68,8 @@ public class BaseDAOImplTest {
 	
 	@Test
 	public void testGetConnection() throws IOException, SQLException {
-		testClass.init(BaseBean.class, dataSource, daoLookupService);
+		Class clazz = BaseBean.class;
+		testClass.init(clazz, dataSource, daoLookupService);
 		assertEquals(dataSource,testClass.getDataSource());
 		
 		Connection conn = BDDMockito.mock(Connection.class);
@@ -91,16 +94,17 @@ public class BaseDAOImplTest {
 	@Test
 	public void testGetBeanClass() throws IOException {
 		// Test null
-		Class<BaseBean> classType = testClass.getBeanClass();
+		Class<BaseBean<Integer>> classType = testClass.getBeanClass();
 		assertEquals(null,classType);
 
 		// Test BaseBean
-		testClass.init(BaseBean.class);
+		Class clazz = BaseBean.class;
+		testClass.init(clazz);
 		classType = testClass.getBeanClass();
 		assertEquals(BaseBean.class,classType);
 		
 		// Test CustomBean
-		BaseDAO<TestSchemaBean> dao = new BaseDAOImpl<>();
+		BaseDAO<Integer,TestSchemaBean> dao = new BaseDAOImpl<>();
 		dao.init(TestSchemaBean.class);
 		Class<TestSchemaBean> classType2 = dao.getBeanClass();
 		assertEquals(TestSchemaBean.class,classType2);

@@ -18,7 +18,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
  */
 @DisplayValueColumn("email")
 @DisplayOrder("username,email,firstname,lastname,type,description")
-public class User extends BaseBean {
+public class User extends BaseBean<Integer> {
 	@ExcludeView(pages="edit,list")
 	@ExcludeDBWrite
 	@DisplayHeader("Created Date")

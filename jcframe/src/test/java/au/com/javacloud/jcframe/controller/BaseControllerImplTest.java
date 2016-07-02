@@ -9,7 +9,7 @@ import au.com.javacloud.jcframe.model.BaseBean;
 
 public class BaseControllerImplTest {
 
-	private BaseController<? extends BaseBean, ?> testClass;
+	private BaseController<?,? extends BaseBean, ?> testClass;
 	
 	@Before
 	public void setup() {

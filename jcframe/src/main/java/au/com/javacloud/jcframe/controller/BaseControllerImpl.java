@@ -50,11 +50,11 @@ import jdk.nashorn.internal.ir.BaseNode;
 /**
  * Created by david on 22/05/16.
  */
-public class BaseControllerImpl<T extends BaseBean, U> implements BaseController<T,U> {
+public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseController<ID,T,U> {
 
 	private final static Logger LOG = Logger.getLogger(BaseControllerImpl.class);
 
-	protected BaseDAO<T> dao;
+	protected BaseDAO<ID,T> dao;
 	protected Class<T> clazz;
     protected String beanName = "bean";
     protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
@@ -94,7 +94,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		this.clazz = clazz;
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
-		dao = (BaseDAO<T>) Statics.getDaoMap().get(clazz);
+		dao = (BaseDAO<ID,T>) Statics.getDaoMap().get(clazz);
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
 
@@ -442,7 +442,7 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 			idValue = pathParts.get(2);
 		}
 		if (idValue!=null) {
-			int id = Integer.parseInt(idValue);
+			ID id = (ID)idValue; // TODO: Fix this!
 			T bean = dao.get(id,true);
 			if (handleJson(bean)) {
 				return;
@@ -466,15 +466,15 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
     @Override
     public void update(String id) throws Exception {
 		T bean = populateBean(request, response);
-		bean.setId( Integer.parseInt(id) );
+		bean.setId( (ID)id ); // TODO: Fix this!
 		dao.saveOrUpdate(bean);
     }
 
     @Override
     public void delete()  throws Exception {
-		int id = pathParts.getInt(2);
-		if (id>0) {
-			dao.delete(id);
+		String id = pathParts.get(2);
+		if (StringUtils.isNotBlank(id)) {
+			dao.delete((ID)id);
 		}
     }
 
@@ -541,11 +541,11 @@ public class BaseControllerImpl<T extends BaseBean, U> implements BaseController
 		}
 	}
 
-	public BaseDAO<T> getDao() {
+	public BaseDAO<ID,T> getDao() {
 		return dao;
 	}
 
-	public void setDao(BaseDAO<T> dao) {
+	public void setDao(BaseDAO<ID,T> dao) {
 		this.dao = dao;
 	}
 
