@@ -237,6 +237,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		if (isBean && type.equals(FIELD_TYPE_TEXT)) {
 			type = FIELD_TYPE_BEAN;
 		}
+		String other = "";
 		M2MTable m2MTable = field.getAnnotation(M2MTable.class);
 		if (m2MTable !=null) {
 			type = FIELD_TYPE_BEANLIST;
@@ -244,8 +245,10 @@ public class ViewGeneratorImpl implements ViewGenerator {
 		LinkField linkField = field.getAnnotation(LinkField.class);
 		if (linkField!=null) {
 			type = FIELD_TYPE_TEXT;
+			if (viewType == ViewType.EDIT) {
+				other = "readonly=\"readonly\"";
+			}
 		}
-		String other = "";
 		String fieldHeader = getDisplayHeader(field);
 		if (fieldName.equals(BaseBean.FIELD_ID)) {
 			fieldHeader = classType.getSimpleName() + " ID";

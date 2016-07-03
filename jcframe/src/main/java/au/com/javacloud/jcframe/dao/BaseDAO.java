@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,6 @@ public interface BaseDAO<ID,T extends BaseBean<ID>> {
     public List<T> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception;
 
     public ID getIdFromResultSet(ResultSet resultSet) throws SQLException;
-    public void setIdForStatement(PreparedStatement statement, int index, ID id) throws SQLException;
 
     public void init(Class<T> clazz) throws IOException;
     public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookupService) throws IOException;

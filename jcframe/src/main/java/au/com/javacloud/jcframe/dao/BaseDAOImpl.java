@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -467,7 +468,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 					if (result == null) {
 						preparedStatement.setInt(++index, 0);
 					} else if (result instanceof BaseBean) {
-						setIdForStatement(preparedStatement, ++index, ((BaseBean<ID>) result).getId()); // TODO: Fix this
+						preparedStatement.setObject( ++index, ((BaseBean<ID>) result).getId());
 					}
 				} else if (fieldMetaData.isCollection()) {
 					// Handle Collections
@@ -516,19 +517,14 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 						} else if (classType.equals(Clob.class)) {
 							preparedStatement.setClob(++index, (Clob) result);
 						} else if (classType.equals(Object.class)) {
-							if (StringUtils.isNumeric(result.toString())) {
-								preparedStatement.setInt(++index, Integer.parseInt(result.toString()));
-							} else {
-								preparedStatement.setString(++index, result.toString());
-							}
+							preparedStatement.setObject(++index, result);
 						}
 					}
 				}
-				// TODO: else
 			}
 		}
 		if (updateStmt) {
-			setIdForStatement(preparedStatement, ++index, bean.getId());
+			preparedStatement.setObject(++index, bean.getId());
 		}
 		return preparedStatementWrapper;
 	}
@@ -560,8 +556,8 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 								throw new Exception("@M2MTable annotation requires the Collection to be BaseBean objects");
 							}
 							BaseBean<ID> resultBean = (BaseBean<ID>) resultObject; // TODO: Fix this
-							setIdForStatement(preparedStatement, 1, bean.getId());
-							setIdForStatement(preparedStatement, 2, resultBean.getId());
+							preparedStatement.setObject(1, bean.getId());
+							preparedStatement.setObject(2, resultBean.getId());
 							preparedStatement.addBatch();
 						}
 						preparedStatement.executeBatch();
@@ -723,45 +719,19 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	public ID getIdFromResultSet(ResultSet resultSet) throws SQLException {
 		Object id = resultSet.getObject( BaseBean.FIELD_ID );
 		if (id!=null) {
-			if (String.class.isAssignableFrom(id.getClass())) {
-				return (ID) (String) id;
-			} else if (id.getClass().equals(int.class) || Integer.class.isAssignableFrom(id.getClass())) {
-				return (ID) (Integer) id;
-			} else if (java.sql.Date.class.isAssignableFrom(id.getClass())) {
-				return (ID) (java.sql.Date) id;
-			} else if (id.getClass().equals(long.class) || Long.class.isAssignableFrom(id.getClass())) {
-				return (ID) (Long) id;
+			DateFormat dateFormat = Statics.getServiceLoader().getDatabaseDateFormat();
+			try {
+				return ReflectUtil.getValueObject(id.getClass(), id, dateFormat);
+			} catch (ParseException e) {
+				throw new SQLException(e);
 			}
-			throw new SQLException("Could not get ID from resultSet");
 		}
 		return null;
 	}
 
-	public PreparedStatement getStatementWithId(Connection conn, String query, ID id) throws SQLException {
+	protected PreparedStatement getStatementWithId(Connection conn, String query, ID id) throws SQLException {
 		PreparedStatement statement = conn.prepareStatement(query);
-		setIdForStatement(statement,1,id);
+		statement.setObject(1, id);
 		return statement;
-	}
-
-	@Override
-	public void setIdForStatement(PreparedStatement statement, int index, ID id) throws SQLException {
-		if (String.class.isAssignableFrom(id.getClass())) {
-			statement.setString(index, (String) id);
-		} else if (id.getClass().equals(int.class) || Integer.class.isAssignableFrom(id.getClass())) {
-			statement.setInt(index, (Integer) id);
-		} else if (java.sql.Date.class.isAssignableFrom(id.getClass())) {
-			statement.setDate(index, (java.sql.Date) id);
-		} else if (id.getClass().equals(long.class) || Long.class.isAssignableFrom(id.getClass())) {
-			statement.setLong(index, (Long) id);
-		} else if (id!=null) {
-			String result = id.toString();
-			if (StringUtils.isNumeric(result)) {
-				statement.setInt(index, Integer.parseInt(result));
-			} else {
-				statement.setString(index, result);
-			}
-		} else {
-			throw new SQLException("Could not set ID to statement. id=" + id);
-		}
 	}
 }

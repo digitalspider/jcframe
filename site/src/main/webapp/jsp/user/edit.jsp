@@ -39,6 +39,7 @@ function removeLookup(selectName) {
     <% } else { %>
         <strong><a href="<%=request.getContextPath()%>/logout.jsp">Logout</a></strong>
     <% } %>&nbsp;|&nbsp;
+    <a href="${beanUrl}/list">List</a>&nbsp;|&nbsp;
 	<form action="${beanUrl}" method="post">
 		<table border="1">
 <tr>
@@ -118,7 +119,7 @@ function removeLookup(selectName) {
   <label for="pages">Pages</label>
 </td>
 <td>
-  <input type="text" id="pages" name="pages" value='<c:out value="${bean.pages}" />' placeholder="Pages"  />
+  <input type="text" id="pages" name="pages" value='<c:out value="${bean.pages}" />' placeholder="Pages" readonly="readonly" />
 </td>
 </tr>
 <tr>
@@ -190,7 +191,14 @@ function removeLookup(selectName) {
 		</table>
         <div>
 			<input class="button" type="submit" value="Submit">
-			<input class="button" type="button" onclick="window.location='${beanUrl}/show/<c:out value="${bean.id}" />';return false;" value="Cancel" />
+			<c:choose>
+                <c:when test="${bean.id==null}">
+                    <input class="button" type="button" onclick="window.location='${beanUrl}/list';return false;" value="Cancel" />
+                </c:when>
+                <c:otherwise>
+                    <input class="button" type="button" onclick="window.location='${beanUrl}/show/<c:out value="${bean.id}" />';return false;" value="Cancel" />
+                </c:otherwise>
+            </c:choose>
 		</div>
 	</form>
 </body>

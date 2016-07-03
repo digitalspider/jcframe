@@ -10,6 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -352,33 +353,43 @@ public class ReflectUtil {
 
 	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value, DateFormat dateFormat) throws Exception {
 		if (!StringUtils.isBlank(value)) {
+			method.invoke(bean, getValueObject(classType, value, dateFormat));
+		}
+	}
+
+	public static <T extends Object> T getValueObject(Class classType, Object object, DateFormat dateFormat) throws ParseException {
+		if (object==null) {
+			return null;
+		} else {
+			String value = object.toString();
 			if (classType.equals(String.class)) {
-				method.invoke(bean, value);
+				return (T)value;
 			} else if (classType.equals(int.class) || classType.equals(Integer.class)) {
-				method.invoke(bean, Integer.parseInt(value));
+				return (T)(Integer)Integer.parseInt(value);
 			} else if (classType.equals(boolean.class) || classType.equals(Boolean.class)) {
-				method.invoke(bean, Boolean.parseBoolean(value));
+				return (T)(Boolean)Boolean.parseBoolean(value);
 			} else if (classType.equals(Date.class)) {
-				method.invoke(bean, dateFormat.parse(value));
+				return (T) dateFormat.parse(value);
 			} else if (classType.equals(long.class) || classType.equals(Long.class)) {
-				method.invoke(bean, Long.parseLong(value));
+				return (T)(Long)Long.parseLong(value);
 			} else if (classType.equals(short.class) || classType.equals(Short.class)) {
-				method.invoke(bean, Short.parseShort(value));
+				return (T)(Short)Short.parseShort(value);
 			} else if (classType.equals(float.class) || classType.equals(Float.class)) {
-				method.invoke(bean, Float.parseFloat(value));
+				return (T)(Float)Float.parseFloat(value);
 			} else if (classType.equals(double.class) || classType.equals(Double.class)) {
-				method.invoke(bean, Double.parseDouble(value));
+				return (T)(Double)Double.parseDouble(value);
 			} else if (classType.equals(BigDecimal.class)) {
-				method.invoke(bean, new BigDecimal(value));
+				return (T)new BigDecimal(value);
 			} else if (classType.equals(File.class)) {
 				if (value.lastIndexOf("\\") >= 0) {
 					value = value.substring(value.lastIndexOf("\\"));
 				} else {
 					value = value.substring(value.lastIndexOf("\\") + 1);
 				}
-				method.invoke(bean, new File(value));
+				return (T)new File(value);
 			}
 		}
+		return null;
 	}
 
 	public static List<Class<? extends Annotation>> asList(Class<? extends Annotation> singleClass) {
