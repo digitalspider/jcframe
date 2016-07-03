@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,6 +80,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 	private ServletConfig servletConfig;
 	private ServletContext servletContext;
 	private DAOLookup daoLookupService;
+	protected DateFormat dateFormat;
 
 	public String toString() {
 		return getClass().getSimpleName()+"["+clazz.getSimpleName().toLowerCase()+"]";
@@ -95,6 +97,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
 		dao = (BaseDAO<ID,T>) Statics.getDaoMap().get(clazz);
+		dateFormat = Statics.getServiceLoader().getDatabaseDateFormat();
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
 
@@ -352,15 +355,15 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 			String fieldName = field.getName();
 			try {
 				String value = request.getParameter(fieldName);
-				LOG.info("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
+				LOG.info("fieldName="+fieldName+" classType=" + classType.getSimpleName() +" method=" + method.getName() +  " value=" + value);
 
 				if (fieldMetaData.isCollection()) {
 					// Handle Collections
 					String[] values = request.getParameterValues(fieldName);
 					if (values!=null) {
-						LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + Arrays.asList(values));
+						LOG.info("fieldName="+fieldName+" classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + Arrays.asList(values));
 					} else {
-						LOG.info("classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + values);
+						LOG.info("fieldName="+fieldName+" classType=" + classType.getSimpleName() + " method=" + method.getName() + " values=" + values);
 					}
 					ReflectUtil.invokeSetterMethodForCollection(bean, method, classType, fieldMetaData.getCollectionClass(), values);
 				} else if (fieldMetaData.isBean()) {
@@ -442,7 +445,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 			idValue = pathParts.get(2);
 		}
 		if (idValue!=null) {
-			ID id = (ID)idValue; // TODO: Fix this!
+			ID id = (ID)ReflectUtil.getValueObject(idValue,dateFormat);
 			T bean = dao.get(id,true);
 			if (handleJson(bean)) {
 				return;
@@ -466,7 +469,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
     @Override
     public void update(String id) throws Exception {
 		T bean = populateBean(request, response);
-		bean.setId( (ID)id ); // TODO: Fix this!
+		bean.setId( (ID)ReflectUtil.getValueObject(id,dateFormat) );
 		dao.saveOrUpdate(bean);
     }
 
@@ -474,7 +477,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
     public void delete()  throws Exception {
 		String id = pathParts.get(2);
 		if (StringUtils.isNotBlank(id)) {
-			dao.delete((ID)id);
+			dao.delete((ID)ReflectUtil.getValueObject(id,dateFormat));
 		}
     }
 

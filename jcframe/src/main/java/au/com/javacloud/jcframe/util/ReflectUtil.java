@@ -353,15 +353,16 @@ public class ReflectUtil {
 
 	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value, DateFormat dateFormat) throws Exception {
 		if (!StringUtils.isBlank(value)) {
-			method.invoke(bean, getValueObject(classType, value, dateFormat));
+			method.invoke(bean, getValueObject(value, dateFormat));
 		}
 	}
 
-	public static <T extends Object> T getValueObject(Class classType, Object object, DateFormat dateFormat) throws ParseException {
+	public static <T extends Object> T getValueObject(Object object, DateFormat dateFormat) throws ParseException {
 		if (object==null) {
 			return null;
 		} else {
 			String value = object.toString();
+			Class classType = object.getClass();
 			if (classType.equals(String.class)) {
 				return (T)value;
 			} else if (classType.equals(int.class) || classType.equals(Integer.class)) {

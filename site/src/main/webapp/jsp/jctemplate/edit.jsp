@@ -18,6 +18,11 @@ function addLookup(selectName) {
             selectActual.appendChild(option);
         }
     }
+    // Select all remaining options
+    for (var i=selectActual.options.length; --i>=0; ) {
+       var option = selectActual.options[i];
+       option.selected=true;
+    }
 }
 function removeLookup(selectName) {
     var selectActual = document.getElementById(selectName);
@@ -26,7 +31,13 @@ function removeLookup(selectName) {
         var option = selectActual.options[i];
         if (option.selected) {
             selectLookup.appendChild(option);
+            option.selected=false;
         }
+    }
+    // Select all remaining options
+    for (var i=selectActual.options.length; --i>=0; ) {
+       var option = selectActual.options[i];
+       option.selected=true;
     }
 }
 </script>

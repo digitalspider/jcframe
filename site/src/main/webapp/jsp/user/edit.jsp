@@ -18,6 +18,11 @@ function addLookup(selectName) {
             selectActual.appendChild(option);
         }
     }
+    // Select all remaining options
+    for (var i=selectActual.options.length; --i>=0; ) {
+       var option = selectActual.options[i];
+       option.selected=true;
+    }
 }
 function removeLookup(selectName) {
     var selectActual = document.getElementById(selectName);
@@ -26,7 +31,13 @@ function removeLookup(selectName) {
         var option = selectActual.options[i];
         if (option.selected) {
             selectLookup.appendChild(option);
+            option.selected=false;
         }
+    }
+    // Select all remaining options
+    for (var i=selectActual.options.length; --i>=0; ) {
+       var option = selectActual.options[i];
+       option.selected=true;
     }
 }
 </script>
@@ -139,7 +150,7 @@ function removeLookup(selectName) {
   <!--email_off-->
   <select id="roles" name="roles" style="float: left" size="10" multiple="true">
     <c:forEach items='${bean.roles}' var="lookupBean">
-      <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
+      <option value='<c:out value="${lookupBean.id}"/>' selected="true"><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">

@@ -539,29 +539,31 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 				if (fieldMetaData.isCollection()) {
 					Method method = fieldMetaData.getGetMethod();
 					Object result = method.invoke(bean);
+
+					String m2mTable = field.getAnnotation(M2MTable.class).table();
+					String column = field.getAnnotation(M2MTable.class).column();
+					String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
+					String deleteSQL = "delete from " + m2mTable + " where " + column + "=?";
+					PreparedStatement deleteStatement = getStatementWithId(conn, deleteSQL, bean.getId());
 					if (result!=null) {
 						Class<? extends Collection<?>> collectionClass = fieldMetaData.getCollectionClass();
 						Collection<?> resultList = collectionClass.cast(result);
-
-						String m2mTable = field.getAnnotation(M2MTable.class).table();
-						String column = field.getAnnotation(M2MTable.class).column();
-						String rcolumn = field.getAnnotation(M2MTable.class).rcolumn();
-						String query = "delete from " + m2mTable + " where " + column + "=?";
-						PreparedStatement preparedStatement = getStatementWithId(conn, query, bean.getId());
-						preparedStatement.addBatch();
-						query = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
-						preparedStatement = conn.prepareStatement(query);
+						String insertSQL = "insert into " + m2mTable + " (" + column + "," + rcolumn + ") VALUES (?,?)";
+						PreparedStatement insertStatement = conn.prepareStatement(insertSQL);
 						for (Object resultObject : resultList) {
 							if (!(resultObject instanceof BaseBean)) {
 								throw new Exception("@M2MTable annotation requires the Collection to be BaseBean objects");
 							}
-							BaseBean<ID> resultBean = (BaseBean<ID>) resultObject; // TODO: Fix this
-							preparedStatement.setObject(1, bean.getId());
-							preparedStatement.setObject(2, resultBean.getId());
-							preparedStatement.addBatch();
+							BaseBean resultBean = (BaseBean) resultObject;
+							insertStatement.setObject(1, bean.getId());
+							insertStatement.setObject(2, ReflectUtil.getValueObject(resultBean.getId(),dateFormat));
+							insertStatement.addBatch();
 						}
-						preparedStatement.executeBatch();
-					}
+						deleteStatement.executeUpdate();
+						insertStatement.executeBatch();
+					} else {
+						deleteStatement.executeUpdate();
+						}
 				} else {
 					throw new Exception("@M2MTable annotation has to be on a 'Collection' field, e.g. List, Set, etc");
 				}
@@ -719,9 +721,8 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	public ID getIdFromResultSet(ResultSet resultSet) throws SQLException {
 		Object id = resultSet.getObject( BaseBean.FIELD_ID );
 		if (id!=null) {
-			DateFormat dateFormat = Statics.getServiceLoader().getDatabaseDateFormat();
 			try {
-				return ReflectUtil.getValueObject(id.getClass(), id, dateFormat);
+				return ReflectUtil.getValueObject(id, dateFormat);
 			} catch (ParseException e) {
 				throw new SQLException(e);
 			}

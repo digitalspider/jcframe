@@ -7,7 +7,7 @@
   <!--email_off-->
   <select id="${fieldName}" name="${fieldName}" style="float: left" size="10" multiple="true">
     <c:forEach items='${bean.${fieldName}}' var="lookupBean">
-      <option value='<c:out value="${lookupBean.id}"/>'><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
+      <option value='<c:out value="${lookupBean.id}"/>' selected="true"><c:out value="${lookupBean.displayValue}"/> [<c:out value="${lookupBean.id}"/>]</option>
     </c:forEach>
   </select>
   <div id="selectors" style="float: left">
