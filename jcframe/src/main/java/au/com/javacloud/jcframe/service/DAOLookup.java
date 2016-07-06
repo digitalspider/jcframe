@@ -1,7 +1,6 @@
 package au.com.javacloud.jcframe.service;
 
 import java.util.List;
-import java.util.Map;
 
 import au.com.javacloud.jcframe.controller.BaseController;
 import au.com.javacloud.jcframe.dao.DAOActionEvent;
@@ -14,7 +13,7 @@ public interface DAOLookup {
     public List<BaseBean> getLookupList(Class<? extends BaseBean> beanClass);
     public void registerController(Class<? extends BaseBean> beanClass, BaseController<?,? extends BaseBean, ?> controller);
     public void unregisterController(Class<? extends BaseBean> beanClass, BaseController<?,? extends BaseBean, ?> controller);
-    public <ID,T extends BaseBean<ID>> void fireDAOUpdate(DAOActionEvent<ID,T> event);
+    public <ID, Bean extends BaseBean<ID>> void fireDAOUpdate(DAOActionEvent<ID, Bean> event);
     public void addToLookupMap(Class<? extends BaseBean> lookupClass, BaseBean bean);
     public <ID> void deleteFromLookupMap(Class<? extends BaseBean> lookupClass, ID id);
 }

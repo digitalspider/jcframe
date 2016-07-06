@@ -16,9 +16,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.sql.DataSource;
@@ -29,6 +27,7 @@ import org.apache.log4j.Logger;
 import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
 import au.com.javacloud.jcframe.annotation.ExcludeDBRead;
 import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
+import au.com.javacloud.jcframe.annotation.IdColumnName;
 import au.com.javacloud.jcframe.annotation.LinkField;
 import au.com.javacloud.jcframe.annotation.M2MTable;
 import au.com.javacloud.jcframe.annotation.TableName;
@@ -41,13 +40,13 @@ import au.com.javacloud.jcframe.util.Statics;
 /**
  * Created by david on 22/05/16.
  */
-public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
+public class BaseDAOImpl<ID, Bean extends BaseBean<ID>> implements BaseDAO<ID, Bean> {
 
 	private static final Logger LOG = Logger.getLogger(BaseDAOImpl.class);
 
 	protected DataSource dataSource;
 	protected String tableName;
-	protected Class<T> clazz;
+	protected Class<Bean> clazz;
 	protected String orderBy;
 	protected boolean orderAsc = true;
 	protected int limit = DEFAULT_LIMIT;
@@ -56,12 +55,12 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	private DAOLookup daoLookup;
 
 	@Override
-	public void init(Class<T> clazz) throws IOException {
+	public void init(Class<Bean> clazz) throws IOException {
 		init(clazz, Statics.getServiceLoader().getDataSource(), Statics.getServiceLoader().getDAOLookupService());
 	}
 
 	@Override
-	public void init(Class<T> clazz, DataSource dataSource, DAOLookup daoLookup) throws IOException {
+	public void init(Class<Bean> clazz, DataSource dataSource, DAOLookup daoLookup) throws IOException {
 		this.clazz = clazz;
 		this.tableName = getTableName();
 		if (tableName.contains(":") && tableName.split(":").length==2) {
@@ -97,7 +96,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public void saveOrUpdate( T bean ) throws Exception {
+	public void saveOrUpdate( Bean bean ) throws Exception {
 		PreparedStatementWrapper statement = null;
 		Connection conn = getConnection();
 		try {
@@ -117,11 +116,19 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 				} else {
 					throw new SQLException("Creating bean failed, no ID affected. bean="+bean);
 				}
-				daoLookup.fireDAOUpdate(new DAOActionEvent<ID,T>(bean.getId(), clazz, bean, DAOEventType.INSERT));
+				daoLookup.fireDAOUpdate(new DAOActionEvent<ID, Bean>(bean.getId(), clazz, bean, DAOEventType.INSERT));
 			}
 			executeM2MUpdate(conn, bean);
 		} finally {
 			if (statement!=null) statement.getPreparedStatement().close();
+		}
+	}
+
+	@Override
+	public void saveOrUpdate( List<Bean> beanList ) throws Exception {
+		// TODO: Make transactional
+		for (Bean bean : beanList) {
+			saveOrUpdate(bean);
 		}
 	}
 
@@ -145,14 +152,21 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public int count(String field, String value) throws SQLException {
+	public int count(String field, String value, boolean exact) throws SQLException {
 		String query = "select count(1) from "+tableName+" where "+field+" like ?";
+		if (exact) {
+			query = "select count(1) from "+tableName+" where "+field+" = ?";
+		}
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
 			statement = conn.prepareStatement(query);
-			statement.setString(1, "%"+value+"%");
+			if (exact) {
+				statement.setString(1, value);
+			} else {
+				statement.setString(1, "%" + value + "%");
+			}
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				return resultSet.getInt(1);
@@ -166,26 +180,42 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 
 	@Override
 	public void delete( ID id ) throws SQLException {
-		String query = "delete from "+tableName+" where id=?";
-		Connection conn = getConnection();
-		PreparedStatement statement = getStatementWithId(conn, query, id);
-		statement.executeUpdate();
-		statement.close();
-		daoLookup.fireDAOUpdate(new DAOActionEvent<ID,T>(id, clazz, null, DAOEventType.DELETE));
+		if (id!=null && StringUtils.isNotBlank(id.toString())) {
+			String idColumnName = ReflectUtil.getAnnotationValue(clazz, IdColumnName.class, BaseBean.FIELD_ID);
+			String query = "delete from " + tableName + " where " + idColumnName + "=?";
+			Connection conn = getConnection();
+			PreparedStatement statement = getStatementWithId(conn, query, id);
+			statement.executeUpdate();
+			statement.close();
+			daoLookup.fireDAOUpdate(new DAOActionEvent<ID, Bean>(id, clazz, null, DAOEventType.DELETE));
+		}
 	}
 
 	@Override
-	public List<T> getAll(int pageNo, boolean populateBean) throws Exception {
-		List<T> beans = new ArrayList<T>();
+	public void delete( List<ID> idList ) throws SQLException {
+		if (idList==null || idList.isEmpty()) {
+			return;
+		}
+		String idColumnName = ReflectUtil.getAnnotationValue(clazz,IdColumnName.class, BaseBean.FIELD_ID);
+		String query = "delete from "+tableName+" where "+idColumnName+" in "+getInClause(idList);
+		Connection conn = getConnection();
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.executeUpdate();
+		statement.close();
+		for (ID id : idList) {
+			daoLookup.fireDAOUpdate(new DAOActionEvent<ID, Bean>(id, clazz, null, DAOEventType.DELETE));
+		}
+	}
+
+	@Override
+	public List<Bean> getAll(int pageNo, boolean populateBean) throws Exception {
+		List<Bean> beans = new ArrayList<Bean>();
 		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			T bean = ReflectUtil.getNewBean(clazz);
-			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
-				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
-			}
+			Bean bean = ReflectUtil.getNewBean(clazz);
+			String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
 			if (pageNo<1) { pageNo=1; }
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			statement = conn.createStatement();
@@ -197,7 +227,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 			resultSet = statement.executeQuery( query );
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
-				bean.setDisplayValue( resultSet.getString( columnName ) );
+				bean.setDisplayValue( resultSet.getString( dvColumnName ) );
 				if (populateBean) {
 					populateBeanFromResultSet(bean, resultSet);
 				}
@@ -211,24 +241,22 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public List<T> getLookupList() throws SQLException, IOException {
-		List<T> beans = new ArrayList<T>();
+	public List<Bean> getLookupList() throws SQLException, IOException {
+		List<Bean> beans = new ArrayList<Bean>();
 		Connection conn = getConnection();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			T bean = ReflectUtil.getNewBean(clazz);
-			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
-				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
-			}
+			Bean bean = ReflectUtil.getNewBean(clazz);
+			String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
+			String idColumnName = ReflectUtil.getAnnotationValue(clazz,IdColumnName.class, BaseBean.FIELD_ID);
 			statement = conn.createStatement();
-			String query = "select id,"+columnName+" from "+tableName+" order by "+columnName+" limit "+DEFAULT_DAOLOOKUP_LIMIT;
+			String query = "select "+idColumnName+","+dvColumnName+" from "+tableName+" order by "+dvColumnName+" limit "+DEFAULT_DAOLOOKUP_LIMIT;
 			resultSet = statement.executeQuery( query );
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
-				bean.setId( getIdFromResultSet(resultSet) );
-				bean.setDisplayValue( resultSet.getString( columnName ) );
+				bean.setId( getIdFromResultSet(resultSet, idColumnName) );
+				bean.setDisplayValue( resultSet.getString( dvColumnName ) );
 				beans.add(bean);
 			}
 		} finally {
@@ -239,27 +267,54 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public T getLookup(ID id) throws Exception {
-		return get(id, false);
+	public List<Bean> get(List<ID> idList, boolean populateBean) throws Exception {
+		List<Bean> result = new ArrayList<Bean>();
+		if (idList==null || idList.isEmpty()) {
+			return result;
+		}
+		Connection conn = getConnection();
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+
+		Bean bean = ReflectUtil.getNewBean(clazz);
+		String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
+		String idColumnName = ReflectUtil.getAnnotationValue(clazz,IdColumnName.class, BaseBean.FIELD_ID);
+		try {
+			for (ID id : idList) {
+				String query = "select * from " + tableName + " where "+idColumnName+" in " + getInClause(idList);
+				statement = getStatementWithId(conn, query, id);
+				resultSet = statement.executeQuery();
+				while (resultSet.next()) {
+					bean.setId(getIdFromResultSet(resultSet, idColumnName));
+					bean.setDisplayValue(resultSet.getString(dvColumnName));
+					if (populateBean) {
+						populateBeanFromResultSet(bean, resultSet);
+					}
+					result.add(bean);
+				}
+			}
+		} finally {
+			if (resultSet != null) resultSet.close();
+			if (statement != null) statement.close();
+		}
+		return result;
 	}
 
 	@Override
-	public T get(ID id, boolean populateBean) throws Exception {
-		T bean = ReflectUtil.getNewBean(clazz);
+	public Bean get(ID id, boolean populateBean) throws Exception {
+		Bean bean = ReflectUtil.getNewBean(clazz);
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
-				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
-			}
-			String query = "select * from "+tableName+" where id=?";
+			String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
+			String idColumnName = ReflectUtil.getAnnotationValue(clazz,IdColumnName.class, BaseBean.FIELD_ID);
+			String query = "select * from "+tableName+" where "+idColumnName+"=?";
 			statement = getStatementWithId(conn, query, id);
 			resultSet = statement.executeQuery();
 			if( resultSet.next() ) {
-				bean.setId( getIdFromResultSet(resultSet) );
-				bean.setDisplayValue( resultSet.getString( columnName ) );
+				bean.setId( getIdFromResultSet(resultSet, idColumnName) );
+				bean.setDisplayValue( resultSet.getString( dvColumnName ) );
 				if (populateBean) {
 					populateBeanFromResultSet(bean, resultSet);
 				}
@@ -272,17 +327,15 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public List<T> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception {
-		List<T> results = new ArrayList<T>();
+	public List<Bean> find(String field, String value, int pageNo, boolean exact, boolean populateBean) throws Exception {
+		List<Bean> results = new ArrayList<Bean>();
 		Connection conn = getConnection();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			T bean = ReflectUtil.getNewBean(clazz);
-			String columnName = BaseBean.FIELD_ID;
-			if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
-				columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
-			}
+			Bean bean = ReflectUtil.getNewBean(clazz);
+			String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
+			String idColumnName = ReflectUtil.getAnnotationValue(clazz,IdColumnName.class, BaseBean.FIELD_ID);
 			if (pageNo<1) { pageNo=1; }
 			if (pageNo>MAX_LIMIT) { pageNo=MAX_LIMIT; }
 			String query = "select * from "+tableName+" where "+field+" like ?";
@@ -302,8 +355,8 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 			resultSet = statement.executeQuery();
 			while( resultSet.next() ) {
 				bean = ReflectUtil.getNewBean(clazz);
-				bean.setId( getIdFromResultSet(resultSet) );
-				bean.setDisplayValue( resultSet.getString( columnName ) );
+				bean.setId( getIdFromResultSet(resultSet, idColumnName) );
+				bean.setDisplayValue( resultSet.getString( dvColumnName ) );
 				if (populateBean) {
 					populateBeanFromResultSet(bean, resultSet);
 				}
@@ -321,17 +374,11 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 		if (tableName!=null) {
 			return tableName;
 		}
-		if (clazz.isAnnotationPresent(TableName.class)) {
-			tableName = clazz.getAnnotation(TableName.class).value();
-		}
-		if (StringUtils.isEmpty(tableName)) {
-			tableName = clazz.getSimpleName().toLowerCase();
-		}
-		return tableName;
+		return ReflectUtil.getAnnotationValue(clazz,TableName.class,clazz.getSimpleName());
 	}
 	
 	@Override
-	public Class<T> getBeanClass() {
+	public Class<Bean> getBeanClass() {
 		return clazz;
 	}
 
@@ -342,12 +389,9 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void populateBeanFromResultSet(T bean, ResultSet rs) throws Exception {
+	public void populateBeanFromResultSet(Bean bean, ResultSet rs) throws Exception {
 		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBRead.class);
-		String columnName = BaseBean.FIELD_ID;
-		if (bean.getClass().isAnnotationPresent(DisplayValueColumn.class)) {
-			columnName = bean.getClass().getAnnotation(DisplayValueColumn.class).value();
-		}
+		String dvColumnName = ReflectUtil.getAnnotationValue(clazz,DisplayValueColumn.class, BaseBean.FIELD_ID);
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
 			Field field = fieldMetaData.getField();
 			String fieldName = field.getName();
@@ -362,7 +406,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 			}
 			if (!field.isAnnotationPresent(LinkField.class) && !field.isAnnotationPresent(M2MTable.class)) {
 				// populate the display value
-				if (fieldName.equals(columnName)) {
+				if (fieldName.equals(dvColumnName)) {
 					bean.setDisplayValue(rs.getString(fieldName));
 				}
 
@@ -427,7 +471,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public PreparedStatementWrapper prepareStatementForSave(Connection conn, T bean) throws Exception {
+	public PreparedStatementWrapper prepareStatementForSave(Connection conn, Bean bean) throws Exception {
 		boolean updateStmt = false;
 		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
 
@@ -530,7 +574,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public void executeM2MUpdate(Connection conn, T bean) throws Exception {
+	public void executeM2MUpdate(Connection conn, Bean bean) throws Exception {
 		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
 
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
@@ -572,7 +616,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public void executeM2MPopulate(T bean, FieldMetaData fieldMetaData) throws Exception {
+	public void executeM2MPopulate(Bean bean, FieldMetaData fieldMetaData) throws Exception {
 
 		Field field = fieldMetaData.getField();
 		if (field.isAnnotationPresent(M2MTable.class)) {
@@ -604,7 +648,7 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public void executeLinkFieldPopulate(T bean, FieldMetaData fieldMetaData) throws Exception {
+	public void executeLinkFieldPopulate(Bean bean, FieldMetaData fieldMetaData) throws Exception {
 
 		Field field = fieldMetaData.getField();
 		if (field.isAnnotationPresent(LinkField.class)) {
@@ -718,8 +762,8 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 	}
 
 	@Override
-	public ID getIdFromResultSet(ResultSet resultSet) throws SQLException {
-		Object id = resultSet.getObject( BaseBean.FIELD_ID );
+	public ID getIdFromResultSet(ResultSet resultSet, String idColumnName) throws SQLException {
+		Object id = resultSet.getObject( idColumnName );
 		if (id!=null) {
 			try {
 				return ReflectUtil.getValueObject(id, dateFormat);
@@ -728,6 +772,24 @@ public class BaseDAOImpl<ID,T extends BaseBean<ID>> implements BaseDAO<ID,T> {
 			}
 		}
 		return null;
+	}
+
+	public String getInClause(List<ID> idList) {
+		StringBuffer buf = new StringBuffer("(");
+		for (ID id : idList) {
+			if (id!=null) {
+				if (buf.length()>1) {
+					buf.append(",");
+				}
+				if (String.class.isAssignableFrom(id.getClass())) {
+					buf.append("'" + id + "'");
+				} else {
+					buf.append(id);
+				}
+			}
+		}
+		buf.append(")");
+		return buf.toString();
 	}
 
 	protected PreparedStatement getStatementWithId(Connection conn, String query, ID id) throws SQLException {

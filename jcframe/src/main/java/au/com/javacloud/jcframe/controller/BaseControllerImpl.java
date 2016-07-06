@@ -46,17 +46,16 @@ import au.com.javacloud.jcframe.util.HttpUtil;
 import au.com.javacloud.jcframe.util.PathParts;
 import au.com.javacloud.jcframe.util.ReflectUtil;
 import au.com.javacloud.jcframe.util.Statics;
-import jdk.nashorn.internal.ir.BaseNode;
 
 /**
  * Created by david on 22/05/16.
  */
-public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseController<ID,T,U> {
+public class BaseControllerImpl<ID, Bean extends BaseBean<ID>, U> implements BaseController<ID, Bean,U> {
 
 	private final static Logger LOG = Logger.getLogger(BaseControllerImpl.class);
 
-	protected BaseDAO<ID,T> dao;
-	protected Class<T> clazz;
+	protected BaseDAO<ID, Bean> dao;
+	protected Class<Bean> clazz;
     protected String beanName = "bean";
     protected Map<String,List<BaseBean>> lookupMap = new HashMap<String, List<BaseBean>>();
 	protected Map<String,Class<? extends BaseBean>> lookupFields = new HashMap<String, Class<? extends BaseBean>>();
@@ -87,16 +86,16 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 	}
 
 	@SuppressWarnings("unchecked")
-    public void init(Class<T> clazz) {
+    public void init(Class<Bean> clazz) {
 		init(clazz, Statics.getServiceLoader().getAuthService(), Statics.getServiceLoader().getDAOLookupService());
 	}
 
 	@SuppressWarnings("unchecked")
-    public void init(Class<T> clazz, AuthService<U> authService, DAOLookup daoLookupService) {
+    public void init(Class<Bean> clazz, AuthService<U> authService, DAOLookup daoLookupService) {
 		this.clazz = clazz;
 		this.authService = authService;
 		this.daoLookupService = daoLookupService;
-		dao = (BaseDAO<ID,T>) Statics.getDaoMap().get(clazz);
+		dao = (BaseDAO<ID, Bean>) Statics.getDaoMap().get(clazz);
 		dateFormat = Statics.getServiceLoader().getDatabaseDateFormat();
 		updateUrls(DEFAULT_JSPPAGE_PREFIX,clazz.getSimpleName().toLowerCase());
     }
@@ -344,8 +343,8 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 
     @SuppressWarnings("rawtypes")
     @Override
-	public T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		T bean = ReflectUtil.getNewBean(clazz);
+	public Bean populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		Bean bean = ReflectUtil.getNewBean(clazz);
 		List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(clazz, ExcludeDBWrite.class);
 
 		for (FieldMetaData fieldMetaData : fieldMetaDataList) {
@@ -432,7 +431,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 
     @Override
     public void create() throws Exception {
-		T bean = populateBean(request, response);
+		Bean bean = populateBean(request, response);
 		dao.saveOrUpdate(bean);
     }
 
@@ -446,7 +445,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 		}
 		if (idValue!=null) {
 			ID id = (ID)ReflectUtil.getValueObject(idValue,dateFormat);
-			T bean = dao.get(id,true);
+			Bean bean = dao.get(id,true);
 			if (handleJson(bean)) {
 				return;
 			}
@@ -457,7 +456,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 	@Override
 	public void list() throws Exception {
 		int pageNo = pathParts.getInt(2);
-		List<T> beans = dao.getAll(pageNo,true);
+		List<Bean> beans = dao.getAll(pageNo,true);
 		int count = dao.count();
 		if (handleJson(beans)) {
 			return;
@@ -468,7 +467,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 
     @Override
     public void update(String id) throws Exception {
-		T bean = populateBean(request, response);
+		Bean bean = populateBean(request, response);
 		bean.setId( (ID)ReflectUtil.getValueObject(id,dateFormat) );
 		dao.saveOrUpdate(bean);
     }
@@ -493,8 +492,8 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 			}
 			int pageNo = pathParts.getInt(4);
 
-			List<T> beans = dao.find(field, value, pageNo, exact,true);
-			int count = dao.count(field, value);
+			List<Bean> beans = dao.find(field, value, pageNo, exact, true);
+			int count = dao.count(field, value, exact);
 			if (handleJson(beans)) {
 				return;
 			}
@@ -544,11 +543,11 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 		}
 	}
 
-	public BaseDAO<ID,T> getDao() {
+	public BaseDAO<ID, Bean> getDao() {
 		return dao;
 	}
 
-	public void setDao(BaseDAO<ID,T> dao) {
+	public void setDao(BaseDAO<ID, Bean> dao) {
 		this.dao = dao;
 	}
 
@@ -563,7 +562,7 @@ public class BaseControllerImpl<ID,T extends BaseBean<ID>, U> implements BaseCon
 	}
 
 	@Override
-	public Class<T> getBeanClass() {
+	public Class<Bean> getBeanClass() {
 		return clazz;
 	}
 

@@ -152,11 +152,11 @@ public class Statics {
 		}
     }
 
-    private static <T extends BaseBean> Class<T> getClassTypeFromBeanClassAnnotation(Class controllerClassType) throws ClassNotFoundException, NoSuchMethodException {
+    private static <Bean extends BaseBean> Class<Bean> getClassTypeFromBeanClassAnnotation(Class controllerClassType) throws ClassNotFoundException, NoSuchMethodException {
 		if (controllerClassType.isAnnotationPresent(BeanClass.class)) {
 			BeanClass baseClassAnnotation = (BeanClass) controllerClassType.getAnnotation(BeanClass.class);
 			if (baseClassAnnotation!=null) {
-				Class<T> classType = (Class<T>) baseClassAnnotation.value();
+				Class<Bean> classType = (Class<Bean>) baseClassAnnotation.value();
 				return classType;
 			}
 		}

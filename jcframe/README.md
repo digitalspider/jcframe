@@ -37,20 +37,24 @@ public void config();
 
 The **BaseDAO** interface provides:
 ```java
-public void saveOrUpdate(T bean);
-public List<T> getAll(int pageNo);
-public List<T> getLookup();
-public T getLookup(int id);
-public T get(int id);
-public void delete(int beanId);
-public List<T> find(String field, String value, int pageNo);
+public void saveOrUpdate(Bean bean);
+public void saveOrUpdate(List<Bean> beanList);
+public int count();
+public int count(String field, String value, boolean exact);
+public List<Bean> getAll(int pageNo, boolean populateBean);
+public List<Bean> getLookupList();
+public Bean get(ID id, boolean populateBean);
+public List<Bean> get(List<ID> idList, boolean populateBeans);
+public void delete(ID id);
+public void delete(List<ID> idList);
+public List<Bean> find(String field, String value, int pageNo, boolean exact, boolean populateBean);
 ```
 
 The **AuthService** interface provides:
 ```java
-public U getUser(HttpServletRequest request);
+public Bean getUser(HttpServletRequest request);
 public boolean isAuthenticated(HttpServletRequest request);
-public <T extends BaseBean> boolean checkACL(U user, Class<T> classType, Action action);
+public <Bean extends BaseBean> boolean checkACL(Bean user, Class<Bean> classType, Action action);
 ```
 
 The **ViewGenerator** interface provides:

@@ -161,16 +161,16 @@ public class ReflectUtil {
 		return filteredMethodMap;
 	}
 
-	public static <U extends BaseBean> U getNewBean(Class<U> clazz) {
+	public static <Bean extends BaseBean> Bean getNewBean(Class<Bean> clazz) {
 		try {
-			return (U) clazz.newInstance();
+			return (Bean) clazz.newInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public static <U extends BaseBean> List<String> getBeanFieldNames(Class<U> clazz, Class<? extends Annotation> excludeAnnnotationClass) {
+	public static <Bean extends BaseBean> List<String> getBeanFieldNames(Class<Bean> clazz, Class<? extends Annotation> excludeAnnnotationClass) {
 		Collection<FieldMetaData> fieldMetaDatas = getFieldData(clazz, excludeAnnnotationClass);
 		List<String> beanFieldNames = new ArrayList<String>();
 		for (FieldMetaData fieldMetaData : fieldMetaDatas) {
@@ -210,15 +210,15 @@ public class ReflectUtil {
 	}
 
 	/** Reflective way to get an annotation value */
-	public static String getAnnotationValue(Field field, Class<? extends Annotation> annotationClass, String defaultValue) {
-		if (field.isAnnotationPresent(annotationClass)) {
-			return getAnnotationValue(field, annotationClass, "value");
+	public static String getAnnotationValue(Class<?> classType, Class<? extends Annotation> annotationClass, String defaultValue) {
+		if (classType.isAnnotationPresent(annotationClass)) {
+			return getAnnotationValue(classType, annotationClass, defaultValue, "value");
 		}
 		return defaultValue;
 	}
 
-	public String getAnnotationValue(Class<?> classType, Class<? extends Annotation> annotationType, String attributeName) {
-		String value = null;
+	public static String getAnnotationValue(Class<?> classType, Class<? extends Annotation> annotationType, String defaultValue, String attributeName) {
+		String value = defaultValue;
 		Annotation annotation = classType.getAnnotation(annotationType);
 		if (annotation != null) {
 			try {
@@ -263,6 +263,32 @@ public class ReflectUtil {
 		return classes;
 	}
 
+
+	/**
+	 * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
+	 *
+	 * @param packageName The base package
+	 * @return The classes
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	public static List<Class> getClasses(String packageName, Class<? extends Annotation> annotationClass) throws ClassNotFoundException, IOException {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		assert classLoader != null;
+		String path = packageName.replace('.', '/');
+		Enumeration<URL> resources = classLoader.getResources(path);
+		List<File> dirs = new ArrayList<File>();
+		while (resources.hasMoreElements()) {
+			URL resource = resources.nextElement();
+			dirs.add(new File(resource.getFile()));
+		}
+		List<Class> classes = new ArrayList<Class>();
+		for (File directory : dirs) {
+			classes.addAll(findClasses(directory, packageName, annotationClass));
+		}
+		return classes;
+	}
+
 	/**
 	 * Recursive method used to find all classes in a given directory and subdirs.
 	 *
@@ -297,11 +323,43 @@ public class ReflectUtil {
 		return classes;
 	}
 
-	public static <T extends BaseBean> void invokeSetterMethodForBeanType(T bean, Method method, Class classType, int id) throws Exception {
+	/**
+	 * Recursive method used to find all classes in a given directory and subdirs.
+	 *
+	 * @param directory   The base directory
+	 * @param packageName The package name for classes found inside the base directory
+	 * @return The classes
+	 * @throws ClassNotFoundException
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<Class> findClasses(File directory, String packageName, Class<? extends Annotation> annotationClass) throws ClassNotFoundException {
+
+		List<Class> classes = new ArrayList<Class>();
+
+		if (!directory.exists()) {
+			return classes;
+		}
+
+		File[] files = directory.listFiles();
+		for (File file : files) {
+			if (file.isDirectory()) {
+				assert !file.getName().contains(".");
+				classes.addAll(findClasses(file, packageName + "." + file.getName(), annotationClass));
+			} else if (file.getName().endsWith(".class")) {
+				Class classType = Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6));
+				if (classType.isAnnotationPresent(annotationClass)) {
+					classes.add(classType);
+				}
+			}
+		}
+		return classes;
+	}
+
+	public static <Bean extends BaseBean> void invokeSetterMethodForBeanType(Bean bean, Method method, Class classType, int id) throws Exception {
 		if (ReflectUtil.isBean(classType)) {
 			BaseDAO fieldDao = Statics.getDaoMap().get(classType);
 			if (fieldDao != null) {
-				BaseBean valueBean = fieldDao.getLookup(id);
+				BaseBean valueBean = fieldDao.get(id,false);
 				LOG.debug("classType=" + classType.getSimpleName() +" method=" + method.getName() +  " valueBean=" + valueBean);
 				if (valueBean != null) {
 					method.invoke(bean, valueBean);
@@ -311,7 +369,7 @@ public class ReflectUtil {
 	}
 
 
-	public static <T extends BaseBean> void invokeSetterMethodForCollection(T bean, Method method, Class fieldClass, Class collectionClass, String[] valueArray) throws Exception {
+	public static <Bean extends BaseBean> void invokeSetterMethodForCollection(Bean bean, Method method, Class fieldClass, Class collectionClass, String[] valueArray) throws Exception {
 		if (ReflectUtil.isCollection(collectionClass) && valueArray!=null) {
 			BaseDAO fieldDao = Statics.getDaoMap().get(fieldClass);
 			LOG.info("fieldDao="+fieldDao);
@@ -332,7 +390,7 @@ public class ReflectUtil {
 			if (fieldDao!=null && valueArray.length>0 && StringUtils.isNumeric(valueArray[0])) {
 				for (String valueString : valueArray) {
 					if (!StringUtils.isBlank(valueString)) {
-						BaseBean valueBean = fieldDao.getLookup(Integer.parseInt(valueString));
+						BaseBean valueBean = fieldDao.get(Integer.parseInt(valueString),false);
 						LOG.info("valueBean="+valueBean);
 						if (valueBean != null) {
 							values.add(valueBean);
@@ -346,12 +404,12 @@ public class ReflectUtil {
 		}
 	}
 
-	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value) throws Exception {
+	public static <Bean extends BaseBean> void invokeSetterMethodForPrimitive(Bean bean, Method method, Class classType, String value) throws Exception {
 		DateFormat dateFormat = Statics.getServiceLoader().getDisplayDateFormat();
 		invokeSetterMethodForPrimitive(bean, method, classType, value, dateFormat);
 	}
 
-	public static <T extends BaseBean> void invokeSetterMethodForPrimitive(T bean, Method method, Class classType, String value, DateFormat dateFormat) throws Exception {
+	public static <Bean extends BaseBean> void invokeSetterMethodForPrimitive(Bean bean, Method method, Class classType, String value, DateFormat dateFormat) throws Exception {
 		if (!StringUtils.isBlank(value)) {
 			method.invoke(bean, getValueObject(value, dateFormat));
 		}

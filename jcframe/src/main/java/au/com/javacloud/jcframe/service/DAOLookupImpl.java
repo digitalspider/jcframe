@@ -57,8 +57,8 @@ public class DAOLookupImpl implements DAOLookup {
     }
 
     @Override
-    public <ID,T extends BaseBean<ID>> void fireDAOUpdate(DAOActionEvent<ID,T> event) {
-        Class<T> beanClass = event.getBeanClass();
+    public <ID, Bean extends BaseBean<ID>> void fireDAOUpdate(DAOActionEvent<ID, Bean> event) {
+        Class<Bean> beanClass = event.getBeanClass();
         switch (event.getEventType()) {
             case INSERT:
                 addToLookupMap(beanClass, event.getBean());

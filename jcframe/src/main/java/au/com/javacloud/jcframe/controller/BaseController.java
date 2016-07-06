@@ -19,7 +19,7 @@ import au.com.javacloud.jcframe.util.PathParts;
 /**
  * Created by david on 22/05/16.
  */
-public interface BaseController<ID,T extends BaseBean<ID>, U> {
+public interface BaseController<ID, Bean extends BaseBean<ID>, U> {
 
     public static final String SUFFIX_BEANS = "s";
     public static final String SUFFIX_FIELDS = "fields";
@@ -52,15 +52,15 @@ public interface BaseController<ID,T extends BaseBean<ID>, U> {
 
 	public boolean isInitialised();
 	
-	public void init(Class<T> clazz);
+	public void init(Class<Bean> clazz);
 	
-	public void init(Class<T> clazz, AuthService<U> authService, DAOLookup daoLookupService);
+	public void init(Class<Bean> clazz, AuthService<U> authService, DAOLookup daoLookupService);
 
 	public void initHttp(ServletContext servletContext, ServletConfig servletConfig) throws ServletException;
 	
 	public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 	
-	public T populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+	public Bean populateBean(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 	
 	public void list() throws Exception;
 	
@@ -81,13 +81,13 @@ public interface BaseController<ID,T extends BaseBean<ID>, U> {
     public void initLookupMap();
     public void reloadLookupMap();
 
-    public Class<T> getBeanClass();
+    public Class<Bean> getBeanClass();
 
     public String getBeanName();
     public void setBeanName(String name);
 
-	public BaseDAO<ID,T> getDao();
-	public void setDao(BaseDAO<ID,T> dao);
+	public BaseDAO<ID, Bean> getDao();
+	public void setDao(BaseDAO<ID, Bean> dao);
 
     public AuthService<U> getAuthService();
     public void setAuthService(AuthService<U> auth);

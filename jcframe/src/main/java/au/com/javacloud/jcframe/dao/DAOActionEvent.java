@@ -5,13 +5,13 @@ import au.com.javacloud.jcframe.model.BaseBean;
 /**
  * Created by david on 19/06/16.
  */
-public class DAOActionEvent<ID,T extends BaseBean<ID>> {
+public class DAOActionEvent<ID, Bean extends BaseBean<ID>> {
     private ID id;
-    Class<T> beanClass;
-    private T bean;
+    Class<Bean> beanClass;
+    private Bean bean;
     private DAOEventType eventType;
 
-    public DAOActionEvent(ID id, Class<T> beanClass, T bean, DAOEventType eventType) {
+    public DAOActionEvent(ID id, Class<Bean> beanClass, Bean bean, DAOEventType eventType) {
         this.id = id;
         this.beanClass = beanClass;
         this.bean = bean;
@@ -22,11 +22,11 @@ public class DAOActionEvent<ID,T extends BaseBean<ID>> {
         return id;
     }
 
-    public Class<T> getBeanClass() {
+    public Class<Bean> getBeanClass() {
         return beanClass;
     }
 
-    public T getBean() {
+    public Bean getBean() {
         return bean;
     }
 
