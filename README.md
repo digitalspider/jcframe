@@ -8,6 +8,36 @@ This project contains 2 artefacts:
 
 The development process is:
 * Create a new database table schema, or get the connection properties to existing database
+* Create a new database configuration file
+ * src/main/resources/**db.properties**
+ * Note: Different databases can be accessed through the annotation <code>@TableName("myschema:Table")</code>
+```properties
+# MySQL
+myschema.driver=com.mysql.jdbc.Driver
+myschema.url=jdbc:mysql://localhost:3306/TestDB
+myschema.username=test
+myschema.password=test
+
+# SQLite
+default.driver=org.sqlite.JDBC
+default.url=jdbc:sqlite:${REALPATH}database.db
+default.username=test
+default.password=test
+```
+* Create a javacloud configuration file
+ * src/main/resources/**jc.properties**
+```properties
+# JavaCloud configuration file
+
+package.name=com.mysite
+
+#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderImpl
+#auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
+#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupImpl
+#viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
+#ds.class=au.com.javacloud.jcframe.dao.BaseDataSource
+#ds.config.file=db.properties
+```
 * Use a tool to generate a series of *beans* against the database schema
  * A **bean** is an object representing a table in the database, extends **BaseBean**
  * e.g. [oracle jpa page](http://www.oracle.com/technetwork/developer-tools/eclipse/jpatutorial-2-092215.html) or [eclipse jpa page](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftasks021.htm)
@@ -29,21 +59,24 @@ The development process is:
 ```java
 import java.security.Principal;
 import au.com.javacloud.annotation.BeanClass;
-import au.com.javacloud.model.Page;
+import au.com.javacloud.model.MyData;
 
-@BeanClass(Page.class)
-public class PageController extends BaseControllerImpl<Page,Principal> {
+@BeanClass(MyData.class)
+public class MyDataController extends BaseControllerImpl<MyData,Principal> {
     @Override
     public void doAction(ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         super.doAction(action, pathParts, request, response);
     }
 }
 ```
-* Generate some jsp pages for the *bean* "page" by running "site/generate.sh page"
- * src/main/webapp/jsp/page/list.jsp
- * src/main/webapp/jsp/page/show.jsp
- * src/main/webapp/jsp/page/edit.jsp
- * src/main/webapp/jsp/page/index.jsp (optional)
+* Generate some jsp pages for the *bean* "MyData" by running "site/generate.sh mydata"
+ * src/main/webapp/jsp/mydata/list.jsp
+ * src/main/webapp/jsp/mydata/show.jsp
+ * src/main/webapp/jsp/mydata/edit.jsp
+ * src/main/webapp/jsp/mydata/index.jsp (optional, based on @IndexPage)
+ * **Note:** Create your own custom templates in:
+  * src/main/webapp/jsp/jctemplate/<list/index/edit/show>.jsp (for page templates)
+  * src/main/webapp/jsp/jctemplate/<view>/<list/index/edit/show>.jsp (for field templates)
 * These pages use the variables **${bean}** or **${beans}**
  * e.g. content for *list.jsp*
 ```html
@@ -56,37 +89,7 @@ public class PageController extends BaseControllerImpl<Page,Principal> {
         <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
     </tr>
 </c:forEach>
-<a href="${beanUrl}/insertStmt">Add Page</a>
-```
-* Create a new file for the database configuration in
- * src/main/resources/**db.properties**
- * Note: Different databases can be accessed through the annotation <code>@TableName("myschema:Table")</code>
-```properties
-# MySQL
-myschema.driver=com.mysql.jdbc.Driver
-myschema.url=jdbc:mysql://localhost:3306/TestDB
-myschema.username=test
-myschema.password=test
-
-# SQLite
-default.driver=org.sqlite.JDBC
-default.url=jdbc:sqlite:${REALPATH}database.db
-default.username=test
-default.password=test
-```
-* Create a new file for the javacloud configuration in
- * src/main/resources/**jc.properties**
-```properties
-# JavaCloud configuration file
-
-package.name=com.mysite
-
-#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderImpl
-#auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
-#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupImpl
-#viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
-#ds.class=au.com.javacloud.jcframe.dao.BaseDataSource
-#ds.config.file=db.properties
+<a href="${beanUrl}/insertStmt">Add MyData</a>
 ```
 * Build your application
  * <code>mvn package</code>
@@ -96,7 +99,10 @@ package.name=com.mysite
 # TODO
 * Implement AttachmentService = File Upload / display
 * Implement bean generator from DB metadata
+* Implement AJAX mechanism
 * Move DBDateFormat to new DataSourceWrapper
+* Implement custom @DBColumnName attribute
+* Implement default templates in jcframe.jar
 * Add Tests for ViewGeneratorImpl
 * Add Tests for BaseControllerImpl
 * Add Tests for BaseDAOImpl

@@ -17,10 +17,24 @@ You can extend any of these classes to add your own functionality.
 Special **annotation** can be added to BaseBeans.
 ```java
 @Secure(roles = "admin")
-@TableName("Page")
+@TableName("mydata")
 @DisplayValueColumn("title")
-@DisplayOrder("title,url,description,content,tags,type,status,authorId,parentId")
-public class Page extends BaseBean {
+@IdNameColumn("id")
+@DisplayOrder("title,url,description")
+public class MyData extends BaseBean {
+
+	@ExcludeView(pages="edit,list")
+	@ExcludeDBWrite
+	@DisplayHeader("Custom Title")
+	@DisplayType("html")
+	private String title;
+	
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
 }
 ```
 
