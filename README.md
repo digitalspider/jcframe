@@ -94,10 +94,17 @@ package.name=com.mysite
  * Place the war file into a tomcat "webapps" directory
 
 # TODO
-* Refactor ReflectUtil to create a centralised FieldMetaData with setMethod, getMethod, Field, ClassType :white_check_mark: 26/06/2016
-* Implement M2MService = Many-to-Many i.e. List<BaseBean>
 * Implement AttachmentService = File Upload / display
-* Implement ServiceLoaderService = abstract away some of statics :white_check_mark: 27/06/2016
 * Implement bean generator from DB metadata
+* Move DBDateFormat to new DataSourceWrapper
+* Add Tests for ViewGeneratorImpl
+* Add Tests for BaseControllerImpl
+* Add Tests for BaseDAOImpl
+* Add Tests for FrontControllerServlet
+* Add ITTests for Database Testing
+* Implement custom ID types = :white_check_mark: 06/07/2016
+* Implement M2MService = Many-to-Many i.e. List<BaseBean> :white_check_mark: 04/07/2016
+* Implement ServiceLoaderService = abstract away some of statics :white_check_mark: 27/06/2016
 * Implement namespaces in db.properties files, and in @TableName("schema:Table") :white_check_mark: 27/06/2016
-* Add Test Cases
+* Refactor ReflectUtil to create a centralised FieldMetaData with setMethod, getMethod, Field, ClassType :white_check_mark: 26/06/2016
+
