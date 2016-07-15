@@ -30,7 +30,7 @@ public class LoginController extends BaseControllerImpl<Integer,Login,Principal>
     private final static Logger LOG = Logger.getLogger(LoginController.class);
 
     @Override
-    public void doAction(au.com.javacloud.jcframe.controller.ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doAction(au.com.jcloud.jcframe.controller.ServletAction action, PathParts pathParts, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             LOG.info("In custom controller!");
             if (action.equals(ServletAction.POST) && StringUtils.isNotBlank(pathParts.get(1)) && pathParts.get(1).equals(FrontControllerServlet.LOGIN)) {

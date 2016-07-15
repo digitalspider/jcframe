@@ -26,7 +26,7 @@ public class Statics {
 
 	private static final Logger LOG = Logger.getLogger(Statics.class);
 
-    private static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
+    private static final String DEFAULT_PACKAGE_NAME = "au.com.jcloud.jcframe";
     private static final String DEFAULT_JC_CONFIG_FILE = "jc.properties";
 	private static final String DEFAULT_SERVICELOADER_CLASS = DEFAULT_PACKAGE_NAME+".service.ServiceLoaderImpl";
 
