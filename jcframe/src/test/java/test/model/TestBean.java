@@ -3,9 +3,9 @@ package test.model;
 import java.util.Date;
 import java.util.List;
 
-import au.com.javacloud.jcframe.annotation.DisplayOrder;
-import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
-import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.jcloud.jcframe.annotation.DisplayOrder;
+import au.com.jcloud.jcframe.annotation.DisplayValueColumn;
+import au.com.jcloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 26/06/16.

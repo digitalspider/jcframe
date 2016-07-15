@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>au.com.javacloud</groupId>
-  <artifactId>site</artifactId>
-  <packaging>war</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>JavaCloud website</name>
-  <url>http://javacloud.com.au</url>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>au.com.javacloud</groupId>
+	<artifactId>site</artifactId>
+	<packaging>war</packaging>
+	<version>1.0-SNAPSHOT</version>
+	<name>JavaCloud website</name>
+	<url>http://jcloud.com.au</url>
 
 	<!--
 	<parent>
-		<groupId>au.com.javacloud</groupId>
+		<groupId>au.com.jcloud</groupId>
 		<artifactId>all</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
@@ -18,7 +18,7 @@
 	
 	<organization>
 		<name>JavaCloud</name>
-		<url>http://www.javacloud.com.au</url>
+		<url>http://www.jcloud.com.au</url>
 	</organization>
 
 	<developers>
@@ -41,7 +41,7 @@
 		           <descriptor>assembly.xml</descriptor>
                     <archive>
                         <manifest>
-                            <mainClass>au.com.javacloud.jcframe.Generator</mainClass>
+                            <mainClass>au.com.jcloud.jcframe.Generator</mainClass>
                         </manifest>
                     </archive>
                     <outputDirectory>target</outputDirectory>
@@ -94,7 +94,7 @@
 
     <!-- JavaCloud Framework -->
     <dependency>
-      <groupId>au.com.javacloud</groupId>
+      <groupId>au.com.jcloud</groupId>
       <artifactId>jcframe</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>

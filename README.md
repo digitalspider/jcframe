@@ -31,11 +31,11 @@ default.password=test
 
 package.name=com.mysite
 
-#serviceloader.class=au.com.javacloud.jcframe.service.ServiceLoaderImpl
-#auth.class=au.com.javacloud.jcframe.auth.BaseAuthServiceImpl
-#daolookup.class=au.com.javacloud.jcframe.service.DAOLookupImpl
-#viewgen.class=au.com.javacloud.jcframe.view.ViewGeneratorImpl
-#ds.class=au.com.javacloud.jcframe.dao.BaseDataSource
+#serviceloader.class=au.com.jcloud.jcframe.service.ServiceLoaderImpl
+#auth.class=au.com.jcloud.jcframe.auth.BaseAuthServiceImpl
+#daolookup.class=au.com.jcloud.jcframe.service.DAOLookupImpl
+#viewgen.class=au.com.jcloud.jcframe.view.ViewGeneratorImpl
+#ds.class=au.com.jcloud.jcframe.dao.BaseDataSource
 #ds.config.file=db.properties
 ```
 * Use a tool to generate a series of *beans* against the database schema
@@ -48,7 +48,7 @@ package.name=com.mysite
 ```xml
     <!-- JavaCloud Framework -->
     <dependency>
-      <groupId>au.com.javacloud</groupId>
+      <groupId>au.com.jcloud</groupId>
       <artifactId>jcframe</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
@@ -58,8 +58,8 @@ package.name=com.mysite
  * For complete override of all Controllers set **@BeanClass(BaseBean.class)**
 ```java
 import java.security.Principal;
-import au.com.javacloud.annotation.BeanClass;
-import au.com.javacloud.model.MyData;
+import au.com.jcloud.annotation.BeanClass;
+import au.com.jcloud.model.MyData;
 
 @BeanClass(MyData.class)
 public class MyDataController extends BaseControllerImpl<MyData,Principal> {

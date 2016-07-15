@@ -3,15 +3,15 @@ package com.mysite.model;
 import java.util.Date;
 import java.util.List;
 
-import au.com.javacloud.jcframe.annotation.DisplayHeader;
-import au.com.javacloud.jcframe.annotation.DisplayOrder;
-import au.com.javacloud.jcframe.annotation.DisplayType;
-import au.com.javacloud.jcframe.annotation.DisplayValueColumn;
-import au.com.javacloud.jcframe.annotation.ExcludeDBWrite;
-import au.com.javacloud.jcframe.annotation.ExcludeView;
-import au.com.javacloud.jcframe.annotation.LinkField;
-import au.com.javacloud.jcframe.annotation.M2MTable;
-import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.jcloud.jcframe.annotation.DisplayHeader;
+import au.com.jcloud.jcframe.annotation.DisplayOrder;
+import au.com.jcloud.jcframe.annotation.DisplayType;
+import au.com.jcloud.jcframe.annotation.DisplayValueColumn;
+import au.com.jcloud.jcframe.annotation.ExcludeDBWrite;
+import au.com.jcloud.jcframe.annotation.ExcludeView;
+import au.com.jcloud.jcframe.annotation.LinkField;
+import au.com.jcloud.jcframe.annotation.M2MTable;
+import au.com.jcloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.

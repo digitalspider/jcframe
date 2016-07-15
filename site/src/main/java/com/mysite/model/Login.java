@@ -1,9 +1,9 @@
 package com.mysite.model;
 
-import au.com.javacloud.jcframe.annotation.DisplayType;
-import au.com.javacloud.jcframe.annotation.HiddenBean;
-import au.com.javacloud.jcframe.annotation.TableName;
-import au.com.javacloud.jcframe.model.BaseBean;
+import au.com.jcloud.jcframe.annotation.DisplayType;
+import au.com.jcloud.jcframe.annotation.HiddenBean;
+import au.com.jcloud.jcframe.annotation.TableName;
+import au.com.jcloud.jcframe.model.BaseBean;
 
 /**
  * Created by david on 22/05/16.
