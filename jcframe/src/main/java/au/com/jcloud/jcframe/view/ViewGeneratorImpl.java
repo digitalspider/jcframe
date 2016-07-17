@@ -96,10 +96,13 @@ public class ViewGeneratorImpl implements ViewGenerator {
     public Map<ViewType,String> getTemplates(String layout, String fieldName) throws IOException {
 		Map<ViewType,String> templates = new HashMap<ViewType,String>();
 		String templatePath = PATH_TEMPLATE;
+		String jcTemplatePath = PATH_JCTEMPLATE;
 		if (StringUtils.isNotBlank(layout)) {
 			templatePath += layout+"/";
+			jcTemplatePath += layout+"/";
 		} else {
 			templatePath += PATH_DEFAULT;
+			jcTemplatePath += PATH_DEFAULT;
 		}
 		if (StringUtils.isNotBlank(fieldName)) {
 			templates = fieldContentTemplateMap.get(fieldName);
@@ -110,6 +113,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				return templates;
 			}
 			templatePath+=fieldName+"/";
+			jcTemplatePath+=fieldName+"/";
 		}
 		boolean displayLog = true;
 
@@ -124,13 +128,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				}
 				template = FileUtils.readFileToString(templateFile);
 			} else {
-				viewTemplateFilePath = PATH_JCTEMPLATE;
-				if (StringUtils.isNotBlank(layout)) {
-					viewTemplateFilePath += layout+"/";
-				} else {
-					viewTemplateFilePath += PATH_DEFAULT;
-				}
-				viewTemplateFilePath += viewType.getPageName();
+				viewTemplateFilePath = jcTemplatePath + viewType.getPageName();
 				if (displayLog) {
 					LOG.info("viewTemplateFilePath=" + viewTemplateFilePath);
 					displayLog = false;
