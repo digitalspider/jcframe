@@ -14,7 +14,7 @@ import au.com.jcloud.jcframe.view.ViewGenerator;
  */
 public interface ServiceLoader {
 
-    public static final String DEFAULT_PACKAGE_NAME = "au.com.javacloud.jcframe";
+    public static final String DEFAULT_PACKAGE_NAME = "au.com.jcloud.jcframe";
     public static final String DEFAULT_DB_CONFIG_FILE = "db.properties";
     public static final String DEFAULT_AUTH_CLASS = DEFAULT_PACKAGE_NAME+".auth.BaseAuthServiceImpl";
     public static final String DEFAULT_DAOLOOKUP_CLASS = DEFAULT_PACKAGE_NAME+".service.DAOLookupImpl";

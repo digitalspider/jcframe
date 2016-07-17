@@ -37,8 +37,18 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 	@Override
 	public void generatePages(List<String> beans) throws Exception {
+		generatePages(beans, null);
+	}
+
+	@Override
+	public void generatePages(List<String> beans, String layout) throws Exception {
 		LOG.info("generatePages() STARTED");
-		Map<ViewType,String> pageTemplates = getTemplates(PATH_TEMPLATE, null);
+		String templatePath = PATH_TEMPLATE_DEFAULT;
+		if (StringUtils.isNotBlank(layout)) {
+			templatePath = PATH_TEMPLATE+layout+"/";
+		}
+		LOG.info("templatePath="+templatePath);
+		Map<ViewType,String> pageTemplates = getTemplates(templatePath, null);
 		LOG.debug("pageTemplates="+pageTemplates);
 
 		if (!pageTemplates.isEmpty()) {

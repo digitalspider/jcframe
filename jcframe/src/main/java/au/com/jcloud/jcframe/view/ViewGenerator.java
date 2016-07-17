@@ -2,7 +2,6 @@ package au.com.jcloud.jcframe.view;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +11,8 @@ import au.com.jcloud.jcframe.util.FieldMetaData;
 public interface ViewGenerator {
 
 	public static final String PATH_JSP = "src/main/webapp/jsp/";
-	public static final String PATH_TEMPLATE = PATH_JSP+"jctemplate/";
+	public static final String PATH_TEMPLATE = "src/main/resources/jctemplate/";
+	public static final String PATH_TEMPLATE_DEFAULT = PATH_TEMPLATE+"default/";
 	public static final String FIELD_TYPE_TEXT = "text";
 	public static final String FIELD_TYPE_HTML = "html";
 	public static final String FIELD_TYPE_BEAN = "bean";
@@ -22,6 +22,8 @@ public interface ViewGenerator {
 	public static final String PLACEHOLDER_FIELDHEADERS = "##FIELDHEADERS##";
 
 	public void generatePages(List<String> beans) throws Exception;
+
+	public void generatePages(List<String> beans, String layout) throws Exception;
 
 	public String getTemplate(ViewType viewType, String type) throws IOException;
 
