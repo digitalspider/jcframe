@@ -11,8 +11,9 @@ import au.com.jcloud.jcframe.util.FieldMetaData;
 public interface ViewGenerator {
 
 	public static final String PATH_JSP = "src/main/webapp/jsp/";
-	public static final String PATH_TEMPLATE = "src/main/resources/jctemplate/";
-	public static final String PATH_TEMPLATE_DEFAULT = PATH_TEMPLATE+"default/";
+	public static final String PATH_JCTEMPLATE = "jctemplate/";
+	public static final String PATH_TEMPLATE = "src/main/resources/"+PATH_JCTEMPLATE;
+	public static final String PATH_DEFAULT = "default/";
 	public static final String FIELD_TYPE_TEXT = "text";
 	public static final String FIELD_TYPE_HTML = "html";
 	public static final String FIELD_TYPE_BEAN = "bean";
@@ -25,7 +26,7 @@ public interface ViewGenerator {
 
 	public void generatePages(List<String> beans, String layout) throws Exception;
 
-	public String getTemplate(ViewType viewType, String type) throws IOException;
+	public String getTemplate(ViewType viewType, String layout, String type) throws IOException;
 
 	public Map<ViewType,String> getTemplates(String templateDirectory, String fieldName) throws IOException;
 
@@ -33,9 +34,9 @@ public interface ViewGenerator {
 
 	public boolean validForView(ViewType viewType, Field field);
 
-	public String generateView(ViewType viewType, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception;
+	public String generateView(ViewType viewType, String layout, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception;
 
-	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception;
+	public String getTemplatedContent(ViewType viewType, String layout, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception;
 
 	public String getTemplatedContent(ViewType viewType, String template, FieldMetaData fieldMetaData, String fieldHeader, Class<? extends BaseBean> classType, Class fieldClass, String type, String other, boolean isBean) throws Exception;
 

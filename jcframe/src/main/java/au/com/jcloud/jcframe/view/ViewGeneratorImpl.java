@@ -2,6 +2,7 @@ package au.com.jcloud.jcframe.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,12 +44,9 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	@Override
 	public void generatePages(List<String> beans, String layout) throws Exception {
 		LOG.info("generatePages() STARTED");
-		String templatePath = PATH_TEMPLATE_DEFAULT;
-		if (StringUtils.isNotBlank(layout)) {
-			templatePath = PATH_TEMPLATE+layout+"/";
-		}
+		String templatePath = PATH_TEMPLATE;
 		LOG.info("templatePath="+templatePath);
-		Map<ViewType,String> pageTemplates = getTemplates(templatePath, null);
+		Map<ViewType,String> pageTemplates = getTemplates(layout, null);
 		LOG.debug("pageTemplates="+pageTemplates);
 
 		if (!pageTemplates.isEmpty()) {
@@ -65,7 +63,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 
 						for (ViewType viewType : ViewType.values()) {
 							if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
-								String html = generateView(viewType, classType, fieldMetaDataList);
+								String html = generateView(viewType, layout, classType, fieldMetaDataList);
 								String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
 								String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
 								if (htmlParts.length == 2) {
@@ -86,8 +84,8 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplate(ViewType viewType, String type) throws IOException {
-		Map<ViewType,String> contentTemplates = getTemplates(PATH_TEMPLATE, type);
+	public String getTemplate(ViewType viewType, String layout, String type) throws IOException {
+		Map<ViewType,String> contentTemplates = getTemplates(layout, type);
 		if (contentTemplates!=null) {
 			return contentTemplates.get(viewType);
 		}
@@ -95,8 +93,14 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-    public Map<ViewType,String> getTemplates(String templateDirectory, String fieldName) throws IOException {
+    public Map<ViewType,String> getTemplates(String layout, String fieldName) throws IOException {
 		Map<ViewType,String> templates = new HashMap<ViewType,String>();
+		String templatePath = PATH_TEMPLATE;
+		if (StringUtils.isNotBlank(layout)) {
+			templatePath += layout+"/";
+		} else {
+			templatePath += PATH_DEFAULT;
+		}
 		if (StringUtils.isNotBlank(fieldName)) {
 			templates = fieldContentTemplateMap.get(fieldName);
 			if (templates==null) {
@@ -105,26 +109,46 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			} else {
 				return templates;
 			}
-			templateDirectory+=fieldName+"/";
+			templatePath+=fieldName+"/";
 		}
 		boolean displayLog = true;
+
 		for (ViewType viewType : ViewType.values()) {
-			File templateFile = new File(templateDirectory + viewType.getPageName());
+			String viewTemplateFilePath = templatePath + viewType.getPageName();
+			String template;
+			File templateFile = new File(viewTemplateFilePath);
 			if (templateFile.exists()) {
 				if (displayLog) {
 					LOG.info("templateFile=" + templateFile.getAbsolutePath());
 					displayLog = false;
 				}
-				final String template = FileUtils.readFileToString(templateFile, "UTF-8");
-				templates.put(viewType, template);
+				template = FileUtils.readFileToString(templateFile);
+			} else {
+				viewTemplateFilePath = PATH_JCTEMPLATE;
+				if (StringUtils.isNotBlank(layout)) {
+					viewTemplateFilePath += layout+"/";
+				} else {
+					viewTemplateFilePath += PATH_DEFAULT;
+				}
+				viewTemplateFilePath += viewType.getPageName();
+				if (displayLog) {
+					LOG.info("viewTemplateFilePath=" + viewTemplateFilePath);
+					displayLog = false;
+				}
+				InputStream templateInputStream = getClass().getClassLoader().getResourceAsStream(viewTemplateFilePath);
+				File temporaryFile = new File(System.getProperty("java.io.tmpdir"), viewType.getPageName());
+				temporaryFile.createNewFile();
+				FileUtils.copyInputStreamToFile(templateInputStream, temporaryFile);
+				template = FileUtils.readFileToString(temporaryFile, "UTF-8");
 			}
+			templates.put(viewType, template);
 		}
 		return templates;
     }
     
 	@SuppressWarnings("rawtypes")
 	@Override
-	public String generateView(ViewType viewType, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception {
+	public String generateView(ViewType viewType, String layout, Class<? extends BaseBean> classType, List<FieldMetaData> fieldMetaDataList) throws Exception {
 		StringBuffer html = new StringBuffer();
 
 		String[] orderList = new String[0];
@@ -145,7 +169,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				Method method = fieldMetaData.getSetMethod();
 				fieldName = field.getName();
 				if (validForView(viewType, field)) {
-					content = getTemplatedContent(viewType, fieldMetaData, classType);
+					content = getTemplatedContent(viewType, layout, fieldMetaData, classType);
 					html.append(content);
 				}
 			}
@@ -178,7 +202,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 				Method method = fieldMetaData.getSetMethod();
 				fieldName = field.getName();
 				if (validForView(viewType, field)) {
-					content = getTemplatedContent(viewType, fieldMetaData, classType);
+					content = getTemplatedContent(viewType, layout, fieldMetaData, classType);
 					html.append(content);
 				}
 			}
@@ -234,7 +258,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 	}
 
 	@Override
-	public String getTemplatedContent(ViewType viewType, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception {
+	public String getTemplatedContent(ViewType viewType, String layout, FieldMetaData fieldMetaData, Class<? extends BaseBean> classType) throws Exception {
 		Class fieldClass = fieldMetaData.getClassType(); // TODO: Implement field specific stuff
 		boolean isBean = fieldMetaData.isBean();
 		boolean isCollection = fieldMetaData.isCollection();
@@ -267,7 +291,7 @@ public class ViewGeneratorImpl implements ViewGenerator {
 			}
 		}
 
-		String template = getTemplate(viewType, getTypeToUseForTemplate(type));
+		String template = getTemplate(viewType, layout, getTypeToUseForTemplate(type));
 		if (template!=null) {
 			LOG.debug("viewType="+viewType+", fieldMetaData="+fieldMetaData+", fieldHeader="+fieldHeader+", classType="+classType+", fieldClass="+fieldClass+", type="+type+", isBean="+isBean);
 			return getTemplatedContent(viewType, template, fieldMetaData, fieldHeader, classType, fieldClass, type, other, isBean);
