@@ -20,6 +20,7 @@ import au.com.jcloud.jcframe.annotation.DisplayHeader;
 import au.com.jcloud.jcframe.annotation.DisplayOrder;
 import au.com.jcloud.jcframe.annotation.DisplayType;
 import au.com.jcloud.jcframe.annotation.ExcludeView;
+import au.com.jcloud.jcframe.annotation.HiddenBean;
 import au.com.jcloud.jcframe.annotation.IndexPage;
 import au.com.jcloud.jcframe.annotation.LinkField;
 import au.com.jcloud.jcframe.annotation.M2MTable;
@@ -58,22 +59,23 @@ public class ViewGeneratorImpl implements ViewGenerator {
 						File destDir = new File(directory);
 						LOG.info("destDir=" + destDir.getAbsolutePath());
 						Class<? extends BaseBean> classType = classMap.get(beanName);
-						List<Class<? extends Annotation>> excludedAnnotationClasses = new ArrayList<Class<? extends Annotation>>();
-						List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(classType);
+						if (!classType.isAnnotationPresent(HiddenBean.class)) {
+							List<FieldMetaData> fieldMetaDataList = ReflectUtil.getFieldData(classType);
 
-						for (ViewType viewType : ViewType.values()) {
-							if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
-								String html = generateView(viewType, layout, classType, fieldMetaDataList);
-								String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
-								String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
-								if (htmlParts.length == 2) {
-									pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
-									pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
-								} else {
-									pageContent = pageContent.replace(PLACEHOLDER_FIELDS, html);
+							for (ViewType viewType : ViewType.values()) {
+								if (!viewType.equals(ViewType.INDEX) || (viewType.equals(ViewType.INDEX) && classType.isAnnotationPresent(IndexPage.class))) {
+									String html = generateView(viewType, layout, classType, fieldMetaDataList);
+									String pageContent = pageTemplates.get(viewType).replaceAll("\\$\\{beanName\\}", classType.getSimpleName());
+									String[] htmlParts = html.split(DELIM_HTML_TEMPLATE); // split on delimiter
+									if (htmlParts.length == 2) {
+										pageContent = pageContent.replace(PLACEHOLDER_FIELDHEADERS, htmlParts[0]);
+										pageContent = pageContent.replace(PLACEHOLDER_FIELDS, htmlParts[1]);
+									} else {
+										pageContent = pageContent.replace(PLACEHOLDER_FIELDS, html);
+									}
+									File outputFile = new File(destDir, viewType.getPageName());
+									FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
 								}
-								File outputFile = new File(destDir, viewType.getPageName());
-								FileUtils.writeStringToFile(outputFile, pageContent, "UTF-8");
 							}
 						}
 					}
