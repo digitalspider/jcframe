@@ -101,7 +101,7 @@ public class FrontControllerServlet extends HttpServlet {
             } else {
                 Class<? extends BaseBean> classType = Statics.getSecureClassTypeMap().get(beanName);
                 if (classType!=null) {
-                    LOG.error("Login required for bean=" + beanName);
+                    LOG.error("BaseLogin required for bean=" + beanName);
                     RequestDispatcher view = request.getRequestDispatcher(URL_LOGIN);
                     view.forward(request, response);
                     return;
