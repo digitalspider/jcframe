@@ -6,7 +6,16 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
-<title>Add New Student</title>
+<c:choose>
+    <c:when test="${bean.id==null}">
+        <c:set var="action" value="Add"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="action" value="Edit"/>
+    </c:otherwise>
+</c:choose>
+
+<title>${action} Student</title>
 
 <script>
 function addLookup(selectName) {
