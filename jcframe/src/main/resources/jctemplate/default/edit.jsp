@@ -6,7 +6,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
-<title>Add New ${beanName}</title>
+<title>Add/Edit ${beanName}</title>
 
 <script>
 function addLookup(selectName) {

@@ -7,7 +7,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-        <title>Show All ${beanName}s</title>
+        <title>${beanName} Home</title>
     </head>
     <body>
         <a href="${baseUrl}">Home</a>&nbsp;|&nbsp;
@@ -29,24 +29,17 @@
         <br/>
 
         <p>Showing ${beans.size()}/${beancount}</p>
-        <table>
-        <thead>
-          <tr>
-##FIELDHEADERS##
-            <th colspan="2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <c:forEach items="${beans}" var="bean">
-            <tr>
-##FIELDS##
-              <td><a href="${beanUrl}/edit/<c:out value='${bean.id}'/>">Update</a></td>
-              <td><a href="${beanUrl}/delete/<c:out value='${bean.id}'/>">Delete</a></td>
-            </tr>  </c:forEach></tbody>
-        </table>
 
-        <p>
-            <a href="${beanUrl}/insert">Add ${beanName}</a>
-        </p>
+        <c:choose>
+            <c:when test="${beans.size()>0}">
+                <c:set var="bean" value="${beans.get(0)}"/>
+                <div id="content">
+                    <c:out value="${bean.displayValue}"/>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <script type="text/javascript">window.location.href="${beanUrl}/list"</script>
+            </c:otherwise>
+        </c:choose>
     </body>
 </html>

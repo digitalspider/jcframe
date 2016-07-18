@@ -25,6 +25,7 @@ public interface BaseController<ID, Bean extends BaseBean<ID>, U> {
     public static final String SUFFIX_FIELDS = "fields";
     public static final String SUFFIX_TYPES = "types";
     public static final String SUFFIX_COUNT = "count";
+    public static final String BEANNAME = "beanName";
     public static final String LOOKUPMAP = "lookupMap";
     public static final String CONTEXTURL = "contextUrl";
     public static final String BASEURL = "baseUrl";

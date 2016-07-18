@@ -183,6 +183,7 @@ public class BaseControllerImpl<ID, Bean extends BaseBean<ID>, U> implements Bas
 		String forward = null;
 		request.setAttribute(beanName+SUFFIX_FIELDS, dao.getBeanFieldNames() );
 		request.setAttribute(beanName+SUFFIX_TYPES, Statics.getClassTypeMap(request).keySet() );
+		request.setAttribute(BEANNAME, clazz.getSimpleName());
 		request.setAttribute(LOOKUPMAP, lookupMap );
 		request.setAttribute(CONTEXTURL, contextUrl );
 		request.setAttribute(BASEURL, baseUrl );
