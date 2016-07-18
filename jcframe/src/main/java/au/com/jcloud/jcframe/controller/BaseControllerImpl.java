@@ -160,7 +160,7 @@ public class BaseControllerImpl<ID, Bean extends BaseBean<ID>, U> implements Bas
 		this.request = request;
 		this.response = response;
 
-		LOG.info("isAuth=" + authService.isAuthenticated(request));
+		LOG.debug("isAuth=" + authService.isAuthenticated(request));
 		Principal principal = request.getUserPrincipal();
 		if (principal!=null) {
 			String username = principal.getName();
@@ -168,17 +168,17 @@ public class BaseControllerImpl<ID, Bean extends BaseBean<ID>, U> implements Bas
 		}
 
 		contextUrl = HttpUtil.getContextUrl(request);
-		LOG.info("contextUrl="+contextUrl);
+		LOG.debug("contextUrl="+contextUrl);
         baseUrl = HttpUtil.getBaseUrl(request);
         LOG.info("baseUrl="+baseUrl);
         String pathInfo = request.getPathInfo();
-		LOG.info("pathInfo="+pathInfo);
+		LOG.debug("pathInfo="+pathInfo);
 		String servletPath = request.getServletPath();
-		LOG.info("servletPath="+servletPath);
+		LOG.debug("servletPath="+servletPath);
 		this.pathParts = pathParts;
 		LOG.info("pathParts="+pathParts);
 		beanUrl = baseUrl + "/"+pathParts.get(0);
-		LOG.info("beanUrl="+beanUrl);
+		LOG.debug("beanUrl="+beanUrl);
 
 		String forward = null;
 		request.setAttribute(beanName+SUFFIX_FIELDS, dao.getBeanFieldNames() );
